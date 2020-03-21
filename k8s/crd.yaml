@@ -6,6 +6,9 @@ metadata:
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: k8s.kevingomez.fr
+  # either Namespaced or Cluster
+  scope: Namespaced
+
   # list of versions supported by this CustomResourceDefinition
   versions:
     - name: v1
@@ -24,10 +27,7 @@ spec:
               properties:
                 message:
                   type: string
-            status:
-              type: object
-  # either Namespaced or Cluster
-  scope: Namespaced
+
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
     plural: grafanadashboards
@@ -37,4 +37,5 @@ spec:
     kind: GrafanaDashboard
     shortNames:
       - gd
+      - grafana-dashboards
       - dashboards
