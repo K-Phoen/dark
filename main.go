@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/K-Phoen/dark/pkg/dashboards"
 	"github.com/K-Phoen/grabana"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -58,8 +59,9 @@ func main() {
 	darkInformerFactory := informers.NewSharedInformerFactory(darkClient, time.Second*30)
 
 	grabanaClient := grabana.NewClient(&http.Client{}, cfg.GrafanaHost, cfg.GrafanaToken)
+	dashboardCreator := dashboards.NewCreator(grabanaClient)
 
-	controller := NewController(kubeClient, darkClient, darkInformerFactory.Controller().V1().GrafanaDashboards(), grabanaClient)
+	controller := NewController(kubeClient, darkClient, darkInformerFactory.Controller().V1().GrafanaDashboards(), dashboardCreator)
 
 	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.

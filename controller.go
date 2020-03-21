@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bytes"
-	"context"
-	"encoding/json"
 	"fmt"
 	"time"
 
@@ -12,8 +9,6 @@ import (
 	samplescheme "github.com/K-Phoen/dark/pkg/generated/clientset/versioned/scheme"
 	informers "github.com/K-Phoen/dark/pkg/generated/informers/externalversions/controller/v1"
 	listers "github.com/K-Phoen/dark/pkg/generated/listers/controller/v1"
-	"github.com/K-Phoen/grabana"
-	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -38,6 +33,10 @@ const (
 	MessageResourceSynced = "GrafanaDashboard synced successfully"
 )
 
+type dashboardCreator interface {
+	FromRawSpec(folderName string, rawJSON []byte) error
+}
+
 // Controller is the controller implementation for GrafanaDashboard resources
 type Controller struct {
 	// kubeclientset is a standard kubernetes clientset
@@ -58,11 +57,11 @@ type Controller struct {
 	// Kubernetes API.
 	recorder record.EventRecorder
 
-	grabanaClient *grabana.Client
+	dashboardCreator dashboardCreator
 }
 
 // NewController returns a new sample controller
-func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer, grabanaClient *grabana.Client) *Controller {
+func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer, dashboardCreator dashboardCreator) *Controller {
 	// Create event broadcaster
 	// Add dark-controller types to the default Kubernetes Scheme so Events can be
 	// logged for dark-controller types.
@@ -80,7 +79,7 @@ func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.I
 		dashboardsSynced: dashboardInformer.Informer().HasSynced,
 		workqueue:        workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "GrafanaDashboards"),
 		recorder:         recorder,
-		grabanaClient:    grabanaClient,
+		dashboardCreator: dashboardCreator,
 	}
 
 	klog.Info("Setting up event handlers")
@@ -224,51 +223,8 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	spec := make(map[string]interface{})
-	if err := json.Unmarshal(dashboard.Spec.Raw, &spec); err != nil {
-		fmt.Printf("could not unmarshall  dashboard json spec: %s", err)
-		// TODO
-		return nil
-	}
-
-	dashboardYaml, err := yaml.Marshal(spec)
-	if err != nil {
-		fmt.Printf("could not convert dashboard spec to yaml: %s", err)
-		// TODO
-		return nil
-	}
-
-	fmt.Printf("dashboard: %s\n", dashboardYaml)
-
-	dashboardBuilder, err := grabana.UnmarshalYAML(bytes.NewBuffer(dashboardYaml))
-	if err != nil {
-		fmt.Printf("Could not unmarshall dashboard YAML spec: %s\n", err)
-		// TODO
-		return nil
-	}
-
-	ctx := context.Background()
-
-	// create the folder holding the dashboard for the service
-	folder, err := c.grabanaClient.GetFolderByTitle(ctx, dashboard.Folder)
-	if err != nil && err != grabana.ErrFolderNotFound {
-		fmt.Printf("Could not create folder: %s\n", err)
-		// TODO
-		return nil
-	}
-	if folder == nil {
-		folder, err = c.grabanaClient.CreateFolder(ctx, dashboard.Folder)
-		if err != nil {
-			fmt.Printf("Could not create folder: %s\n", err)
-			// TODO
-			return nil
-		}
-
-		fmt.Printf("Folder created (id: %d, uid: %s)\n", folder.ID, folder.UID)
-	}
-
-	if _, err := c.grabanaClient.UpsertDashboard(ctx, folder, dashboardBuilder); err != nil {
-		fmt.Printf("Could not create dashboard: %s\n", err)
+	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.Spec.Raw); err != nil {
+		fmt.Printf("could not create dashboard from spec: %s", err)
 		// TODO
 		return nil
 	}
