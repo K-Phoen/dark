@@ -43,3 +43,4 @@ spec:
       - gd
       - grafana-dashboards
       - dashboards
+      - dashboard

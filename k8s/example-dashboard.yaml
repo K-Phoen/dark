@@ -6,7 +6,7 @@ metadata:
 
 folder: "Test folder"
 spec:
-  title: Awesome Dashboard qui tue
+  title: Awesome Dashboard
 
   editable: true
   shared_crosshair: true
