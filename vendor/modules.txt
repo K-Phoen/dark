@@ -1,3 +1,17 @@
+# github.com/K-Phoen/grabana v0.4.1 => ../grabana
+github.com/K-Phoen/grabana
+github.com/K-Phoen/grabana/alert
+github.com/K-Phoen/grabana/axis
+github.com/K-Phoen/grabana/graph
+github.com/K-Phoen/grabana/row
+github.com/K-Phoen/grabana/singlestat
+github.com/K-Phoen/grabana/table
+github.com/K-Phoen/grabana/target/prometheus
+github.com/K-Phoen/grabana/text
+github.com/K-Phoen/grabana/variable/constant
+github.com/K-Phoen/grabana/variable/custom
+github.com/K-Phoen/grabana/variable/interval
+github.com/K-Phoen/grabana/variable/query
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
@@ -40,6 +54,10 @@ github.com/google/gofuzz
 github.com/googleapis/gnostic/OpenAPIv2
 github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
+# github.com/gosimple/slug v1.1.1
+github.com/gosimple/slug
+# github.com/grafana-tools/sdk v0.0.0-20200127194913-bdcab199ffde
+github.com/grafana-tools/sdk
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru
 github.com/hashicorp/golang-lru/simplelru
@@ -55,6 +73,8 @@ github.com/mailru/easyjson/jwriter
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
+# github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be
+github.com/rainycape/unidecode
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # golang.org/x/crypto v0.0.0-20200220183623-bac4c82f6975

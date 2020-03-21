@@ -1,18 +1,21 @@
 package main
 
 import (
+	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"time"
 
 	v1 "github.com/K-Phoen/dark/pkg/apis/controller/v1"
-
 	clientset "github.com/K-Phoen/dark/pkg/generated/clientset/versioned"
 	samplescheme "github.com/K-Phoen/dark/pkg/generated/clientset/versioned/scheme"
 	informers "github.com/K-Phoen/dark/pkg/generated/informers/externalversions/controller/v1"
 	listers "github.com/K-Phoen/dark/pkg/generated/listers/controller/v1"
+	"github.com/K-Phoen/grabana"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -54,10 +57,12 @@ type Controller struct {
 	// recorder is an event recorder for recording Event resources to the
 	// Kubernetes API.
 	recorder record.EventRecorder
+
+	grabanaClient *grabana.Client
 }
 
 // NewController returns a new sample controller
-func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer) *Controller {
+func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer, grabanaClient *grabana.Client) *Controller {
 	// Create event broadcaster
 	// Add dark-controller types to the default Kubernetes Scheme so Events can be
 	// logged for dark-controller types.
@@ -75,6 +80,7 @@ func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.I
 		dashboardsSynced: dashboardInformer.Informer().HasSynced,
 		workqueue:        workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "GrafanaDashboards"),
 		recorder:         recorder,
+		grabanaClient:    grabanaClient,
 	}
 
 	klog.Info("Setting up event handlers")
@@ -206,7 +212,7 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	// Get the GrafanaDashboard resource with this namespace/name
-	foo, err := c.dashboardsLister.GrafanaDashboards(namespace).Get(name)
+	dashboard, err := c.dashboardsLister.GrafanaDashboards(namespace).Get(name)
 	if err != nil {
 		// The GrafanaDashboard resource may no longer exist, in which case we stop
 		// processing.
@@ -218,9 +224,56 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	// TODO: some magic here
+	spec := make(map[string]interface{})
+	if err := json.Unmarshal(dashboard.Spec.Raw, &spec); err != nil {
+		fmt.Printf("could not unmarshall  dashboard json spec: %s", err)
+		// TODO
+		return nil
+	}
 
-	c.recorder.Event(foo, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
+	dashboardYaml, err := yaml.Marshal(spec)
+	if err != nil {
+		fmt.Printf("could not convert dashboard spec to yaml: %s", err)
+		// TODO
+		return nil
+	}
+
+	fmt.Printf("dashboard: %s\n", dashboardYaml)
+
+	dashboardBuilder, err := grabana.UnmarshalYAML(bytes.NewBuffer(dashboardYaml))
+	if err != nil {
+		fmt.Printf("Could not unmarshall dashboard YAML spec: %s\n", err)
+		// TODO
+		return nil
+	}
+
+	ctx := context.Background()
+
+	// create the folder holding the dashboard for the service
+	folder, err := c.grabanaClient.GetFolderByTitle(ctx, dashboard.Folder)
+	if err != nil && err != grabana.ErrFolderNotFound {
+		fmt.Printf("Could not create folder: %s\n", err)
+		// TODO
+		return nil
+	}
+	if folder == nil {
+		folder, err = c.grabanaClient.CreateFolder(ctx, dashboard.Folder)
+		if err != nil {
+			fmt.Printf("Could not create folder: %s\n", err)
+			// TODO
+			return nil
+		}
+
+		fmt.Printf("Folder created (id: %d, uid: %s)\n", folder.ID, folder.UID)
+	}
+
+	if _, err := c.grabanaClient.UpsertDashboard(ctx, folder, dashboardBuilder); err != nil {
+		fmt.Printf("Could not create dashboard: %s\n", err)
+		// TODO
+		return nil
+	}
+
+	c.recorder.Event(dashboard, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
 
 	return nil
 }
@@ -236,44 +289,4 @@ func (c *Controller) enqueueDashboard(obj interface{}) {
 		return
 	}
 	c.workqueue.Add(key)
-}
-
-// handleObject will take any resource implementing metav1.Object and attempt
-// to find the GrafanaDashboard resource that 'owns' it. It does this by looking at the
-// objects metadata.ownerReferences field for an appropriate OwnerReference.
-// It then enqueues that GrafanaDashboard resource to be processed. If the object does not
-// have an appropriate OwnerReference, it will simply be skipped.
-func (c *Controller) handleObject(obj interface{}) {
-	var object metav1.Object
-	var ok bool
-	if object, ok = obj.(metav1.Object); !ok {
-		tombstone, ok := obj.(cache.DeletedFinalStateUnknown)
-		if !ok {
-			utilruntime.HandleError(fmt.Errorf("error decoding object, invalid type"))
-			return
-		}
-		object, ok = tombstone.Obj.(metav1.Object)
-		if !ok {
-			utilruntime.HandleError(fmt.Errorf("error decoding object tombstone, invalid type"))
-			return
-		}
-		klog.V(4).Infof("Recovered deleted object '%s' from tombstone", object.GetName())
-	}
-	klog.V(4).Infof("Processing object: %s", object.GetName())
-	if ownerRef := metav1.GetControllerOf(object); ownerRef != nil {
-		// If this object is not owned by a GrafanaDashboard, we should not do anything more
-		// with it.
-		if ownerRef.Kind != "GrafanaDashboard" {
-			return
-		}
-
-		foo, err := c.dashboardsLister.GrafanaDashboards(object.GetNamespace()).Get(ownerRef.Name)
-		if err != nil {
-			klog.V(4).Infof("ignoring orphaned object '%s' of foo '%s'", object.GetSelfLink(), ownerRef.Name)
-			return
-		}
-
-		c.enqueueDashboard(foo)
-		return
-	}
 }
