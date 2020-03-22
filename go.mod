@@ -4,6 +4,11 @@ go 1.13
 
 require (
 	github.com/K-Phoen/grabana v0.5.0
+	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/go-playground/universal-translator v0.17.0 // indirect
+	github.com/leodido/go-urn v1.2.0 // indirect
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
+	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/yaml.v2 v2.2.8
 	k8s.io/api v0.0.0-20200319202348-eb909d5fe0e7
 	k8s.io/apimachinery v0.0.0-20200319202151-147abd67b880

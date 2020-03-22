@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"net/http"
 	"time"
 
@@ -17,29 +16,33 @@ import (
 	clientset "github.com/K-Phoen/dark/pkg/generated/clientset/versioned"
 	informers "github.com/K-Phoen/dark/pkg/generated/informers/externalversions"
 	"github.com/K-Phoen/dark/pkg/signals"
+	"github.com/caarlos0/env"
+	"gopkg.in/go-playground/validator.v9"
 )
 
 type config struct {
-	MasterURL  string
-	KubeConfig string
+	MasterURL  string `env:"K8S_MASTER_URL"`
+	KubeConfig string `env:"K8S_CONFIG"`
 
-	GrafanaHost  string
-	GrafanaToken string
+	GrafanaHost  string `env:"GRAFANA_HOST" validate:"required"`
+	GrafanaToken string `env:"GRAFANA_TOKEN" validate:"required"`
+}
+
+func (cfg *config) loadFromEnv() error {
+	if err := env.Parse(cfg); err != nil {
+		return err
+	}
+	if err := validator.New().Struct(*cfg); err != nil {
+		return err
+	}
+	return nil
 }
 
 func main() {
 	cfg := config{}
-
-	flag.StringVar(&cfg.KubeConfig, "kubeconfig", "", "Path to a kubeconfig. Only required if out-of-cluster.")
-	flag.StringVar(&cfg.MasterURL, "master", "", "The address of the Kubernetes API server. Overrides any value in kubeconfig. Only required if out-of-cluster.")
-	flag.StringVar(&cfg.GrafanaHost, "grafana-host", "", "Grafana host.")
-	flag.StringVar(&cfg.GrafanaToken, "grafana-token", "", "Grafana API Token.")
-
-	klog.InitFlags(nil)
-	flag.Parse()
-
-	// set up signals so we handle the first shutdown signal gracefully
-	stopCh := signals.SetupSignalHandler()
+	if err := cfg.loadFromEnv(); err != nil {
+		klog.Fatalf("Error loading configuration: %s", err.Error())
+	}
 
 	restCfg, err := clientcmd.BuildConfigFromFlags(cfg.MasterURL, cfg.KubeConfig)
 	if err != nil {
@@ -62,6 +65,9 @@ func main() {
 	dashboardCreator := dashboards.NewCreator(grabanaClient)
 
 	controller := NewController(kubeClient, darkClient, darkInformerFactory.Controller().V1().GrafanaDashboards(), dashboardCreator)
+
+	// set up signals so we handle the first shutdown signal gracefully
+	stopCh := signals.SetupSignalHandler()
 
 	// notice that there is no need to run Start methods in a separate goroutine. (i.e. go kubeInformerFactory.Start(stopCh)
 	// Start method is non-blocking and runs all registered informers in a dedicated goroutine.
