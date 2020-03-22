@@ -17,14 +17,6 @@ jobs:
           golangci_lint_flags: "--config=.golangci.yaml"
           reporter: github-pr-review
 
-  hadolint:
-    name: hadolint
-    runs-on: ubuntu-18.04
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          depth: 1
-
       - name: hadolint
         uses: reviewdog/action-hadolint@v1
         with:
