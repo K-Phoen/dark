@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/K-Phoen/grabana"
+	"github.com/K-Phoen/grabana/dashboard"
+	"github.com/K-Phoen/grabana/decoder"
 	"gopkg.in/yaml.v2"
 )
 
@@ -30,7 +32,7 @@ func (creator *Creator) FromRawSpec(folderName string, rawJSON []byte) error {
 		return fmt.Errorf("could not convert dashboard spec to yaml: %w", err)
 	}
 
-	dashboardBuilder, err := grabana.UnmarshalYAML(bytes.NewBuffer(dashboardYaml))
+	dashboardBuilder, err := decoder.UnmarshalYAML(bytes.NewBuffer(dashboardYaml))
 	if err != nil {
 		return fmt.Errorf("could not unmarshall dashboard YAML spec: %w", err)
 	}
@@ -38,7 +40,7 @@ func (creator *Creator) FromRawSpec(folderName string, rawJSON []byte) error {
 	return creator.upsertDashboard(folderName, dashboardBuilder)
 }
 
-func (creator *Creator) upsertDashboard(folderName string, dashboardBuilder grabana.DashboardBuilder) error {
+func (creator *Creator) upsertDashboard(folderName string, dashboardBuilder dashboard.Builder) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
