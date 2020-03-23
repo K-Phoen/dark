@@ -42,19 +42,20 @@ func (creator *Creator) FromRawSpec(folderName string, uid string, rawJSON []byt
 	return creator.upsertDashboard(folderName, dashboardBuilder)
 }
 
+func (creator *Creator) Delete(uid string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return creator.grabanaClient.DeleteDashboard(ctx, uid)
+}
+
 func (creator *Creator) upsertDashboard(folderName string, dashboardBuilder dashboard.Builder) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	folder, err := creator.grabanaClient.GetFolderByTitle(ctx, folderName)
-	if err != nil && err != grabana.ErrFolderNotFound {
-		return fmt.Errorf("could not create folder: %w", err)
-	}
-	if folder == nil {
-		folder, err = creator.grabanaClient.CreateFolder(ctx, folderName)
-		if err != nil {
-			return fmt.Errorf("could not create folder: %w", err)
-		}
+	folder, err := creator.grabanaClient.FindOrCreateFolder(ctx, folderName)
+	if err != nil {
+		return err
 	}
 
 	if _, err := creator.grabanaClient.UpsertDashboard(ctx, folder, dashboardBuilder); err != nil {

@@ -54,6 +54,22 @@ func NewClient(http *http.Client, host string, apiToken string) *Client {
 	}
 }
 
+// FindOrCreateFolder returns the folder by its name or creates it if it doesn't exist.
+func (client *Client) FindOrCreateFolder(ctx context.Context, name string) (*Folder, error) {
+	folder, err := client.GetFolderByTitle(ctx, name)
+	if err != nil && err != ErrFolderNotFound {
+		return nil, fmt.Errorf("could not find or create folder: %w", err)
+	}
+	if folder == nil {
+		folder, err = client.CreateFolder(ctx, name)
+		if err != nil {
+			return nil, fmt.Errorf("could not find create folder: %w", err)
+		}
+	}
+
+	return folder, nil
+}
+
 // CreateFolder creates a dashboard folder.
 // See https://grafana.com/docs/grafana/latest/reference/dashboard_folders/
 func (client *Client) CreateFolder(ctx context.Context, name string) (*Folder, error) {
@@ -191,6 +207,38 @@ func (client *Client) UpsertDashboard(ctx context.Context, folder *Folder, build
 	}
 
 	return &model, nil
+}
+
+// DeleteDashboard deletes a dashboard given its UID.
+func (client *Client) DeleteDashboard(ctx context.Context, uid string) error {
+	resp, err := client.delete(ctx, "/api/dashboards/uid/"+uid)
+	if err != nil {
+		return err
+	}
+
+	defer func() { _ = resp.Body.Close() }()
+
+	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+
+		return fmt.Errorf("could not delete dashboard: %s", body)
+	}
+
+	return nil
+}
+
+func (client Client) delete(ctx context.Context, path string) (*http.Response, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodDelete, client.url(path), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header.Add("Authorization", fmt.Sprintf("Bearer %s", client.apiToken))
+
+	return client.http.Do(request)
 }
 
 func (client Client) postJSON(ctx context.Context, path string, body []byte) (*http.Response, error) {

@@ -3,7 +3,7 @@ module github.com/K-Phoen/dark
 go 1.13
 
 require (
-	github.com/K-Phoen/grabana v0.5.1
+	github.com/K-Phoen/grabana v0.5.3
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
