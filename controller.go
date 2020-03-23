@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	v1 "github.com/K-Phoen/dark/pkg/apis/controller/v1"
@@ -34,7 +35,8 @@ const (
 )
 
 type dashboardCreator interface {
-	FromRawSpec(folderName string, rawJSON []byte) error
+	FromRawSpec(folderName string, uid string, rawJSON []byte) error
+	Delete(uid string) error
 }
 
 // Controller is the controller implementation for GrafanaDashboard resources
@@ -98,9 +100,7 @@ func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.I
 
 			controller.enqueueDashboard(new)
 		},
-		DeleteFunc: func(obj interface{}) {
-			// TODO
-		},
+		DeleteFunc: controller.enqueueDeletion,
 	})
 
 	return controller
@@ -177,17 +177,29 @@ func (c *Controller) processNextWorkItem() bool {
 			utilruntime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", obj))
 			return nil
 		}
-		// Run the syncHandler, passing it the namespace/name string of the
-		// GrafanaDashboard resource to be synced.
-		if err := c.syncHandler(key); err != nil {
-			// Put the item back on the workqueue to handle any transient errors.
-			c.workqueue.AddRateLimited(key)
-			return fmt.Errorf("error syncing '%s': %s, requeuing", key, err.Error())
+
+		if strings.HasPrefix(key, "deletion") {
+			parts := strings.Split(key, ":")
+
+			// Run the deletionHandler, passing it the uid of the dashboard to delete.
+			c.deletionHandler(parts[1])
+
+			klog.Infof("Successfully deleted '%s'", key)
+		} else {
+			// Run the syncHandler, passing it the namespace/name string of the
+			// GrafanaDashboard resource to be synced.
+			if err := c.syncHandler(key); err != nil {
+				// Put the item back on the workqueue to handle any transient errors.
+				c.workqueue.AddRateLimited(key)
+				return fmt.Errorf("error syncing '%s': %w, requeuing", key, err)
+			}
+
+			klog.Infof("Successfully synced '%s'", key)
 		}
+
 		// Finally, if no error occurs we Forget this item so it does not
 		// get queued again until another change happens.
 		c.workqueue.Forget(obj)
-		klog.Infof("Successfully synced '%s'", key)
 		return nil
 	}(obj)
 
@@ -216,22 +228,27 @@ func (c *Controller) syncHandler(key string) error {
 		// The GrafanaDashboard resource may no longer exist, in which case we stop
 		// processing.
 		if errors.IsNotFound(err) {
-			utilruntime.HandleError(fmt.Errorf("foo '%s' in work queue no longer exists", key))
+			utilruntime.HandleError(fmt.Errorf("dashboard '%s' in work queue no longer exists", key))
 			return nil
 		}
 
 		return err
 	}
 
-	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.Spec.Raw); err != nil {
-		fmt.Printf("could not create dashboard from spec: %s", err)
-		// TODO
+	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
+		utilruntime.HandleError(fmt.Errorf("could not create dashboard from spec: %w", err))
 		return nil
 	}
 
 	c.recorder.Event(dashboard, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
 
 	return nil
+}
+
+func (c *Controller) deletionHandler(uid string) {
+	if err := c.dashboardCreator.Delete(uid); err != nil {
+		utilruntime.HandleError(fmt.Errorf("dashboard '%s' in work queue could not be deleted", uid))
+	}
 }
 
 // enqueueDashboard takes a GrafanaDashboard resource and converts it into a namespace/name
@@ -245,4 +262,13 @@ func (c *Controller) enqueueDashboard(obj interface{}) {
 		return
 	}
 	c.workqueue.Add(key)
+}
+
+// enqueueDeletion takes a GrafanaDashboard resource and converts it into a deletion/uid
+// string which is then put onto the work queue. This method should *not* be
+// passed resources of any type other than GrafanaDashboard.
+func (c *Controller) enqueueDeletion(obj interface{}) {
+	dashboard := obj.(*v1.GrafanaDashboard)
+
+	c.workqueue.Add("deletion:" + dashboard.ObjectMeta.Name)
 }
