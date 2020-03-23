@@ -34,7 +34,7 @@ const (
 )
 
 type dashboardCreator interface {
-	FromRawSpec(folderName string, rawJSON []byte) error
+	FromRawSpec(folderName string, uid string, rawJSON []byte) error
 }
 
 // Controller is the controller implementation for GrafanaDashboard resources
@@ -223,7 +223,9 @@ func (c *Controller) syncHandler(key string) error {
 		return err
 	}
 
-	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.Spec.Raw); err != nil {
+	fmt.Printf("%#+v\n", dashboard)
+
+	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
 		fmt.Printf("could not create dashboard from spec: %s", err)
 		// TODO
 		return nil

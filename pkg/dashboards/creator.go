@@ -21,7 +21,7 @@ func NewCreator(grabanaClient *grabana.Client) *Creator {
 	return &Creator{grabanaClient: grabanaClient}
 }
 
-func (creator *Creator) FromRawSpec(folderName string, rawJSON []byte) error {
+func (creator *Creator) FromRawSpec(folderName string, uid string, rawJSON []byte) error {
 	spec := make(map[string]interface{})
 	if err := json.Unmarshal(rawJSON, &spec); err != nil {
 		return fmt.Errorf("could not unmarshall  dashboard json spec: %w", err)
@@ -36,6 +36,8 @@ func (creator *Creator) FromRawSpec(folderName string, rawJSON []byte) error {
 	if err != nil {
 		return fmt.Errorf("could not unmarshall dashboard YAML spec: %w", err)
 	}
+
+	dashboard.UID(uid)(&dashboardBuilder)
 
 	return creator.upsertDashboard(folderName, dashboardBuilder)
 }
