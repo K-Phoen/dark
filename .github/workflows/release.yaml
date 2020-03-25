@@ -15,6 +15,7 @@ jobs:
       - run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u kphoen --password-stdin
 
       - name: Tag
+        id: semver
         uses: K-Phoen/semver-release-action@master
         with:
           release_branch: master
