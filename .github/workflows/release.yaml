@@ -15,6 +15,7 @@ jobs:
       - run: echo "${{ secrets.DOCKER_TOKEN }}" | docker login -u kphoen --password-stdin
 
       - name: Tag
+        id: semver
         uses: K-Phoen/semver-release-action@master
         with:
           release_branch: master
@@ -22,12 +23,12 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - run: make push
-        if: steps.semver.outputs.tag != ''
+        if: steps.semver.outputs.tag
         env:
           VERSION: latest
 
       - run: make push
-        if: steps.semver.outputs.tag != ''
+        if: steps.semver.outputs.tag
         env:
           VERSION: ${{ steps.semver.outputs.tag }}
 
