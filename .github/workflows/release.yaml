@@ -23,5 +23,9 @@ jobs:
 
       - run: make push
         env:
+          VERSION: latest
+
+      - run: make push
+        env:
           VERSION: ${{ steps.semver.outputs.tag }}
 
