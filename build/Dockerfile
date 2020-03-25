@@ -11,7 +11,7 @@ RUN make build
 # Run
 
 FROM alpine:3.11
-ENTRYPOINT ["/app/go-app"]
+ENTRYPOINT ["/app/dark"]
 WORKDIR /app
 RUN apk --update --no-cache add ca-certificates=20191127-r1 && update-ca-certificates
 
