@@ -1,14 +1,14 @@
 REGISTRY?=kphoen
 IMAGE=$(REGISTRY)/dark
 
-GO_MAIN_SRC=main.go controller.go
+CONTROLLER_MAIN_SRC=cmd/controller/main.go
 GOCMD?=CGO_ENABLED=0 go
 
 VERSION?=latest
 
 .PHONY: build
 build:
-	$(GOCMD) build -mod vendor -o dark $(GO_MAIN_SRC)
+	$(GOCMD) build -mod vendor -o dark $(CONTROLLER_MAIN_SRC)
 
 .PHONY: image
 image:
