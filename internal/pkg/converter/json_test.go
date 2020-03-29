@@ -178,3 +178,13 @@ func TestConvertQueryVar(t *testing.T) {
 	req.True(query.IncludeAll)
 	req.True(query.DefaultAll)
 }
+
+func TestConvertRow(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	row := converter.convertRow(sdk.Panel{CommonPanel: sdk.CommonPanel{Title: "Row title"}})
+
+	req.Equal("Row title", row.Name)
+}

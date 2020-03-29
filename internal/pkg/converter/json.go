@@ -41,10 +41,7 @@ func (converter *JSON) Convert(input io.Reader, output io.Writer) error {
 	converter.convertGeneralSettings(board, dashboard)
 	converter.convertVariables(board.Templating.List, dashboard)
 	// TODO: annotations
-
-	if err := converter.convertPanels(board.Panels, dashboard); err != nil {
-		return err
-	}
+	converter.convertPanels(board.Panels, dashboard)
 
 	converted, err := yaml.Marshal(dashboard)
 	if err != nil {
@@ -152,7 +149,7 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Const: constant})
 }
 
-func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) error {
+func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) {
 	var currentRow *grabana.DashboardRow
 
 	for _, panel := range panels {
@@ -184,8 +181,6 @@ func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.Das
 	if currentRow != nil {
 		dashboard.Rows = append(dashboard.Rows, *currentRow)
 	}
-
-	return nil
 }
 
 func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
