@@ -81,7 +81,8 @@ func (converter *JSON) convertVariable(variable sdk.TemplateVar, dashboard *grab
 		converter.convertCustomVar(variable, dashboard)
 	case "query":
 		converter.convertQueryVar(variable, dashboard)
-	// TODO: const
+	case "const":
+		converter.convertConstVar(variable, dashboard)
 	default:
 		converter.logger.Warn("unhandled variable type found: skipped", zap.String("type", variable.Type), zap.String("name", variable.Name))
 	}
@@ -133,6 +134,21 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})
+}
+
+func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {
+	constant := &grabana.VariableConst{
+		Name:      variable.Name,
+		Label:     variable.Label,
+		Default:   variable.Current.Text,
+		ValuesMap: make(map[string]string, len(variable.Options)),
+	}
+
+	for _, opt := range variable.Options {
+		constant.ValuesMap[opt.Text] = opt.Value
+	}
+
+	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Const: constant})
 }
 
 func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) error {
