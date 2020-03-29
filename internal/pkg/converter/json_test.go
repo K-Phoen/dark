@@ -271,3 +271,29 @@ func TestConvertTagAnnotation(t *testing.T) {
 	req.Equal("#5794F2", dashboard.TagsAnnotation[0].IconColor)
 	req.Equal(datasource, dashboard.TagsAnnotation[0].Datasource)
 }
+
+func TestConvertLegend(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	rawLegend := sdkLegend{
+		AlignAsTable: true,
+		Avg:          true,
+		Current:      true,
+		HideEmpty:    true,
+		HideZero:     true,
+		Max:          true,
+		Min:          true,
+		RightSide:    true,
+		Show:         true,
+		Total:        true,
+	}
+
+	legend := converter.convertLegend(rawLegend)
+
+	req.ElementsMatch(
+		[]string{"as_table", "to_the_right", "min", "max", "avg", "current", "total", "no_null_series", "no_zero_series"},
+		legend,
+	)
+}
