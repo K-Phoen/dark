@@ -21,3 +21,6 @@ comment:
 
 ignore:
   - "cmd/"
+  - "internal/pkg/generated"
+  - "internal/pkg/apis"
+  - "internal/pkg/signals"
