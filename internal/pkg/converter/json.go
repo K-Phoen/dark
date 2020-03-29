@@ -79,7 +79,9 @@ func (converter *JSON) convertVariable(variable sdk.TemplateVar, dashboard *grab
 		converter.convertIntervalVar(variable, dashboard)
 	case "custom":
 		converter.convertCustomVar(variable, dashboard)
-	// TODO: const, query
+	case "query":
+		converter.convertQueryVar(variable, dashboard)
+	// TODO: const
 	default:
 		converter.logger.Warn("unhandled variable type found: skipped", zap.String("type", variable.Type), zap.String("name", variable.Name))
 	}
@@ -113,6 +115,24 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Custom: custom})
+}
+
+func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {
+	datasource := ""
+	if variable.Datasource != nil {
+		datasource = *variable.Datasource
+	}
+
+	query := &grabana.VariableQuery{
+		Name:       variable.Name,
+		Label:      variable.Label,
+		Datasource: datasource,
+		Request:    variable.Query,
+		IncludeAll: variable.IncludeAll,
+		DefaultAll: variable.Current.Value == "$__all",
+	}
+
+	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})
 }
 
 func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) error {
