@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
+	grabanaTable "github.com/K-Phoen/grabana/table"
+
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/grafana-tools/sdk"
 	"go.uber.org/zap"
@@ -173,6 +175,8 @@ func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.Das
 			currentRow.Panels = append(currentRow.Panels, converter.convertGraph(*panel))
 		case "singlestat":
 			currentRow.Panels = append(currentRow.Panels, converter.convertSingleStat(*panel))
+		case "table":
+			currentRow.Panels = append(currentRow.Panels, converter.convertTable(*panel))
 		default:
 			converter.logger.Warn("unhandled panel type: skipped", zap.String("type", panel.Type), zap.String("title", panel.Title))
 		}
@@ -273,6 +277,52 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 	}
 
 	return grabana.DashboardPanel{SingleStat: singleStat}
+}
+
+func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
+	table := &grabana.DashboardTable{
+		Title: panel.Title,
+		Span:  panel.Span,
+	}
+
+	if panel.Height != nil {
+		table.Height = *panel.Height
+	}
+	if panel.Datasource != nil {
+		table.Datasource = *panel.Datasource
+	}
+
+	for _, target := range panel.TablePanel.Targets {
+		graphTarget := converter.convertTarget(target)
+		if graphTarget == nil {
+			continue
+		}
+
+		table.Targets = append(table.Targets, *graphTarget)
+	}
+
+	// hidden columns
+	for _, columnStyle := range panel.TablePanel.Styles {
+		if columnStyle.Type != "hidden" {
+			continue
+		}
+
+		table.HiddenColumns = append(table.HiddenColumns, columnStyle.Pattern)
+	}
+
+	// time series aggregations
+	if panel.TablePanel.Transform == "timeseries_aggregations" {
+		for _, column := range panel.TablePanel.Columns {
+			table.TimeSeriesAggregations = append(table.TimeSeriesAggregations, grabanaTable.Aggregation{
+				Label: column.TextType,
+				Type:  grabanaTable.AggregationType(column.Value),
+			})
+		}
+	} else {
+		converter.logger.Warn("unhandled transform type: skipped", zap.String("transform", panel.TablePanel.Transform), zap.String("panel", panel.Title))
+	}
+
+	return grabana.DashboardPanel{Table: table}
 }
 
 func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
