@@ -46,7 +46,7 @@ converter_push: converter_image
 	docker push $(CONVERTER_IMAGE):$(VERSION)
 
 .PHONY: push
-push: images
+push: converter_push controller_push
 
 .PHONY: tests
 tests:
