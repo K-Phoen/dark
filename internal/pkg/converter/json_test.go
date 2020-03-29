@@ -297,3 +297,26 @@ func TestConvertLegend(t *testing.T) {
 		legend,
 	)
 }
+
+func TestConvertAxis(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	rawAxis := sdk.Axis{
+		Format:  "bytes",
+		LogBase: 2,
+		Min:     &sdk.FloatString{Value: 0},
+		Max:     &sdk.FloatString{Value: 42},
+		Show:    true,
+		Label:   "Axis",
+	}
+
+	axis := converter.convertAxis(rawAxis)
+
+	req.Equal("bytes", *axis.Unit)
+	req.Equal("Axis", axis.Label)
+	req.EqualValues(0, *axis.Min)
+	req.EqualValues(42, *axis.Max)
+	req.False(*axis.Hidden)
+}
