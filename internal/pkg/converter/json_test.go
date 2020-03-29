@@ -188,3 +188,21 @@ func TestConvertRow(t *testing.T) {
 
 	req.Equal("Row title", row.Name)
 }
+
+func TestConvertTarget(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		Expr:         "prometheus_query",
+		LegendFormat: "{{ field }}",
+		RefID:        "A",
+	}
+
+	promTarget := converter.convertTarget(target)
+
+	req.Equal("prometheus_query", promTarget.Prometheus.Query)
+	req.Equal("{{ field }}", promTarget.Prometheus.Legend)
+	req.Equal("A", promTarget.Prometheus.Ref)
+}
