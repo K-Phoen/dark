@@ -93,6 +93,15 @@ kubectl get dashboards
 kubectl get events | grep dark
 ```
 
+## Converting Grafana JSON dashboard to YAML
+
+To ease the transition from existing, raw Grafana dashboards to DARK, a converter is provided.
+It takes the path to a JSON dashboard and a path for the destination YAML file.
+
+```sh
+docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest dashboard.json converted-dashboard.yaml
+```
+
 ## License
 
 This library is under the [MIT](LICENSE) license.
