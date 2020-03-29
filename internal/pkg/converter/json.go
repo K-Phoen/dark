@@ -6,9 +6,8 @@ import (
 	"io/ioutil"
 	"strings"
 
-	grabanaTable "github.com/K-Phoen/grabana/table"
-
 	grabana "github.com/K-Phoen/grabana/decoder"
+	grabanaTable "github.com/K-Phoen/grabana/table"
 	"github.com/grafana-tools/sdk"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"

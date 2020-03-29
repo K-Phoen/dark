@@ -8,6 +8,13 @@ GOCMD?=CGO_ENABLED=0 go
 
 VERSION?=latest
 
+WITH_COVERAGE?=false
+ifeq ($(WITH_COVERAGE),true)
+GOCMD_TEST?=go test -mod=vendor -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
+else
+GOCMD_TEST?=go test -mod=vendor
+endif
+
 .PHONY: controller_build
 controller_build:
 	$(GOCMD) build -mod vendor -o dark-controller $(CONTROLLER_MAIN_SRC)
@@ -40,6 +47,10 @@ converter_push: converter_image
 
 .PHONY: push
 push: images
+
+.PHONY: tests
+tests:
+	$(GOCMD_TEST) ./...
 
 .PHONY: clean
 clean:
