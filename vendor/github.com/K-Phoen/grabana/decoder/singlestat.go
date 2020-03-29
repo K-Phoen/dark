@@ -9,21 +9,23 @@ import (
 
 var ErrInvalidColoringTarget = fmt.Errorf("invalid coloring target")
 var ErrInvalidSparkLineMode = fmt.Errorf("invalid sparkline mode")
+var ErrInvalidSingleStatValueType = fmt.Errorf("invalid single stat value type")
 
-type dashboardSingleStat struct {
+type DashboardSingleStat struct {
 	Title      string
-	Span       float32
-	Height     string
-	Datasource string
+	Span       float32 `yaml:",omitempty"`
+	Height     string  `yaml:",omitempty"`
+	Datasource string  `yaml:",omitempty"`
 	Unit       string
+	ValueType  string `yaml:"value_type"`
 	SparkLine  string `yaml:"sparkline"`
-	Targets    []target
+	Targets    []Target
 	Thresholds [2]string
 	Colors     [3]string
-	Color      []string
+	Color      []string `yaml:",omitempty"`
 }
 
-func (singleStatPanel dashboardSingleStat) toOption() (row.Option, error) {
+func (singleStatPanel DashboardSingleStat) toOption() (row.Option, error) {
 	opts := []singlestat.Option{}
 
 	if singleStatPanel.Span != 0 {
@@ -55,6 +57,15 @@ func (singleStatPanel dashboardSingleStat) toOption() (row.Option, error) {
 		return nil, ErrInvalidSparkLineMode
 	}
 
+	if singleStatPanel.ValueType != "" {
+		opt, err := singleStatPanel.valueType()
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, opt)
+	}
+
 	for _, colorTarget := range singleStatPanel.Color {
 		switch colorTarget {
 		case "value":
@@ -78,7 +89,32 @@ func (singleStatPanel dashboardSingleStat) toOption() (row.Option, error) {
 	return row.WithSingleStat(singleStatPanel.Title, opts...), nil
 }
 
-func (singleStatPanel dashboardSingleStat) target(t target) (singlestat.Option, error) {
+func (singleStatPanel DashboardSingleStat) valueType() (singlestat.Option, error) {
+	switch singleStatPanel.ValueType {
+	case "min":
+		return singlestat.ValueType(singlestat.Min), nil
+	case "max":
+		return singlestat.ValueType(singlestat.Max), nil
+	case "avg":
+		return singlestat.ValueType(singlestat.Avg), nil
+	case "current":
+		return singlestat.ValueType(singlestat.Current), nil
+	case "total":
+		return singlestat.ValueType(singlestat.Total), nil
+	case "first":
+		return singlestat.ValueType(singlestat.First), nil
+	case "delta":
+		return singlestat.ValueType(singlestat.Delta), nil
+	case "diff":
+		return singlestat.ValueType(singlestat.Diff), nil
+	case "range":
+		return singlestat.ValueType(singlestat.Range), nil
+	default:
+		return nil, ErrInvalidSingleStatValueType
+	}
+}
+
+func (singleStatPanel DashboardSingleStat) target(t Target) (singlestat.Option, error) {
 	if t.Prometheus != nil {
 		return singlestat.WithPrometheusTarget(t.Prometheus.Query, t.Prometheus.toOptions()...), nil
 	}

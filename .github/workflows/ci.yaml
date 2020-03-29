@@ -22,3 +22,26 @@ jobs:
         with:
           github_token: ${{ secrets.github_token }}
           reporter: github-pr-review
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          depth: 1
+
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.13.3'
+
+      - run: make tests
+        env:
+          WITH_COVERAGE: true
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          file: ./coverage.txt
+          fail_ci_if_error: false
