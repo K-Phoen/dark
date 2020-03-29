@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"bytes"
 	"reflect"
 	"testing"
 
@@ -16,6 +17,24 @@ func defaultVar(varType string) sdk.TemplateVar {
 		Name:  "var",
 		Label: "Label",
 	}
+}
+
+func TestConvertInvalidJSON(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.Convert(bytes.NewBufferString(""), bytes.NewBufferString(""))
+
+	req.Error(err)
+}
+
+func TestConvertValidJSON(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.Convert(bytes.NewBufferString("{}"), bytes.NewBufferString(""))
+
+	req.NoError(err)
 }
 
 func TestConvertGeneralSettings(t *testing.T) {
