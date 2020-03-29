@@ -18,6 +18,21 @@ type JSON struct {
 	logger *zap.Logger
 }
 
+type sdkLegend struct {
+	AlignAsTable bool  `json:"alignAsTable"`
+	Avg          bool  `json:"avg"`
+	Current      bool  `json:"current"`
+	HideEmpty    bool  `json:"hideEmpty"`
+	HideZero     bool  `json:"hideZero"`
+	Max          bool  `json:"max"`
+	Min          bool  `json:"min"`
+	RightSide    bool  `json:"rightSide"`
+	Show         bool  `json:"show"`
+	SideWidth    *uint `json:"sideWidth,omitempty"`
+	Total        bool  `json:"total"`
+	Values       bool  `json:"values"`
+}
+
 func NewJSON(logger *zap.Logger) *JSON {
 	return &JSON{
 		logger: logger,
@@ -226,6 +241,10 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	graph := &grabana.DashboardGraph{
 		Title: panel.Title,
 		Span:  panelSpan(panel),
+		Axes: &grabana.GraphAxes{
+			Bottom: converter.convertAxis(panel.Xaxis),
+		},
+		Legend: converter.convertLegend(panel.Legend),
 	}
 
 	if panel.Height != nil {
@@ -233,6 +252,11 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	}
 	if panel.Datasource != nil {
 		graph.Datasource = *panel.Datasource
+	}
+
+	if len(panel.Yaxes) == 2 {
+		graph.Axes.Left = converter.convertAxis(panel.Yaxes[0])
+		graph.Axes.Right = converter.convertAxis(panel.Yaxes[1])
 	}
 
 	for _, target := range panel.GraphPanel.Targets {
@@ -245,6 +269,65 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	}
 
 	return grabana.DashboardPanel{Graph: graph}
+}
+
+func (converter *JSON) convertLegend(sdkLegend sdkLegend) []string {
+	var legend []string
+
+	if !sdkLegend.Show {
+		legend = append(legend, "hide")
+	}
+	if sdkLegend.AlignAsTable {
+		legend = append(legend, "as_table")
+	}
+	if sdkLegend.RightSide {
+		legend = append(legend, "to_the_right")
+	}
+	if sdkLegend.Min {
+		legend = append(legend, "min")
+	}
+	if sdkLegend.Max {
+		legend = append(legend, "max")
+	}
+	if sdkLegend.Avg {
+		legend = append(legend, "avg")
+	}
+	if sdkLegend.Current {
+		legend = append(legend, "current")
+	}
+	if sdkLegend.Total {
+		legend = append(legend, "total")
+	}
+	if sdkLegend.HideEmpty {
+		legend = append(legend, "no_null_series")
+	}
+	if sdkLegend.HideZero {
+		legend = append(legend, "no_zero_series")
+	}
+
+	return legend
+}
+
+func (converter *JSON) convertAxis(sdkAxis sdk.Axis) *grabana.GraphAxis {
+	hidden := !sdkAxis.Show
+	var min *float64
+	var max *float64
+
+	if sdkAxis.Min != nil {
+		min = &sdkAxis.Min.Value
+	}
+	if sdkAxis.Max != nil {
+		max = &sdkAxis.Max.Value
+	}
+
+	return &grabana.GraphAxis{
+		Hidden:  &hidden,
+		Label:   sdkAxis.Label,
+		Unit:    &sdkAxis.Format,
+		Min:     min,
+		Max:     max,
+		LogBase: sdkAxis.LogBase,
+	}
 }
 
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
