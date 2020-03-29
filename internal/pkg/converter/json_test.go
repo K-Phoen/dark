@@ -81,11 +81,11 @@ func TestConvertIntervalVar(t *testing.T) {
 	variable := defaultVar("interval")
 	variable.Name = "var_interval"
 	variable.Label = "Label interval"
-	variable.Current = sdk.Current{Text: "30s"}
+	variable.Current = sdk.Current{Text: "30sec", Value: "30s"}
 	variable.Options = []sdk.Option{
-		{Text: "10s", Value: "10s"},
-		{Text: "30s", Value: "30s"},
-		{Text: "1m", Value: "1m"},
+		{Text: "10sec", Value: "10s"},
+		{Text: "30sec", Value: "30s"},
+		{Text: "1min", Value: "1m"},
 	}
 
 	converter := NewJSON(zap.NewNop())
@@ -129,7 +129,7 @@ func TestConvertCustomVar(t *testing.T) {
 
 	req.Equal("var_custom", custom.Name)
 	req.Equal("Label custom", custom.Label)
-	req.Equal("85th", custom.Default)
+	req.Equal("85", custom.Default)
 	req.True(reflect.DeepEqual(custom.ValuesMap, map[string]string{
 		"50th": "50",
 		"85th": "85",

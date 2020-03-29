@@ -122,7 +122,7 @@ func (converter *JSON) convertIntervalVar(variable sdk.TemplateVar, dashboard *g
 	interval := &grabana.VariableInterval{
 		Name:    variable.Name,
 		Label:   variable.Label,
-		Default: variable.Current.Text,
+		Default: defaultOption(variable.Current),
 		Values:  make([]string, 0, len(variable.Options)),
 	}
 
@@ -137,7 +137,7 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 	custom := &grabana.VariableCustom{
 		Name:      variable.Name,
 		Label:     variable.Label,
-		Default:   variable.Current.Text,
+		Default:   defaultOption(variable.Current),
 		ValuesMap: make(map[string]string, len(variable.Options)),
 	}
 
@@ -225,7 +225,7 @@ func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
 func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	graph := &grabana.DashboardGraph{
 		Title: panel.Title,
-		Span:  panel.Span,
+		Span:  panelSpan(panel),
 	}
 
 	if panel.Height != nil {
@@ -250,7 +250,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
 	singleStat := &grabana.DashboardSingleStat{
 		Title:     panel.Title,
-		Span:      panel.Span,
+		Span:      panelSpan(panel),
 		Unit:      panel.SinglestatPanel.Format,
 		ValueType: panel.SinglestatPanel.ValueName,
 	}
@@ -308,7 +308,7 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
 	table := &grabana.DashboardTable{
 		Title: panel.Title,
-		Span:  panel.Span,
+		Span:  panelSpan(panel),
 	}
 
 	if panel.Height != nil {
@@ -362,4 +362,21 @@ func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
 	}
 
 	return prometheusTarget
+}
+
+func panelSpan(panel sdk.Panel) float32 {
+	span := panel.Span
+	if span == 0 && panel.GridPos.H != nil {
+		span = float32(*panel.GridPos.W / 2) // 24 units per row to 12
+	}
+
+	return span
+}
+
+func defaultOption(opt sdk.Current) string {
+	if opt.Value == nil {
+		return ""
+	}
+
+	return opt.Value.(string)
 }
