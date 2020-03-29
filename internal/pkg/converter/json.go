@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"strings"
 
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/grafana-tools/sdk"
@@ -134,9 +135,15 @@ func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.Das
 		switch panel.Type {
 		case "graph":
 			currentRow.Panels = append(currentRow.Panels, converter.convertGraph(*panel))
+		case "singlestat":
+			currentRow.Panels = append(currentRow.Panels, converter.convertSingleStat(*panel))
 		default:
 			converter.logger.Warn("unhandled panel type: skipped", zap.String("type", panel.Type), zap.String("title", panel.Title))
 		}
+	}
+
+	if currentRow != nil {
+		dashboard.Rows = append(dashboard.Rows, *currentRow)
 	}
 
 	return nil
@@ -172,6 +179,64 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	}
 
 	return grabana.DashboardPanel{Graph: graph}
+}
+
+func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
+	singleStat := &grabana.DashboardSingleStat{
+		Title:     panel.Title,
+		Span:      panel.Span,
+		Unit:      panel.SinglestatPanel.Format,
+		ValueType: panel.SinglestatPanel.ValueName,
+	}
+
+	if panel.Height != nil {
+		singleStat.Height = *panel.Height
+	}
+	if panel.Datasource != nil {
+		singleStat.Datasource = *panel.Datasource
+	}
+
+	thresholds := strings.Split(panel.SinglestatPanel.Thresholds, ",")
+	if len(thresholds) == 2 {
+		singleStat.Thresholds = [2]string{thresholds[0], thresholds[1]}
+	}
+
+	if len(panel.SinglestatPanel.Colors) == 3 {
+		singleStat.Colors = [3]string{
+			panel.SinglestatPanel.Colors[0],
+			panel.SinglestatPanel.Colors[1],
+			panel.SinglestatPanel.Colors[2],
+		}
+	}
+
+	var colorOpts []string
+	if panel.SinglestatPanel.ColorBackground {
+		colorOpts = append(colorOpts, "background")
+	}
+	if panel.SinglestatPanel.ColorValue {
+		colorOpts = append(colorOpts, "value")
+	}
+	if len(colorOpts) != 0 {
+		singleStat.Color = colorOpts
+	}
+
+	if panel.SinglestatPanel.SparkLine.Show && panel.SinglestatPanel.SparkLine.Full {
+		singleStat.SparkLine = "full"
+	}
+	if panel.SinglestatPanel.SparkLine.Show && !panel.SinglestatPanel.SparkLine.Full {
+		singleStat.SparkLine = "bottom"
+	}
+
+	for _, target := range panel.SinglestatPanel.Targets {
+		graphTarget := converter.convertTarget(target)
+		if graphTarget == nil {
+			continue
+		}
+
+		singleStat.Targets = append(singleStat.Targets, *graphTarget)
+	}
+
+	return grabana.DashboardPanel{SingleStat: singleStat}
 }
 
 func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
