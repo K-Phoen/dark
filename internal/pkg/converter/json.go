@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	grabanaDashboard "github.com/K-Phoen/grabana/dashboard"
 	grabana "github.com/K-Phoen/grabana/decoder"
 	grabanaTable "github.com/K-Phoen/grabana/table"
 	"github.com/grafana-tools/sdk"
@@ -40,7 +41,7 @@ func (converter *JSON) Convert(input io.Reader, output io.Writer) error {
 
 	converter.convertGeneralSettings(board, dashboard)
 	converter.convertVariables(board.Templating.List, dashboard)
-	// TODO: annotations
+	converter.convertAnnotations(board.Annotations.List, dashboard)
 	converter.convertPanels(board.Panels, dashboard)
 
 	converted, err := yaml.Marshal(dashboard)
@@ -63,6 +64,37 @@ func (converter *JSON) convertGeneralSettings(board *sdk.Board, dashboard *graba
 	if board.Refresh != nil && board.Refresh.Flag {
 		dashboard.AutoRefresh = board.Refresh.Value
 	}
+}
+
+func (converter *JSON) convertAnnotations(annotations []sdk.Annotation, dashboard *grabana.DashboardModel) {
+	for _, annotation := range annotations {
+		// grafana-sdk doesn't expose the "builtIn" field, so we work around that by skipping
+		// the annotation we know to be built-in by its name
+		if annotation.Name == "Annotations & Alerts" {
+			continue
+		}
+
+		if annotation.Type != "tags" {
+			converter.logger.Warn("unhandled annotation type: skipped", zap.String("type", annotation.Type), zap.String("name", annotation.Name))
+			continue
+		}
+
+		converter.convertTagAnnotation(annotation, dashboard)
+	}
+}
+
+func (converter *JSON) convertTagAnnotation(annotation sdk.Annotation, dashboard *grabana.DashboardModel) {
+	datasource := ""
+	if annotation.Datasource != nil {
+		datasource = *annotation.Datasource
+	}
+
+	dashboard.TagsAnnotation = append(dashboard.TagsAnnotation, grabanaDashboard.TagAnnotation{
+		Name:       annotation.Name,
+		Datasource: datasource,
+		IconColor:  annotation.IconColor,
+		Tags:       annotation.Tags,
+	})
 }
 
 func (converter *JSON) convertVariables(variables []sdk.TemplateVar, dashboard *grabana.DashboardModel) {
