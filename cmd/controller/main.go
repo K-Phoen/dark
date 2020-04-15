@@ -63,7 +63,7 @@ func main() {
 
 	darkInformerFactory := informers.NewSharedInformerFactory(darkClient, time.Second*30)
 
-	grabanaClient := grabana.NewClient(&http.Client{}, cfg.GrafanaHost, cfg.GrafanaToken)
+	grabanaClient := grabana.NewClient(&http.Client{}, cfg.GrafanaHost, grabana.WithAPIToken(cfg.GrafanaToken))
 	dashboardCreator := dashboards.NewCreator(grabanaClient)
 
 	controller := internal.NewController(kubeClient, darkClient, darkInformerFactory.Controller().V1().GrafanaDashboards(), dashboardCreator)

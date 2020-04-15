@@ -277,7 +277,7 @@ func TestConvertLegend(t *testing.T) {
 
 	converter := NewJSON(zap.NewNop())
 
-	rawLegend := sdkLegend{
+	rawLegend := sdk.Legend{
 		AlignAsTable: true,
 		Avg:          true,
 		Current:      true,
