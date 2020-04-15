@@ -18,21 +18,6 @@ type JSON struct {
 	logger *zap.Logger
 }
 
-type sdkLegend struct {
-	AlignAsTable bool  `json:"alignAsTable"`
-	Avg          bool  `json:"avg"`
-	Current      bool  `json:"current"`
-	HideEmpty    bool  `json:"hideEmpty"`
-	HideZero     bool  `json:"hideZero"`
-	Max          bool  `json:"max"`
-	Min          bool  `json:"min"`
-	RightSide    bool  `json:"rightSide"`
-	Show         bool  `json:"show"`
-	SideWidth    *uint `json:"sideWidth,omitempty"`
-	Total        bool  `json:"total"`
-	Values       bool  `json:"values"`
-}
-
 func NewJSON(logger *zap.Logger) *JSON {
 	return &JSON{
 		logger: logger,
@@ -271,7 +256,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	return grabana.DashboardPanel{Graph: graph}
 }
 
-func (converter *JSON) convertLegend(sdkLegend sdkLegend) []string {
+func (converter *JSON) convertLegend(sdkLegend sdk.Legend) []string {
 	var legend []string
 
 	if !sdkLegend.Show {
