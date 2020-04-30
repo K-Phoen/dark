@@ -29,6 +29,9 @@ const (
 	// SuccessSynced is used as part of the Event 'reason' when a GrafanaDashboard is synced
 	SuccessSynced = "Synced"
 
+	// WarningNotSynced is used as part of the Event 'reason' when a GrafanaDashboard could not be synced
+	WarningNotSynced = "Not synced"
+
 	// MessageResourceSynced is the message used for an Event fired when a GrafanaDashboard
 	// is synced successfully
 	MessageResourceSynced = "GrafanaDashboard synced successfully"
@@ -229,6 +232,7 @@ func (c *Controller) syncHandler(key string) error {
 		// processing.
 		if errors.IsNotFound(err) {
 			utilruntime.HandleError(fmt.Errorf("dashboard '%s' in work queue no longer exists", key))
+			c.recorder.Event(dashboard, corev1.EventTypeWarning, WarningNotSynced, fmt.Sprintf("dashboard '%s' in work queue no longer exists", key))
 			return nil
 		}
 
@@ -237,6 +241,7 @@ func (c *Controller) syncHandler(key string) error {
 
 	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
 		utilruntime.HandleError(fmt.Errorf("could not create dashboard from spec: %w", err))
+		c.recorder.Event(dashboard, corev1.EventTypeWarning, WarningNotSynced, fmt.Sprintf("could not create dashboard from spec: %s", err))
 		return nil
 	}
 
