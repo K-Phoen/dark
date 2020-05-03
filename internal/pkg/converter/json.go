@@ -60,8 +60,10 @@ func (converter *JSON) convertGeneralSettings(board *sdk.Board, dashboard *graba
 	dashboard.SharedCrosshair = board.SharedCrosshair
 	dashboard.Tags = board.Tags
 	dashboard.Editable = board.Editable
+	dashboard.Time = [2]string{board.Time.From, board.Time.To}
+	dashboard.Timezone = board.Timezone
 
-	if board.Refresh != nil && board.Refresh.Flag {
+	if board.Refresh != nil {
 		dashboard.AutoRefresh = board.Refresh.Value
 	}
 }
