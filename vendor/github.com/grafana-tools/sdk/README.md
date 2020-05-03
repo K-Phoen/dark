@@ -45,11 +45,13 @@ library is useful per se.
 	row1.Add(graph)
 	grafanaURL := "http://grafana.host"
 	c := sdk.NewClient(grafanaURL, "grafana-api-key", sdk.DefaultHTTPClient)
-	response, err := c.SetDashboard(board, false)
-	err != nil {
+	response, err := c.SetDashboard(context.TODO() ,*board, sdk.SetDashboardParams{
+		Overwrite: false,
+	})
+	if err != nil {
 		fmt.Printf("error on uploading dashboard %s", board.Title)
 	} else {
-		fmt.Printf("dashboard URL: %v", grafanaURL+*resp.URL)
+		fmt.Printf("dashboard URL: %v", grafanaURL+*response.URL)
 	}
 ```
 
@@ -101,12 +103,14 @@ datasources. State of support for misc API parts noted below.
 There is no exact roadmap.  The integration tests are being run against the
 following Grafana versions:
 
+* [6.7.1](./travis.yml)
 * [6.6.2](/.travis.yml)
 * [6.5.3](/.travis.yml)
 * [6.4.5](/.travis.yml)
 
 With the following Go versions:
 
+* 1.14.x
 * 1.13.x
 * 1.12.x
 * 1.11.x
