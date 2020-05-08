@@ -24,6 +24,12 @@ Setup the [CRD](https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-re
 kubectl apply -f k8s/crd.yaml
 ```
 
+Add the ClusterRole and ClusterRoleBinding to grant ServiceAccount API access to the new GrafanaDashboard resource:
+
+```sh
+kubectl apply -f k8s/cluster-role.yaml
+```
+
 Create a secret to store Grafana's API token (with `editor` access level):
 
 ```sh
