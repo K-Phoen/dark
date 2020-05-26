@@ -208,7 +208,15 @@ func TestConvertRow(t *testing.T) {
 	req.Equal("Row title", row.Name)
 }
 
-func TestConvertTarget(t *testing.T) {
+func TestConvertTargetFailsIfNoValidTargetIsGiven(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	convertedTarget := converter.convertTarget(sdk.Target{})
+	req.Nil(convertedTarget)
+}
+
+func TestConvertTargetWithPrometheusTarget(t *testing.T) {
 	req := require.New(t)
 
 	converter := NewJSON(zap.NewNop())
@@ -219,11 +227,148 @@ func TestConvertTarget(t *testing.T) {
 		RefID:        "A",
 	}
 
-	promTarget := converter.convertTarget(target)
+	convertedTarget := converter.convertTarget(target)
 
-	req.Equal("prometheus_query", promTarget.Prometheus.Query)
-	req.Equal("{{ field }}", promTarget.Prometheus.Legend)
-	req.Equal("A", promTarget.Prometheus.Ref)
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Stackdriver)
+	req.Equal("prometheus_query", convertedTarget.Prometheus.Query)
+	req.Equal("{{ field }}", convertedTarget.Prometheus.Legend)
+	req.Equal("A", convertedTarget.Prometheus.Ref)
+}
+
+func TestConvertTargetWithStackdriverTargetFailsIfNoMetricKind(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.Nil(convertedTarget)
+}
+
+func TestConvertTargetWithStackdriverTargetIgnoresUnknownCrossSeriesReducer(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind:         "DELTA",
+		MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
+		CrossSeriesReducer: "unknown",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Empty(convertedTarget.Stackdriver.Aggregation)
+}
+
+func TestConvertTargetWithStackdriverTargetIgnoresUnknownAligner(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind:       "DELTA",
+		MetricType:       "pubsub.googleapis.com/subscription/ack_message_count",
+		PerSeriesAligner: "unknown",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Empty(convertedTarget.Stackdriver.Alignment)
+}
+
+func TestConvertTargetWithStackdriverTarget(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind:         "DELTA",
+		MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
+		CrossSeriesReducer: "REDUCE_MEAN",
+		PerSeriesAligner:   "ALIGN_DELTA",
+		AlignmentPeriod:    "stackdriver-auto",
+		AliasBy:            "legend",
+		RefID:              "A",
+		Filters: []string{
+			"resource.label.subscription_id",
+			"=",
+			"subscription_name",
+			"AND",
+			"other-property",
+			"!=",
+			"other-value",
+			"AND",
+			"regex-property",
+			"=~",
+			"regex-value",
+			"AND",
+			"regex-not-property",
+			"!=~",
+			"regex-not-value",
+		},
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Prometheus)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Equal("delta", convertedTarget.Stackdriver.Type)
+	req.Equal("pubsub.googleapis.com/subscription/ack_message_count", convertedTarget.Stackdriver.Metric)
+	req.Equal("mean", convertedTarget.Stackdriver.Aggregation)
+	req.Equal("stackdriver-auto", convertedTarget.Stackdriver.Alignment.Period)
+	req.Equal("delta", convertedTarget.Stackdriver.Alignment.Method)
+	req.Equal("legend", convertedTarget.Stackdriver.Legend)
+	req.Equal("A", convertedTarget.Stackdriver.Ref)
+	req.EqualValues(map[string]string{"resource.label.subscription_id": "subscription_name"}, convertedTarget.Stackdriver.Filters.Eq)
+	req.EqualValues(map[string]string{"other-property": "other-value"}, convertedTarget.Stackdriver.Filters.Neq)
+	req.EqualValues(map[string]string{"regex-property": "regex-value"}, convertedTarget.Stackdriver.Filters.Matches)
+	req.EqualValues(map[string]string{"regex-not-property": "regex-not-value"}, convertedTarget.Stackdriver.Filters.NotMatches)
+}
+
+func TestConvertTargetWithStackdriverGauge(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind: "GAUGE",
+		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Prometheus)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Equal("gauge", convertedTarget.Stackdriver.Type)
+	req.Equal("pubsub.googleapis.com/subscription/ack_message_count", convertedTarget.Stackdriver.Metric)
+}
+
+func TestConvertTargetWithStackdriverCumulative(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind: "CUMULATIVE",
+		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Prometheus)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Equal("cumulative", convertedTarget.Stackdriver.Type)
+	req.Equal("pubsub.googleapis.com/subscription/ack_message_count", convertedTarget.Stackdriver.Metric)
 }
 
 func TestConvertTagAnnotationIgnoresBuiltIn(t *testing.T) {
@@ -296,6 +441,14 @@ func TestConvertLegend(t *testing.T) {
 		[]string{"as_table", "to_the_right", "min", "max", "avg", "current", "total", "no_null_series", "no_zero_series"},
 		legend,
 	)
+}
+
+func TestConvertCanHideLegend(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	legend := converter.convertLegend(sdk.Legend{Show: false})
+	req.ElementsMatch([]string{"hide"}, legend)
 }
 
 func TestConvertAxis(t *testing.T) {
