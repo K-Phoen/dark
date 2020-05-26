@@ -1,5 +1,7 @@
 # DARK
 
+[![codecov](https://codecov.io/gh/K-Phoen/dark/branch/master/graph/badge.svg)](https://codecov.io/gh/K-Phoen/dark)
+
 **D**ashboards **A**s **R**esources in **K**ubernetes.
 
 DARK provides a way to define and deploy Grafana dashboards via Kubernetes, next to the services they monitor.
@@ -16,7 +18,7 @@ with your services, then this project is meant for you.
 
 ## Setup
 
-**Note:** review these manifests to ensure that they fit your cluster's configuration. 
+**Note:** review these manifests to ensure that they fit your cluster's configuration.
 
 Setup the [CRD](https://kubernetes.io/docs/tasks/access-kubernetes-api/custom-resources/custom-resource-definitions/):
 
@@ -56,6 +58,13 @@ spec:
   shared_crosshair: true
   tags: [generated, yaml]
   auto_refresh: 10s
+
+  variables:
+    - interval:
+        name: interval
+        label: interval
+        default: 1m
+        values: [30s, 1m, 5m, 10m, 30m, 1h, 6h, 12h]
 
   rows:
     - name: Prometheus
