@@ -304,6 +304,14 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 			"other-property",
 			"!=",
 			"other-value",
+			"AND",
+			"regex-property",
+			"=~",
+			"regex-value",
+			"AND",
+			"regex-not-property",
+			"!=~",
+			"regex-not-value",
 		},
 	}
 
@@ -321,6 +329,46 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 	req.Equal("A", convertedTarget.Stackdriver.Ref)
 	req.EqualValues(map[string]string{"resource.label.subscription_id": "subscription_name"}, convertedTarget.Stackdriver.Filters.Eq)
 	req.EqualValues(map[string]string{"other-property": "other-value"}, convertedTarget.Stackdriver.Filters.Neq)
+	req.EqualValues(map[string]string{"regex-property": "regex-value"}, convertedTarget.Stackdriver.Filters.Matches)
+	req.EqualValues(map[string]string{"regex-not-property": "regex-not-value"}, convertedTarget.Stackdriver.Filters.NotMatches)
+}
+
+func TestConvertTargetWithStackdriverGauge(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind: "GAUGE",
+		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Prometheus)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Equal("gauge", convertedTarget.Stackdriver.Type)
+	req.Equal("pubsub.googleapis.com/subscription/ack_message_count", convertedTarget.Stackdriver.Metric)
+}
+
+func TestConvertTargetWithStackdriverCumulative(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		MetricKind: "CUMULATIVE",
+		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.Nil(convertedTarget.Prometheus)
+	req.NotNil(convertedTarget.Stackdriver)
+	req.Equal("cumulative", convertedTarget.Stackdriver.Type)
+	req.Equal("pubsub.googleapis.com/subscription/ack_message_count", convertedTarget.Stackdriver.Metric)
 }
 
 func TestConvertTagAnnotationIgnoresBuiltIn(t *testing.T) {
@@ -393,6 +441,14 @@ func TestConvertLegend(t *testing.T) {
 		[]string{"as_table", "to_the_right", "min", "max", "avg", "current", "total", "no_null_series", "no_zero_series"},
 		legend,
 	)
+}
+
+func TestConvertCanHideLegend(t *testing.T) {
+	req := require.New(t)
+	converter := NewJSON(zap.NewNop())
+
+	legend := converter.convertLegend(sdk.Legend{Show: false})
+	req.ElementsMatch([]string{"hide"}, legend)
 }
 
 func TestConvertAxis(t *testing.T) {
