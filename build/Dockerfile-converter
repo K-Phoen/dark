@@ -1,5 +1,5 @@
 # Build
-FROM golang:1.13-alpine AS build
+FROM golang:1.14-alpine3.11 AS build
 
 RUN apk --update --no-cache add make=4.2.1-r2
 
