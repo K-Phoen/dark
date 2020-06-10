@@ -17,6 +17,8 @@ github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/K-Phoen/grabana v0.11.1 h1:z8ZcNNSgo8svhSC+vmumg026O1O0T1zRAIQNF3oOaXQ=
 github.com/K-Phoen/grabana v0.11.1/go.mod h1:d6laJN347jVc/UvHXP94IIh+IInrzD46JsxbsF64oU4=
+github.com/K-Phoen/grabana v0.11.3 h1:dA9SWquYYbJJUqi0659vD9iT6nDnR2/9ahQCMVr6U7I=
+github.com/K-Phoen/grabana v0.11.3/go.mod h1:jeqCvdDxKfL5BEm91DCZttD4LWHtFnC282OMtwptiJk=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
 github.com/PuerkitoBio/purell v1.1.1 h1:WEQqlqaGbrPkxLJWfBwQmfEAE1Z7ONdDLqrN38tNFfI=
@@ -97,6 +99,8 @@ github.com/grafana-tools/sdk v0.0.0-20200421141239-edb3b044281c h1:T1ckSwJLGPeKL
 github.com/grafana-tools/sdk v0.0.0-20200421141239-edb3b044281c/go.mod h1:aqBqJVTJmj0MTX9cP8wuReJPte6HyttMDzSS2u8nJwo=
 github.com/grafana-tools/sdk v0.0.0-20200424161218-784ae0c7d6cc h1:vbciiLT0YD3wsBITfwdQF/UNVYjMxD5xh0kJQesrypk=
 github.com/grafana-tools/sdk v0.0.0-20200424161218-784ae0c7d6cc/go.mod h1:aqBqJVTJmj0MTX9cP8wuReJPte6HyttMDzSS2u8nJwo=
+github.com/grafana-tools/sdk v0.0.0-20200610203821-a982d46f0598 h1:PqTSd+sSXH9WkMMCXW41J061pAwLBgPbvW7/2inMjCc=
+github.com/grafana-tools/sdk v0.0.0-20200610203821-a982d46f0598/go.mod h1:aqBqJVTJmj0MTX9cP8wuReJPte6HyttMDzSS2u8nJwo=
 github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7/go.mod h1:FecbI9+v66THATjSRHfNgh1IVFe/9kFxbXtjV0ctIMA=
 github.com/hashicorp/golang-lru v0.5.0/go.mod h1:/m3WP610KZHVQ1SGc6re/UDhFvYD7pJ4Ao+sR/qLZy8=
 github.com/hashicorp/golang-lru v0.5.1 h1:0hERBMJE1eitiLkihrMvRVBYAkpHzc/J3QdDN+dAcgU=
