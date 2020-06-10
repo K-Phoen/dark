@@ -13,6 +13,6 @@ RUN make converter_build
 FROM alpine:3.11
 ENTRYPOINT ["/app/dark-converter"]
 WORKDIR /workspace
-RUN apk --update --no-cache add ca-certificates=20191127-r1 && update-ca-certificates
+RUN apk --update --no-cache add ca-certificates=20191127-r2 && update-ca-certificates
 
 COPY --from=build /app/dark-converter /app/dark-converter
