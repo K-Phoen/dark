@@ -3,10 +3,10 @@ module github.com/K-Phoen/dark
 go 1.13
 
 require (
-	github.com/K-Phoen/grabana v0.11.1
+	github.com/K-Phoen/grabana v0.11.3
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/grafana-tools/sdk v0.0.0-20200424161218-784ae0c7d6cc
+	github.com/grafana-tools/sdk v0.0.0-20200610203821-a982d46f0598
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	go.uber.org/zap v1.14.1
