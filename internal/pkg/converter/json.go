@@ -443,6 +443,7 @@ func (converter *JSON) convertPrometheusTarget(target sdk.Target) *grabana.Targe
 			Query:  target.Expr,
 			Legend: target.LegendFormat,
 			Ref:    target.RefID,
+			Hidden: target.Hide,
 		},
 	}
 }
@@ -526,6 +527,7 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			Alignment:   alignment,
 			Legend:      target.AliasBy,
 			Ref:         target.RefID,
+			Hidden:      target.Hide,
 		},
 	}
 }
