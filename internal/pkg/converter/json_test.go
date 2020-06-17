@@ -294,6 +294,7 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 		CrossSeriesReducer: "REDUCE_MEAN",
 		PerSeriesAligner:   "ALIGN_DELTA",
 		AlignmentPeriod:    "stackdriver-auto",
+		GroupBys:           []string{"field"},
 		AliasBy:            "legend",
 		RefID:              "A",
 		Filters: []string{
@@ -327,6 +328,7 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 	req.Equal("delta", convertedTarget.Stackdriver.Alignment.Method)
 	req.Equal("legend", convertedTarget.Stackdriver.Legend)
 	req.Equal("A", convertedTarget.Stackdriver.Ref)
+	req.ElementsMatch([]string{"field"}, convertedTarget.Stackdriver.GroupBy)
 	req.EqualValues(map[string]string{"resource.label.subscription_id": "subscription_name"}, convertedTarget.Stackdriver.Filters.Eq)
 	req.EqualValues(map[string]string{"other-property": "other-value"}, convertedTarget.Stackdriver.Filters.Neq)
 	req.EqualValues(map[string]string{"regex-property": "regex-value"}, convertedTarget.Stackdriver.Filters.Matches)
