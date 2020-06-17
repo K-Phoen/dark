@@ -525,6 +525,7 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			Filters:     converter.convertStackdriverFilters(target),
 			Aggregation: aggregation,
 			Alignment:   alignment,
+			GroupBy:     target.GroupBys,
 			Legend:      target.AliasBy,
 			Ref:         target.RefID,
 			Hidden:      target.Hide,
