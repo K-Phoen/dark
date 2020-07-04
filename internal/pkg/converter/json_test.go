@@ -19,20 +19,38 @@ func defaultVar(varType string) sdk.TemplateVar {
 	}
 }
 
-func TestConvertInvalidJSON(t *testing.T) {
+func TestConvertInvalidJSONToYAML(t *testing.T) {
 	req := require.New(t)
 
 	converter := NewJSON(zap.NewNop())
-	err := converter.Convert(bytes.NewBufferString(""), bytes.NewBufferString(""))
+	err := converter.ToYAML(bytes.NewBufferString(""), bytes.NewBufferString(""))
 
 	req.Error(err)
 }
 
-func TestConvertValidJSON(t *testing.T) {
+func TestConvertValidJSONToYaml(t *testing.T) {
 	req := require.New(t)
 
 	converter := NewJSON(zap.NewNop())
-	err := converter.Convert(bytes.NewBufferString("{}"), bytes.NewBufferString(""))
+	err := converter.ToYAML(bytes.NewBufferString("{}"), bytes.NewBufferString(""))
+
+	req.NoError(err)
+}
+
+func TestConvertInvalidJSONToK8SManifest(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.ToK8SManifest(bytes.NewBufferString(""), bytes.NewBufferString(""), "Folder", "test-dashboard")
+
+	req.Error(err)
+}
+
+func TestConvertValidJSONK8SManifest(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.ToK8SManifest(bytes.NewBufferString("{}"), bytes.NewBufferString(""), "Folder", "test-dashboard")
 
 	req.NoError(err)
 }

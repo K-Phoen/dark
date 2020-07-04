@@ -114,7 +114,13 @@ To ease the transition from existing, raw Grafana dashboards to DARK, a converte
 It takes the path to a JSON dashboard and a path for the destination YAML file.
 
 ```sh
-docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest dashboard.json converted-dashboard.yaml
+docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-yaml -i dashboard.json -o converted-dashboard.yaml
+```
+
+## Converting Grafana JSON dashboard to a Kubernetes manifest
+
+```sh
+docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-k8s-manifest -i dashboard.json -o converted-dashboard.yaml test-dashboard
 ```
 
 ## License
