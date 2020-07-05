@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"strings"
 
+	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
 	grabanaDashboard "github.com/K-Phoen/grabana/dashboard"
 	grabana "github.com/K-Phoen/grabana/decoder"
 	grabanaTable "github.com/K-Phoen/grabana/table"
@@ -14,6 +15,14 @@ import (
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v2"
 )
+
+type k8sDashboard struct {
+	APIVersion string
+	Kind       string
+	Metadata   map[string]string
+	Folder     string
+	Spec       *grabana.DashboardModel
+}
 
 type JSON struct {
 	logger *zap.Logger
@@ -25,25 +34,12 @@ func NewJSON(logger *zap.Logger) *JSON {
 	}
 }
 
-func (converter *JSON) Convert(input io.Reader, output io.Writer) error {
-	content, err := ioutil.ReadAll(input)
+func (converter *JSON) ToYAML(input io.Reader, output io.Writer) error {
+	dashboard, err := converter.parseInput(input)
 	if err != nil {
-		converter.logger.Error("could not read input", zap.Error(err))
+		converter.logger.Error("could parse input", zap.Error(err))
 		return err
 	}
-
-	board := &sdk.Board{}
-	if err := json.Unmarshal(content, board); err != nil {
-		converter.logger.Error("could not unmarshall dashboard", zap.Error(err))
-		return err
-	}
-
-	dashboard := &grabana.DashboardModel{}
-
-	converter.convertGeneralSettings(board, dashboard)
-	converter.convertVariables(board.Templating.List, dashboard)
-	converter.convertAnnotations(board.Annotations.List, dashboard)
-	converter.convertPanels(board.Panels, dashboard)
 
 	converted, err := yaml.Marshal(dashboard)
 	if err != nil {
@@ -54,6 +50,55 @@ func (converter *JSON) Convert(input io.Reader, output io.Writer) error {
 	_, err = output.Write(converted)
 
 	return err
+}
+
+func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, folder string, name string) error {
+	dashboard, err := converter.parseInput(input)
+	if err != nil {
+		converter.logger.Error("could parse input", zap.Error(err))
+		return err
+	}
+
+	manifest := k8sDashboard{
+		APIVersion: v1.SchemeGroupVersion.String(),
+		Kind:       "GrafanaDashboard",
+		Metadata:   map[string]string{"name": name, "namespace": "default"},
+		Folder:     folder,
+		Spec:       dashboard,
+	}
+
+	converted, err := yaml.Marshal(manifest)
+	if err != nil {
+		converter.logger.Error("could marshall dashboard to yaml", zap.Error(err))
+		return err
+	}
+
+	_, err = output.Write(converted)
+
+	return err
+}
+
+func (converter *JSON) parseInput(input io.Reader) (*grabana.DashboardModel, error) {
+	content, err := ioutil.ReadAll(input)
+	if err != nil {
+		converter.logger.Error("could not read input", zap.Error(err))
+		return nil, err
+	}
+
+	board := &sdk.Board{}
+	if err := json.Unmarshal(content, board); err != nil {
+		converter.logger.Error("could not unmarshall dashboard", zap.Error(err))
+		return nil, err
+	}
+
+	dashboard := &grabana.DashboardModel{}
+
+	converter.convertGeneralSettings(board, dashboard)
+	converter.convertVariables(board.Templating.List, dashboard)
+	converter.convertAnnotations(board.Annotations.List, dashboard)
+	converter.convertPanels(board.Panels, dashboard)
+
+	return dashboard, nil
 }
 
 func (converter *JSON) convertGeneralSettings(board *sdk.Board, dashboard *grabana.DashboardModel) {
