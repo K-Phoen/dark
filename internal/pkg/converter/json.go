@@ -17,7 +17,7 @@ import (
 )
 
 type k8sDashboard struct {
-	APIVersion string
+	APIVersion string `yaml:"apiVersion"`
 	Kind       string
 	Metadata   map[string]string
 	Folder     string
