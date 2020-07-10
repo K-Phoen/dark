@@ -565,6 +565,7 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 
 	return &grabana.Target{
 		Stackdriver: &grabana.StackdriverTarget{
+			Project:     target.ProjectName,
 			Type:        strings.ToLower(target.MetricKind),
 			Metric:      target.MetricType,
 			Filters:     converter.convertStackdriverFilters(target),
