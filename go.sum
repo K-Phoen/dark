@@ -15,8 +15,8 @@ github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6L
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1 h1:WXkYYl6Yr3qBf1K79EBnL4mak0OimBfB0XUf9Vl28OQ=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
-github.com/K-Phoen/grabana v0.12.6 h1:ghgnS92PwTHoT1Bj+q9D1kAvqsm+BCVn6RpCjqvOQuE=
-github.com/K-Phoen/grabana v0.12.6/go.mod h1:jAPE2R3uNda/vMMFlDjG/S7RjmtfULhd50hh5cgVi4E=
+github.com/K-Phoen/grabana v0.12.8 h1:VvN7QdcX3eUYSoKBer7eWyTf2hSmF95ay99d6v60y84=
+github.com/K-Phoen/grabana v0.12.8/go.mod h1:jAPE2R3uNda/vMMFlDjG/S7RjmtfULhd50hh5cgVi4E=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
 github.com/PuerkitoBio/purell v1.0.0/go.mod h1:c11w/QuzBsJSee3cPx9rAFu61PvFxuPbtSwDGJws/X0=
