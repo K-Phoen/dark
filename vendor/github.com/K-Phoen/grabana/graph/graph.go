@@ -87,7 +87,6 @@ func New(title string, options ...Option) *Graph {
 
 func defaults() []Option {
 	return []Option{
-		Editable(),
 		Draw(Lines),
 		Span(6),
 		Fill(1),
@@ -136,20 +135,6 @@ func WithStackdriverTarget(target *stackdriver.Stackdriver) Option {
 	}
 }
 
-// Editable marks the graph as editable.
-func Editable() Option {
-	return func(graph *Graph) {
-		graph.Builder.Editable = true
-	}
-}
-
-// ReadOnly marks the graph as non-editable.
-func ReadOnly() Option {
-	return func(graph *Graph) {
-		graph.Builder.Editable = false
-	}
-}
-
 // DataSource sets the data source to be used by the graph.
 func DataSource(source string) Option {
 	return func(graph *Graph) {
@@ -169,6 +154,13 @@ func Span(span float32) Option {
 func Height(height string) Option {
 	return func(graph *Graph) {
 		graph.Builder.Height = &height
+	}
+}
+
+// Transparent makes the background transparent.
+func Transparent() Option {
+	return func(graph *Graph) {
+		graph.Builder.Transparent = true
 	}
 }
 

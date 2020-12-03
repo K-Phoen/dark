@@ -82,3 +82,10 @@ func HideTitle() Option {
 		row.builder.ShowTitle = false
 	}
 }
+
+// RepeatFor will repeat the row for all values of the given variable.
+func RepeatFor(variable string) Option {
+	return func(row *Row) {
+		row.builder.Repeat = &variable
+	}
+}

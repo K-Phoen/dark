@@ -63,7 +63,6 @@ func New(title string, options ...Option) *Table {
 
 func defaults() []Option {
 	return []Option{
-		Editable(),
 		Span(6),
 		TimeSeriesToRows(),
 	}
@@ -148,20 +147,6 @@ func AsTimeSeriesAggregations(aggregations []Aggregation) Option {
 	}
 }
 
-// Editable marks the graph as editable.
-func Editable() Option {
-	return func(table *Table) {
-		table.Builder.Editable = true
-	}
-}
-
-// ReadOnly marks the graph as non-editable.
-func ReadOnly() Option {
-	return func(table *Table) {
-		table.Builder.Editable = false
-	}
-}
-
 // DataSource sets the data source to be used by the table.
 func DataSource(source string) Option {
 	return func(table *Table) {
@@ -181,5 +166,12 @@ func Span(span float32) Option {
 func Height(height string) Option {
 	return func(table *Table) {
 		table.Builder.Height = &height
+	}
+}
+
+// Transparent makes the background transparent.
+func Transparent() Option {
+	return func(table *Table) {
+		table.Builder.Transparent = true
 	}
 }
