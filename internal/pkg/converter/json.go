@@ -239,6 +239,13 @@ func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.Das
 			}
 
 			currentRow = converter.convertRow(*panel)
+
+			for _, rowPanel := range panel.Panels {
+				convertedPanel, ok := converter.convertDataPanel(rowPanel)
+				if ok {
+					currentRow.Panels = append(currentRow.Panels, convertedPanel)
+				}
+			}
 			continue
 		}
 
@@ -246,21 +253,30 @@ func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.Das
 			currentRow = &grabana.DashboardRow{Name: "Overview"}
 		}
 
-		switch panel.Type {
-		case "graph":
-			currentRow.Panels = append(currentRow.Panels, converter.convertGraph(*panel))
-		case "singlestat":
-			currentRow.Panels = append(currentRow.Panels, converter.convertSingleStat(*panel))
-		case "table":
-			currentRow.Panels = append(currentRow.Panels, converter.convertTable(*panel))
-		default:
-			converter.logger.Warn("unhandled panel type: skipped", zap.String("type", panel.Type), zap.String("title", panel.Title))
+		convertedPanel, ok := converter.convertDataPanel(*panel)
+		if ok {
+			currentRow.Panels = append(currentRow.Panels, convertedPanel)
 		}
 	}
 
 	if currentRow != nil {
 		dashboard.Rows = append(dashboard.Rows, *currentRow)
 	}
+}
+
+func (converter *JSON) convertDataPanel(panel sdk.Panel) (grabana.DashboardPanel, bool) {
+	switch panel.Type {
+	case "graph":
+		return converter.convertGraph(panel), true
+	case "singlestat":
+		return converter.convertSingleStat(panel), true
+	case "table":
+		return converter.convertTable(panel), true
+	default:
+		converter.logger.Warn("unhandled panel type: skipped", zap.String("type", panel.Type), zap.String("title", panel.Title))
+	}
+
+	return grabana.DashboardPanel{}, false
 }
 
 func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
