@@ -1,6 +1,6 @@
 # cloud.google.com/go v0.38.0
 cloud.google.com/go/compute/metadata
-# github.com/K-Phoen/grabana v0.12.6
+# github.com/K-Phoen/grabana v0.12.9
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
 github.com/K-Phoen/grabana/axis
@@ -15,6 +15,7 @@ github.com/K-Phoen/grabana/target/stackdriver
 github.com/K-Phoen/grabana/text
 github.com/K-Phoen/grabana/variable/constant
 github.com/K-Phoen/grabana/variable/custom
+github.com/K-Phoen/grabana/variable/datasource
 github.com/K-Phoen/grabana/variable/interval
 github.com/K-Phoen/grabana/variable/query
 # github.com/PuerkitoBio/purell v1.1.1
@@ -68,7 +69,7 @@ github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 # github.com/gosimple/slug v1.9.0
 github.com/gosimple/slug
-# github.com/grafana-tools/sdk v0.0.0-20200713194907-007f486b53df
+# github.com/grafana-tools/sdk v0.0.0-20201123153837-5fb28a7aa2ef
 github.com/grafana-tools/sdk
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru

@@ -158,13 +158,19 @@ func (r *Client) GetRawDashboardBySlug(ctx context.Context, slug string) ([]byte
 
 // FoundBoard keeps result of search with metadata of a dashboard.
 type FoundBoard struct {
-	ID        uint     `json:"id"`
-	UID       string   `json:"uid"`
-	Title     string   `json:"title"`
-	URI       string   `json:"uri"`
-	Type      string   `json:"type"`
-	Tags      []string `json:"tags"`
-	IsStarred bool     `json:"isStarred"`
+	ID          uint     `json:"id"`
+	UID         string   `json:"uid"`
+	Title       string   `json:"title"`
+	URI         string   `json:"uri"`
+	URL         string   `json:"url"`
+	Slug        string   `json:"slug"`
+	Type        string   `json:"type"`
+	Tags        []string `json:"tags"`
+	IsStarred   bool     `json:"isStarred"`
+	FolderID    int      `json:"folderId"`
+	FolderUID   string   `json:"folderUid"`
+	FolderTitle string   `json:"folderTitle"`
+	FolderURL   string   `json:"folderUrl"`
 }
 
 // SearchDashboards search dashboards by substring of their title. It allows restrict the result set with
@@ -414,7 +420,7 @@ func setPrefix(slug string) string {
 	if strings.HasPrefix(slug, "db") {
 		return slug
 	}
-	if strings.HasPrefix(slug, "file") {
+	if strings.HasPrefix(slug, "file/") {
 		return slug
 	}
 	return fmt.Sprintf("db/%s", slug)
