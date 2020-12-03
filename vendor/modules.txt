@@ -100,7 +100,7 @@ github.com/rainycape/unidecode
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
-# github.com/stretchr/testify v1.4.0
+# github.com/stretchr/testify v1.6.1
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # go.uber.org/atomic v1.6.0
@@ -170,6 +170,8 @@ gopkg.in/go-playground/validator.v9
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.2.8
 gopkg.in/yaml.v2
+# gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
+gopkg.in/yaml.v3
 # k8s.io/api v0.0.0-20200319202348-eb909d5fe0e7
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
