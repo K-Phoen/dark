@@ -70,7 +70,7 @@ type (
 		HideTimeOverride *bool     `json:"hideTimeOverride,omitempty"`
 		ID               uint      `json:"id"`
 		IsNew            bool      `json:"isNew"`
-		Links            []link    `json:"links,omitempty"`    // general
+		Links            []Link    `json:"links,omitempty"`    // general
 		MinSpan          *float32  `json:"minSpan,omitempty"`  // templating options
 		OfType           panelType `json:"-"`                  // it required for defining type of the panel
 		Renderer         *string   `json:"renderer,omitempty"` // display styles
@@ -361,6 +361,26 @@ type Target struct {
 	Datasource string `json:"datasource,omitempty"`
 	Hide       bool   `json:"hide,omitempty"`
 
+	// For PostgreSQL
+	Table        string `json:"table,omitempty"`
+	TimeColumn   string `json:"timeColumn,omitempty"`
+	MetricColumn string `json:"metricColumn,omitempty"`
+	RawSql       string `json:"rawSql,omitempty"`
+	Select       [][]struct {
+		Params []string `json:"params,omitempty"`
+		Type   string   `json:"type,omitempty"`
+	} `json:"select,omitempty"`
+	Where []struct {
+		Type     string   `json:"type,omitempty"`
+		Name     string   `json:"name,omitempty"`
+		Params   []string `json:"params,omitempty"`
+		Datatype string   `json:"datatype,omitempty"`
+	} `json:"where,omitempty"`
+	Group []struct {
+		Type   string   `json:"type,omitempty"`
+		Params []string `json:"params,omitempty"`
+	} `json:"group,omitempty"`
+
 	// For Prometheus
 	Expr           string `json:"expr,omitempty"`
 	IntervalFactor int    `json:"intervalFactor,omitempty"`
@@ -369,6 +389,9 @@ type Target struct {
 	LegendFormat   string `json:"legendFormat,omitempty"`
 	Instant        bool   `json:"instant,omitempty"`
 	Format         string `json:"format,omitempty"`
+
+	// For InfluxDB
+	Measurement string `json:"measurement,omitempty"`
 
 	// For Elasticsearch
 	DsType  *string `json:"dsType,omitempty"`
@@ -743,6 +766,12 @@ func (p *Panel) UnmarshalJSON(b []byte) (err error) {
 			p.OfType = DashlistType
 			if err = json.Unmarshal(b, &dashlist); err == nil {
 				p.DashlistPanel = &dashlist
+			}
+		case "row":
+			var rowpanel RowPanel
+			p.OfType = RowType
+			if err = json.Unmarshal(b, &rowpanel); err == nil {
+				p.RowPanel = &rowpanel
 			}
 		default:
 			var custom = make(CustomPanel)

@@ -6,7 +6,7 @@ require (
 	github.com/K-Phoen/grabana v0.12.6
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
-	github.com/grafana-tools/sdk v0.0.0-20200713194907-007f486b53df
+	github.com/grafana-tools/sdk v0.0.0-20201123153837-5fb28a7aa2ef
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/spf13/cobra v1.0.0
 	github.com/stretchr/testify v1.4.0
