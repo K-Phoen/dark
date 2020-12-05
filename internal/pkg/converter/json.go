@@ -185,10 +185,12 @@ func (converter *JSON) convertIntervalVar(variable sdk.TemplateVar, dashboard *g
 
 func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {
 	custom := &grabana.VariableCustom{
-		Name:      variable.Name,
-		Label:     variable.Label,
-		Default:   defaultOption(variable.Current),
-		ValuesMap: make(map[string]string, len(variable.Options)),
+		Name:       variable.Name,
+		Label:      variable.Label,
+		Default:    defaultOption(variable.Current),
+		ValuesMap:  make(map[string]string, len(variable.Options)),
+		AllValue:   variable.AllValue,
+		IncludeAll: variable.IncludeAll,
 	}
 
 	for _, opt := range variable.Options {
