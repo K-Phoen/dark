@@ -314,7 +314,8 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		Axes: &grabana.GraphAxes{
 			Bottom: converter.convertAxis(panel.Xaxis),
 		},
-		Legend: converter.convertLegend(panel.Legend),
+		Legend:        converter.convertLegend(panel.Legend),
+		Visualization: converter.convertVisualization(panel),
 	}
 
 	if panel.Height != nil {
@@ -339,6 +340,15 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	}
 
 	return grabana.DashboardPanel{Graph: graph}
+}
+
+func (converter *JSON) convertVisualization(panel sdk.Panel) *grabana.GraphVisualization {
+	graphViz := &grabana.GraphVisualization{
+		NullValue: panel.GraphPanel.NullPointMode,
+		Staircase: panel.GraphPanel.SteppedLine,
+	}
+
+	return graphViz
 }
 
 func (converter *JSON) convertLegend(sdkLegend sdk.Legend) []string {
