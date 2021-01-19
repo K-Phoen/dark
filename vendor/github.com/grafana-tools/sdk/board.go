@@ -107,7 +107,7 @@ type (
 	// for templateVar
 	Current struct {
 		Tags  []*string   `json:"tags,omitempty"`
-		Text  string      `json:"text"`
+		Text  interface{} `json:"text"`
 		Value interface{} `json:"value"` // TODO select more precise type
 	}
 	Annotation struct {

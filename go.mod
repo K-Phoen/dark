@@ -20,3 +20,6 @@ require (
 	k8s.io/code-generator v0.0.0-20200319201949-6bb2b634cece
 	k8s.io/klog v1.0.0
 )
+
+replace github.com/K-Phoen/grabana => ../grabana
+replace github.com/grafana-tools/sdk => ../sdk
