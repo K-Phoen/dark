@@ -155,6 +155,28 @@ func TestConvertCustomVar(t *testing.T) {
 	}))
 }
 
+func TestConvertDatasourceVar(t *testing.T) {
+	req := require.New(t)
+
+	variable := defaultVar("datasource")
+	variable.Name = "var_datasource"
+	variable.Label = "Label datasource"
+
+	converter := NewJSON(zap.NewNop())
+
+	dashboard := &grabana.DashboardModel{}
+	converter.convertVariables([]sdk.TemplateVar{variable}, dashboard)
+
+	req.Len(dashboard.Variables, 1)
+	req.NotNil(dashboard.Variables[0].Datasource)
+
+	dsVar := dashboard.Variables[0].Datasource
+
+	req.Equal("var_datasource", dsVar.Name)
+	req.Equal("Label datasource", dsVar.Label)
+	req.False(dsVar.IncludeAll)
+}
+
 func TestConvertConstVar(t *testing.T) {
 	req := require.New(t)
 
@@ -492,4 +514,133 @@ func TestConvertAxis(t *testing.T) {
 	req.EqualValues(0, *axis.Min)
 	req.EqualValues(42, *axis.Max)
 	req.False(*axis.Hidden)
+}
+
+func TestConvertTextPanelWithMarkdown(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	height := "200px"
+
+	textPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title:       "Text panel",
+			Transparent: true,
+			Height:      &height,
+			Type:        "text",
+		},
+		TextPanel: &sdk.TextPanel{
+			Mode:    "markdown",
+			Content: "# hello world",
+		},
+	}
+
+	converted, ok := converter.convertDataPanel(textPanel)
+
+	req.True(ok)
+	req.True(converted.Text.Transparent)
+	req.Equal("Text panel", converted.Text.Title)
+	req.Equal("# hello world", converted.Text.Markdown)
+	req.Equal(height, converted.Text.Height)
+}
+
+func TestConvertTextPanelWithHTML(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	textPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title: "Text panel html",
+			Type:  "text",
+		},
+		TextPanel: &sdk.TextPanel{
+			Mode:    "html",
+			Content: "<h1>hello world</h1>",
+		},
+	}
+
+	converted, ok := converter.convertDataPanel(textPanel)
+
+	req.True(ok)
+	req.False(converted.Text.Transparent)
+	req.Equal("Text panel html", converted.Text.Title)
+	req.Equal("<h1>hello world</h1>", converted.Text.HTML)
+}
+
+func TestConvertSinglePanel(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	height := "200px"
+	datasource := "prometheus"
+
+	singlestatPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title:       "Singlestat panel",
+			Type:        "singlestat",
+			Transparent: true,
+			Height:      &height,
+			Datasource:  &datasource,
+		},
+		SinglestatPanel: &sdk.SinglestatPanel{
+			Format:          "none",
+			ValueName:       "current",
+			Colors:          []string{"blue", "red", "green"},
+			ColorBackground: true,
+			ColorValue:      true,
+		},
+	}
+
+	converted, ok := converter.convertDataPanel(singlestatPanel)
+
+	req.True(ok)
+	req.True(converted.SingleStat.Transparent)
+	req.Equal("Singlestat panel", converted.SingleStat.Title)
+	req.Equal("none", converted.SingleStat.Unit)
+	req.Equal("current", converted.SingleStat.ValueType)
+	req.Equal(height, converted.SingleStat.Height)
+	req.Equal(datasource, converted.SingleStat.Datasource)
+	req.True(reflect.DeepEqual(converted.SingleStat.Colors, [3]string{
+		"blue", "red", "green",
+	}))
+	req.True(reflect.DeepEqual(converted.SingleStat.Color, []string{
+		"background", "value",
+	}))
+}
+
+func TestConvertHeatmapPanel(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	height := "400px"
+	datasource := "prometheus"
+
+	heatmapPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title:       "heatmap panel",
+			Type:        "heatmap",
+			Transparent: true,
+			Height:      &height,
+			Datasource:  &datasource,
+		},
+		HeatmapPanel: &sdk.HeatmapPanel{
+			HideZeroBuckets: true,
+			HighlightCards:  true,
+			ReverseYBuckets: true,
+			DataFormat:      "tsbuckets",
+		},
+	}
+
+	converted, ok := converter.convertDataPanel(heatmapPanel)
+
+	req.True(ok)
+	req.True(converted.Heatmap.Transparent)
+	req.Equal("heatmap panel", converted.Heatmap.Title)
+	req.Equal(height, converted.Heatmap.Height)
+	req.Equal(datasource, converted.Heatmap.Datasource)
+	req.True(converted.Heatmap.ReverseYBuckets)
+	req.True(converted.Heatmap.HideZeroBuckets)
+	req.True(converted.Heatmap.HightlightCards)
+	req.Equal("time_series_buckets", converted.Heatmap.DataFormat)
 }
