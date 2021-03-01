@@ -236,7 +236,7 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 	constant := &grabana.VariableConst{
 		Name:      variable.Name,
 		Label:     variable.Label,
-		Default:   variable.Current.Text,
+		Default:   variable.Current.Text.(string),
 		ValuesMap: make(map[string]string, len(variable.Options)),
 	}
 
@@ -286,6 +286,8 @@ func (converter *JSON) convertDataPanel(panel sdk.Panel) (grabana.DashboardPanel
 	switch panel.Type {
 	case "graph":
 		return converter.convertGraph(panel), true
+	case "heatmap":
+		return converter.convertHeatmap(panel), true
 	case "singlestat":
 		return converter.convertSingleStat(panel), true
 	case "table":
@@ -314,7 +316,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		Axes: &grabana.GraphAxes{
 			Bottom: converter.convertAxis(panel.Xaxis),
 		},
-		Legend:        converter.convertLegend(panel.Legend),
+		Legend:        converter.convertLegend(panel.GraphPanel.Legend),
 		Visualization: converter.convertVisualization(panel),
 	}
 
@@ -408,6 +410,50 @@ func (converter *JSON) convertAxis(sdkAxis sdk.Axis) *grabana.GraphAxis {
 		Max:     max,
 		LogBase: sdkAxis.LogBase,
 	}
+}
+
+func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
+	heatmap := &grabana.DashboardHeatmap{
+		Title:           panel.Title,
+		Span:            panelSpan(panel),
+		Transparent:     panel.Transparent,
+		HideZeroBuckets: panel.HeatmapPanel.HideZeroBuckets,
+		HightlightCards: panel.HeatmapPanel.HighlightCards,
+		ReverseYBuckets: panel.HeatmapPanel.ReverseYBuckets,
+		Tooltip: &grabana.HeatmapTooltip{
+			Show:          panel.HeatmapPanel.Tooltip.Show,
+			ShowHistogram: panel.HeatmapPanel.Tooltip.ShowHistogram,
+			Decimals:      &panel.HeatmapPanel.TooltipDecimals,
+		},
+	}
+
+	if panel.Height != nil {
+		heatmap.Height = *panel.Height
+	}
+	if panel.Datasource != nil {
+		heatmap.Datasource = *panel.Datasource
+	}
+	if panel.HeatmapPanel.DataFormat != "" {
+		switch panel.HeatmapPanel.DataFormat {
+		case "tsbuckets":
+			heatmap.DataFormat = "time_series_buckets"
+		case "time_series":
+			heatmap.DataFormat = "time_series"
+		default:
+			converter.logger.Warn("unknown data format: skipping heatmap", zap.String("data_format", panel.HeatmapPanel.DataFormat), zap.String("heatmap_title", panel.Title))
+		}
+	}
+
+	for _, target := range panel.HeatmapPanel.Targets {
+		heatmapTarget := converter.convertTarget(target)
+		if heatmapTarget == nil {
+			continue
+		}
+
+		heatmap.Targets = append(heatmap.Targets, *heatmapTarget)
+	}
+
+	return grabana.DashboardPanel{Heatmap: heatmap}
 }
 
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
@@ -554,10 +600,13 @@ func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
 func (converter *JSON) convertPrometheusTarget(target sdk.Target) *grabana.Target {
 	return &grabana.Target{
 		Prometheus: &grabana.PrometheusTarget{
-			Query:  target.Expr,
-			Legend: target.LegendFormat,
-			Ref:    target.RefID,
-			Hidden: target.Hide,
+			Query:          target.Expr,
+			Legend:         target.LegendFormat,
+			Ref:            target.RefID,
+			Hidden:         target.Hide,
+			Format:         target.Format,
+			Instant:        target.Instant,
+			IntervalFactor: &target.IntervalFactor,
 		},
 	}
 }
