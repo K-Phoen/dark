@@ -327,6 +327,9 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		Alert:         converter.convertAlert(panel),
 	}
 
+	if panel.Description != nil {
+		graph.Description = *panel.Description
+	}
 	if panel.Height != nil {
 		graph.Height = *panel.Height
 	}
@@ -499,6 +502,9 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 		},
 	}
 
+	if panel.Description != nil {
+		heatmap.Description = *panel.Description
+	}
 	if panel.Height != nil {
 		heatmap.Height = *panel.Height
 	}
@@ -537,6 +543,9 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		Transparent: panel.Transparent,
 	}
 
+	if panel.Description != nil {
+		singleStat.Description = *panel.Description
+	}
 	if panel.Height != nil {
 		singleStat.Height = *panel.Height
 	}
@@ -594,6 +603,9 @@ func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
 		Transparent: panel.Transparent,
 	}
 
+	if panel.Description != nil {
+		table.Description = *panel.Description
+	}
 	if panel.Height != nil {
 		table.Height = *panel.Height
 	}
@@ -641,6 +653,9 @@ func (converter *JSON) convertText(panel sdk.Panel) grabana.DashboardPanel {
 		Transparent: panel.Transparent,
 	}
 
+	if panel.Description != nil {
+		text.Description = *panel.Description
+	}
 	if panel.Height != nil {
 		text.Height = *panel.Height
 	}
