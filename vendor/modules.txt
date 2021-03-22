@@ -1,12 +1,13 @@
 # cloud.google.com/go v0.46.3
 cloud.google.com/go/compute/metadata
-# github.com/K-Phoen/grabana v0.15.0
+# github.com/K-Phoen/grabana v0.15.2
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
 github.com/K-Phoen/grabana/axis
 github.com/K-Phoen/grabana/dashboard
 github.com/K-Phoen/grabana/decoder
 github.com/K-Phoen/grabana/graph
+github.com/K-Phoen/grabana/graph/series
 github.com/K-Phoen/grabana/heatmap
 github.com/K-Phoen/grabana/row
 github.com/K-Phoen/grabana/singlestat
@@ -72,7 +73,7 @@ github.com/googleapis/gnostic/compiler
 github.com/googleapis/gnostic/extensions
 # github.com/gosimple/slug v1.9.0
 github.com/gosimple/slug
-# github.com/grafana-tools/sdk v0.0.0-20210301100910-d23004341fc8
+# github.com/grafana-tools/sdk v0.0.0-20210402150123-f7c763c3738c
 github.com/grafana-tools/sdk
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru
