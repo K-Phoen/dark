@@ -99,7 +99,7 @@ func TestConvertIntervalVar(t *testing.T) {
 	variable := defaultVar("interval")
 	variable.Name = "var_interval"
 	variable.Label = "Label interval"
-	variable.Current = sdk.Current{Text: "30sec", Value: "30s"}
+	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"30sec"}, Valid: true}, Value: "30s"}
 	variable.Options = []sdk.Option{
 		{Text: "10sec", Value: "10s"},
 		{Text: "30sec", Value: "30s"},
@@ -128,7 +128,7 @@ func TestConvertCustomVar(t *testing.T) {
 	variable := defaultVar("custom")
 	variable.Name = "var_custom"
 	variable.Label = "Label custom"
-	variable.Current = sdk.Current{Text: "85th", Value: "85"}
+	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"85th"}, Valid: true}, Value: "85"}
 	variable.Options = []sdk.Option{
 		{Text: "50th", Value: "50"},
 		{Text: "85th", Value: "85"},
@@ -183,7 +183,7 @@ func TestConvertConstVar(t *testing.T) {
 	variable := defaultVar("const")
 	variable.Name = "var_const"
 	variable.Label = "Label const"
-	variable.Current = sdk.Current{Text: "85th", Value: "85"}
+	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"85th"}, Valid: true}, Value: "85"}
 	variable.Options = []sdk.Option{
 		{Text: "85th", Value: "85"},
 		{Text: "99th", Value: "99"},

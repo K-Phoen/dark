@@ -236,7 +236,7 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 	constant := &grabana.VariableConst{
 		Name:      variable.Name,
 		Label:     variable.Label,
-		Default:   variable.Current.Text.(string),
+		Default:   strings.Join(variable.Current.Text.Value, ","),
 		ValuesMap: make(map[string]string, len(variable.Options)),
 	}
 
@@ -423,9 +423,36 @@ func (converter *JSON) convertVisualization(panel sdk.Panel) *grabana.GraphVisua
 	graphViz := &grabana.GraphVisualization{
 		NullValue: panel.GraphPanel.NullPointMode,
 		Staircase: panel.GraphPanel.SteppedLine,
+		Overrides: converter.convertGraphOverrides(panel),
 	}
 
 	return graphViz
+}
+
+func (converter *JSON) convertGraphOverrides(panel sdk.Panel) []grabana.GraphSeriesOverride {
+	if len(panel.GraphPanel.SeriesOverrides) == 0 {
+		return nil
+	}
+
+	overrides := make([]grabana.GraphSeriesOverride, 0, len(panel.GraphPanel.SeriesOverrides))
+
+	for _, sdkOverride := range panel.GraphPanel.SeriesOverrides {
+		color := ""
+		if sdkOverride.Color != nil {
+			color = *sdkOverride.Color
+		}
+
+		overrides = append(overrides, grabana.GraphSeriesOverride{
+			Alias:     sdkOverride.Alias,
+			Color:     color,
+			Dashes:    sdkOverride.Dashes,
+			Lines:     sdkOverride.Lines,
+			Fill:      sdkOverride.Fill,
+			LineWidth: sdkOverride.LineWidth,
+		})
+	}
+
+	return overrides
 }
 
 func (converter *JSON) convertLegend(sdkLegend sdk.Legend) []string {
@@ -539,6 +566,7 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		Title:       panel.Title,
 		Span:        panelSpan(panel),
 		Unit:        panel.SinglestatPanel.Format,
+		Decimals:    &panel.SinglestatPanel.Decimals,
 		ValueType:   panel.SinglestatPanel.ValueName,
 		Transparent: panel.Transparent,
 	}
