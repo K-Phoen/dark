@@ -302,8 +302,14 @@ func (converter *JSON) convertDataPanel(panel sdk.Panel) (grabana.DashboardPanel
 }
 
 func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
+	repeat := ""
+	if panel.Repeat != nil {
+		repeat = *panel.Repeat
+	}
+
 	return &grabana.DashboardRow{
 		Name:   panel.Title,
+		Repeat: repeat,
 		Panels: nil,
 	}
 }
