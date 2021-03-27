@@ -13,11 +13,13 @@ var ErrInvalidSingleStatValueType = fmt.Errorf("invalid single stat value type")
 
 type DashboardSingleStat struct {
 	Title       string
+	Description string  `yaml:",omitempty"`
 	Span        float32 `yaml:",omitempty"`
 	Height      string  `yaml:",omitempty"`
 	Transparent bool    `yaml:",omitempty"`
 	Datasource  string  `yaml:",omitempty"`
 	Unit        string
+	Decimals    *int   `yaml:",omitempty"`
 	ValueType   string `yaml:"value_type"`
 	SparkLine   string `yaml:"sparkline"`
 	Targets     []Target
@@ -29,6 +31,9 @@ type DashboardSingleStat struct {
 func (singleStatPanel DashboardSingleStat) toOption() (row.Option, error) {
 	opts := []singlestat.Option{}
 
+	if singleStatPanel.Description != "" {
+		opts = append(opts, singlestat.Description(singleStatPanel.Description))
+	}
 	if singleStatPanel.Span != 0 {
 		opts = append(opts, singlestat.Span(singleStatPanel.Span))
 	}
@@ -43,6 +48,9 @@ func (singleStatPanel DashboardSingleStat) toOption() (row.Option, error) {
 	}
 	if singleStatPanel.Unit != "" {
 		opts = append(opts, singlestat.Unit(singleStatPanel.Unit))
+	}
+	if singleStatPanel.Decimals != nil {
+		opts = append(opts, singlestat.Decimals(*singleStatPanel.Decimals))
 	}
 	if singleStatPanel.Thresholds[0] != "" {
 		opts = append(opts, singlestat.Thresholds(singleStatPanel.Thresholds))
@@ -113,6 +121,8 @@ func (singleStatPanel DashboardSingleStat) valueType() (singlestat.Option, error
 		return singlestat.ValueType(singlestat.Diff), nil
 	case "range":
 		return singlestat.ValueType(singlestat.Range), nil
+	case "name":
+		return singlestat.ValueType(singlestat.Name), nil
 	default:
 		return nil, ErrInvalidSingleStatValueType
 	}
