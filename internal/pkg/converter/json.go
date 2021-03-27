@@ -659,6 +659,11 @@ func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
 		return converter.convertGraphiteTarget(target)
 	}
 
+	// looks like influxdb
+	if target.Measurement != "" {
+		return converter.convertInfluxDBTarget(target)
+	}
+
 	// looks like stackdriver
 	if target.MetricType != "" {
 		return converter.convertStackdriverTarget(target)
@@ -687,6 +692,16 @@ func (converter *JSON) convertGraphiteTarget(target sdk.Target) *grabana.Target 
 	return &grabana.Target{
 		Graphite: &grabana.GraphiteTarget{
 			Query:  target.Target,
+			Ref:    target.RefID,
+			Hidden: target.Hide,
+		},
+	}
+}
+
+func (converter *JSON) convertInfluxDBTarget(target sdk.Target) *grabana.Target {
+	return &grabana.Target{
+		InfluxDB: &grabana.InfluxDBTarget{
+			Query:  target.Measurement,
 			Ref:    target.RefID,
 			Hidden: target.Hide,
 		},
