@@ -47,6 +47,9 @@ const (
 	// Range will return the difference between ‘min’ and ‘max’. Useful to
 	// show the range of change for a gauge..
 	Range StatType = "range"
+
+	// Name will return the name value in the series.
+	Name StatType = "name"
 )
 
 // ValueMap allows to map a value into explicit text.
@@ -166,6 +169,13 @@ func Height(height string) Option {
 	}
 }
 
+// Description annotates the current visualization with a human-readable description.
+func Description(content string) Option {
+	return func(singleStat *SingleStat) {
+		singleStat.Builder.Description = &content
+	}
+}
+
 // Transparent makes the background transparent.
 func Transparent() Option {
 	return func(singleStat *SingleStat) {
@@ -177,6 +187,13 @@ func Transparent() Option {
 func Unit(unit string) Option {
 	return func(singleStat *SingleStat) {
 		singleStat.Builder.SinglestatPanel.Format = unit
+	}
+}
+
+// Decimals sets the number of decimals that should be displayed.
+func Decimals(count int) Option {
+	return func(singleStat *SingleStat) {
+		singleStat.Builder.SinglestatPanel.Decimals = count
 	}
 }
 

@@ -15,6 +15,7 @@ var ErrInvalidLegendAttribute = fmt.Errorf("invalid legend attribute")
 
 type DashboardGraph struct {
 	Title         string
+	Description   string  `yaml:",omitempty"`
 	Span          float32 `yaml:",omitempty"`
 	Height        string  `yaml:",omitempty"`
 	Transparent   bool    `yaml:",omitempty"`
@@ -29,6 +30,9 @@ type DashboardGraph struct {
 func (graphPanel DashboardGraph) toOption() (row.Option, error) {
 	opts := []graph.Option{}
 
+	if graphPanel.Description != "" {
+		opts = append(opts, graph.Description(graphPanel.Description))
+	}
 	if graphPanel.Span != 0 {
 		opts = append(opts, graph.Span(graphPanel.Span))
 	}
@@ -212,12 +216,12 @@ type GraphAlert struct {
 	EvaluateEvery    string `yaml:"evaluate_every"`
 	For              string
 	If               []AlertCondition
-	Notify           string
-	Notifications    []string
-	Message          string
-	OnNoData         string `yaml:"on_no_data"`
-	OnExecutionError string `yaml:"on_execution_error"`
-	Tags             map[string]string
+	Notify           string            `yaml:",omitempty"`
+	Notifications    []string          `yaml:",omitempty,flow"`
+	Message          string            `yaml:",omitempty"`
+	OnNoData         string            `yaml:"on_no_data"`
+	OnExecutionError string            `yaml:"on_execution_error"`
+	Tags             map[string]string `yaml:",omitempty"`
 }
 
 func (a GraphAlert) toOptions() ([]alert.Option, error) {
@@ -285,11 +289,11 @@ func (a GraphAlert) toOptions() ([]alert.Option, error) {
 }
 
 type AlertThreshold struct {
-	HasNoValue   bool `yaml:"has_no_value"`
-	Above        *float64
-	Below        *float64
-	OutsideRange [2]float64 `yaml:"outside_range"`
-	WithinRange  [2]float64 `yaml:"within_range"`
+	HasNoValue   bool       `yaml:"has_no_value,omitempty"`
+	Above        *float64   `yaml:",omitempty"`
+	Below        *float64   `yaml:",omitempty"`
+	OutsideRange [2]float64 `yaml:"outside_range,omitempty,flow"`
+	WithinRange  [2]float64 `yaml:"within_range,omitempty,flow"`
 }
 
 func (threshold AlertThreshold) toOption() (alert.ConditionOption, error) {
@@ -350,7 +354,7 @@ func (v AlertValue) toOption() (alert.ConditionOption, error) {
 
 type AlertCondition struct {
 	Operand   string
-	Value     AlertValue
+	Value     AlertValue `yaml:",flow"`
 	Threshold AlertThreshold
 }
 
