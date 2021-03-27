@@ -276,6 +276,46 @@ func TestConvertTargetWithPrometheusTarget(t *testing.T) {
 	req.Equal("A", convertedTarget.Prometheus.Ref)
 }
 
+func TestConvertTargetWithGraphiteTarget(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		Target: "graphite_query",
+		RefID:  "A",
+		Hide:   true,
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.NotNil(convertedTarget.Graphite)
+	req.Equal("graphite_query", convertedTarget.Graphite.Query)
+	req.Equal("A", convertedTarget.Graphite.Ref)
+	req.True(convertedTarget.Graphite.Hidden)
+}
+
+func TestConvertTargetWithInfluxDBTarget(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	target := sdk.Target{
+		Measurement: "influxdb_query",
+		RefID:       "A",
+		Hide:        true,
+	}
+
+	convertedTarget := converter.convertTarget(target)
+
+	req.NotNil(convertedTarget)
+	req.NotNil(convertedTarget.InfluxDB)
+	req.Equal("influxdb_query", convertedTarget.InfluxDB.Query)
+	req.Equal("A", convertedTarget.InfluxDB.Ref)
+	req.True(convertedTarget.InfluxDB.Hidden)
+}
+
 func TestConvertTargetWithStackdriverTargetFailsIfNoMetricKind(t *testing.T) {
 	req := require.New(t)
 	converter := NewJSON(zap.NewNop())
