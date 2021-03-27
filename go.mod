@@ -9,7 +9,7 @@ require (
 	github.com/grafana-tools/sdk v0.0.0-20210301100910-d23004341fc8
 	github.com/leodido/go-urn v1.2.0 // indirect
 	github.com/spf13/cobra v1.1.3
-	github.com/stretchr/testify v1.4.0
+	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.14.1
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
