@@ -654,6 +654,12 @@ func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
 		return converter.convertPrometheusTarget(target)
 	}
 
+	// looks like graphite
+	if target.Target != "" {
+		return converter.convertGraphiteTarget(target)
+	}
+
+	// looks like stackdriver
 	if target.MetricType != "" {
 		return converter.convertStackdriverTarget(target)
 	}
@@ -673,6 +679,16 @@ func (converter *JSON) convertPrometheusTarget(target sdk.Target) *grabana.Targe
 			Format:         target.Format,
 			Instant:        target.Instant,
 			IntervalFactor: &target.IntervalFactor,
+		},
+	}
+}
+
+func (converter *JSON) convertGraphiteTarget(target sdk.Target) *grabana.Target {
+	return &grabana.Target{
+		Graphite: &grabana.GraphiteTarget{
+			Query:  target.Target,
+			Ref:    target.RefID,
+			Hidden: target.Hide,
 		},
 	}
 }
