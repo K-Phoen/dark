@@ -240,7 +240,7 @@ func (c *Controller) syncHandler(key string) error {
 	}
 
 	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
-		utilruntime.HandleError(fmt.Errorf("could not create dashboard from spec: %w", err))
+		utilruntime.HandleError(fmt.Errorf("could not create '%s' dashboard from spec: %w", dashboard.ObjectMeta.Name, err))
 		c.recorder.Event(dashboard, corev1.EventTypeWarning, WarningNotSynced, fmt.Sprintf("could not create dashboard from spec: %s", err))
 		return nil
 	}
