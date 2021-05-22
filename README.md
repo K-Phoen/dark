@@ -123,6 +123,10 @@ docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-ya
 docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-k8s-manifest -i dashboard.json -o converted-dashboard.yaml test-dashboard
 ```
 
+## Adopters
+
+[Companies using DARK](ADOPTERS.md).
+
 ## License
 
 This library is under the [MIT](LICENSE) license.
