@@ -248,6 +248,24 @@ func TestConvertRow(t *testing.T) {
 	req.Equal("Row title", row.Name)
 }
 
+func TestConvertCollaspedRow(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	row := converter.convertRow(sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title: "Row title",
+		},
+		RowPanel: &sdk.RowPanel{
+			Collapsed: true,
+		},
+	})
+
+	req.Equal("Row title", row.Name)
+	req.True(row.Collapse)
+}
+
 func TestConvertTargetFailsIfNoValidTargetIsGiven(t *testing.T) {
 	req := require.New(t)
 	converter := NewJSON(zap.NewNop())

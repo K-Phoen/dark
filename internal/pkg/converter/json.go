@@ -306,11 +306,16 @@ func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
 	if panel.Repeat != nil {
 		repeat = *panel.Repeat
 	}
+	collapse := false
+	if panel.RowPanel != nil && panel.RowPanel.Collapsed {
+		collapse = true
+	}
 
 	return &grabana.DashboardRow{
-		Name:   panel.Title,
-		Repeat: repeat,
-		Panels: nil,
+		Name:     panel.Title,
+		Repeat:   repeat,
+		Collapse: collapse,
+		Panels:   nil,
 	}
 }
 
