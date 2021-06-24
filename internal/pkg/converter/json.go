@@ -174,6 +174,7 @@ func (converter *JSON) convertIntervalVar(variable sdk.TemplateVar, dashboard *g
 		Label:   variable.Label,
 		Default: defaultOption(variable.Current),
 		Values:  make([]string, 0, len(variable.Options)),
+		Hide:    converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -191,6 +192,7 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 		ValuesMap:  make(map[string]string, len(variable.Options)),
 		AllValue:   variable.AllValue,
 		IncludeAll: variable.IncludeAll,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -215,6 +217,7 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 		IncludeAll: variable.IncludeAll,
 		DefaultAll: variable.Current.Value == "$__all",
 		AllValue:   variable.AllValue,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})
@@ -227,6 +230,7 @@ func (converter *JSON) convertDatasourceVar(variable sdk.TemplateVar, dashboard 
 		Type:       variable.Query,
 		Regex:      variable.Regex,
 		IncludeAll: variable.IncludeAll,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Datasource: datasource})
@@ -238,6 +242,7 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 		Label:     variable.Label,
 		Default:   strings.Join(variable.Current.Text.Value, ","),
 		ValuesMap: make(map[string]string, len(variable.Options)),
+		Hide:      converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -245,6 +250,20 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Const: constant})
+}
+
+func (converter *JSON) convertVarHide(variable sdk.TemplateVar) string {
+	switch variable.Hide {
+	case 0:
+		return ""
+	case 1:
+		return "label"
+	case 2:
+		return "variable"
+	default:
+		converter.logger.Warn("unknown hide value for variable %s", zap.String("variable", variable.Name))
+		return ""
+	}
 }
 
 func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) {
