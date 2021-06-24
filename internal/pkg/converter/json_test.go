@@ -647,6 +647,9 @@ func TestConvertSingleStatPanel(t *testing.T) {
 		SinglestatPanel: &sdk.SinglestatPanel{
 			Format:          "none",
 			ValueName:       "current",
+			ValueFontSize:   "120%",
+			PrefixFontSize:  strPtr("80%"),
+			PostfixFontSize: strPtr("80%"),
 			Colors:          []string{"blue", "red", "green"},
 			ColorBackground: true,
 			ColorValue:      true,
@@ -661,6 +664,9 @@ func TestConvertSingleStatPanel(t *testing.T) {
 	req.Equal("panel desc", converted.SingleStat.Description)
 	req.Equal("none", converted.SingleStat.Unit)
 	req.Equal("current", converted.SingleStat.ValueType)
+	req.Equal("120%", converted.SingleStat.ValueFontSize)
+	req.Equal("80%", converted.SingleStat.PrefixFontSize)
+	req.Equal("80%", converted.SingleStat.PostfixFontSize)
 	req.Equal(height, converted.SingleStat.Height)
 	req.Equal(datasource, converted.SingleStat.Datasource)
 	req.True(reflect.DeepEqual(converted.SingleStat.Colors, [3]string{

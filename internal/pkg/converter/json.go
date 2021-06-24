@@ -568,12 +568,13 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
 	singleStat := &grabana.DashboardSingleStat{
-		Title:       panel.Title,
-		Span:        panelSpan(panel),
-		Unit:        panel.SinglestatPanel.Format,
-		Decimals:    &panel.SinglestatPanel.Decimals,
-		ValueType:   panel.SinglestatPanel.ValueName,
-		Transparent: panel.Transparent,
+		Title:         panel.Title,
+		Span:          panelSpan(panel),
+		Unit:          panel.SinglestatPanel.Format,
+		Decimals:      &panel.SinglestatPanel.Decimals,
+		ValueType:     panel.SinglestatPanel.ValueName,
+		Transparent:   panel.Transparent,
+		ValueFontSize: panel.SinglestatPanel.ValueFontSize,
 	}
 
 	if panel.Description != nil {
@@ -615,6 +616,14 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 	}
 	if panel.SinglestatPanel.SparkLine.Show && !panel.SinglestatPanel.SparkLine.Full {
 		singleStat.SparkLine = "bottom"
+	}
+
+	// Font sizes
+	if panel.SinglestatPanel.PrefixFontSize != nil && *panel.SinglestatPanel.PrefixFontSize != "" {
+		singleStat.PrefixFontSize = *panel.SinglestatPanel.PrefixFontSize
+	}
+	if panel.SinglestatPanel.PostfixFontSize != nil && *panel.SinglestatPanel.PostfixFontSize != "" {
+		singleStat.PostfixFontSize = *panel.SinglestatPanel.PostfixFontSize
 	}
 
 	for _, target := range panel.SinglestatPanel.Targets {
