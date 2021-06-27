@@ -720,7 +720,7 @@ func TestConvertHeatmapPanel(t *testing.T) {
 	req.Equal(datasource, converted.Heatmap.Datasource)
 	req.True(converted.Heatmap.ReverseYBuckets)
 	req.True(converted.Heatmap.HideZeroBuckets)
-	req.True(converted.Heatmap.HightlightCards)
+	req.True(converted.Heatmap.HighlightCards)
 	req.Equal("time_series_buckets", converted.Heatmap.DataFormat)
 }
 

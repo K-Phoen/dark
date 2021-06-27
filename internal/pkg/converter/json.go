@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
 
 	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
@@ -544,13 +545,14 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 		Span:            panelSpan(panel),
 		Transparent:     panel.Transparent,
 		HideZeroBuckets: panel.HeatmapPanel.HideZeroBuckets,
-		HightlightCards: panel.HeatmapPanel.HighlightCards,
+		HighlightCards:  panel.HeatmapPanel.HighlightCards,
 		ReverseYBuckets: panel.HeatmapPanel.ReverseYBuckets,
 		Tooltip: &grabana.HeatmapTooltip{
 			Show:          panel.HeatmapPanel.Tooltip.Show,
 			ShowHistogram: panel.HeatmapPanel.Tooltip.ShowHistogram,
 			Decimals:      &panel.HeatmapPanel.TooltipDecimals,
 		},
+		YAxis: converter.convertHeatmapYAxis(panel),
 	}
 
 	if panel.Description != nil {
@@ -583,6 +585,35 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 	}
 
 	return grabana.DashboardPanel{Heatmap: heatmap}
+}
+
+func (converter *JSON) convertHeatmapYAxis(panel sdk.Panel) *grabana.HeatmapYAxis {
+	panelAxis := panel.HeatmapPanel.YAxis
+
+	axis := &grabana.HeatmapYAxis{
+		Decimals: panelAxis.Decimals,
+		Unit:     panelAxis.Format,
+	}
+
+	if panelAxis.Max != nil {
+		max, err := strconv.ParseFloat(*panelAxis.Max, 64)
+		if err != nil {
+			converter.logger.Warn("could not parse max value on heatmap Y axis %s: %s", zap.String("value", *panelAxis.Max), zap.Error(err))
+		} else {
+			axis.Max = &max
+		}
+	}
+
+	if panelAxis.Min != nil {
+		min, err := strconv.ParseFloat(*panelAxis.Min, 64)
+		if err != nil {
+			converter.logger.Warn("could not parse min value on heatmap Y axis %s: %s", zap.String("value", *panelAxis.Min), zap.Error(err))
+		} else {
+			axis.Min = &min
+		}
+	}
+
+	return axis
 }
 
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
