@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/K-Phoen/grabana/singlestat"
+
 	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
 	grabanaDashboard "github.com/K-Phoen/grabana/dashboard"
 	grabana "github.com/K-Phoen/grabana/decoder"
@@ -676,6 +678,9 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		singleStat.PostfixFontSize = *panel.SinglestatPanel.PostfixFontSize
 	}
 
+	// ranges to text mapping
+	singleStat.RangesToText = converter.convertSingleStatRangesToText(panel)
+
 	for _, target := range panel.SinglestatPanel.Targets {
 		graphTarget := converter.convertTarget(target)
 		if graphTarget == nil {
@@ -686,6 +691,35 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 	}
 
 	return grabana.DashboardPanel{SingleStat: singleStat}
+}
+
+func (converter *JSON) convertSingleStatRangesToText(panel sdk.Panel) []singlestat.RangeMap {
+	if panel.SinglestatPanel.MappingType == nil || *panel.SinglestatPanel.MappingType != 2 {
+		return nil
+	}
+
+	mappings := make([]singlestat.RangeMap, 0, len(panel.SinglestatPanel.RangeMaps))
+	for _, mapping := range panel.SinglestatPanel.RangeMaps {
+		converted := singlestat.RangeMap{
+			From: "",
+			To:   "",
+			Text: "",
+		}
+
+		if mapping.From != nil {
+			converted.From = *mapping.From
+		}
+		if mapping.To != nil {
+			converted.To = *mapping.To
+		}
+		if mapping.Text != nil {
+			converted.Text = *mapping.Text
+		}
+
+		mappings = append(mappings, converted)
+	}
+
+	return mappings
 }
 
 func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
