@@ -99,6 +99,7 @@ func TestConvertIntervalVar(t *testing.T) {
 	variable := defaultVar("interval")
 	variable.Name = "var_interval"
 	variable.Label = "Label interval"
+	variable.Hide = 2
 	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"30sec"}, Valid: true}, Value: "30s"}
 	variable.Options = []sdk.Option{
 		{Text: "10sec", Value: "10s"},
@@ -119,6 +120,7 @@ func TestConvertIntervalVar(t *testing.T) {
 	req.Equal("var_interval", interval.Name)
 	req.Equal("Label interval", interval.Label)
 	req.Equal("30s", interval.Default)
+	req.Equal("variable", interval.Hide)
 	req.ElementsMatch([]string{"10s", "30s", "1m"}, interval.Values)
 }
 
@@ -128,6 +130,7 @@ func TestConvertCustomVar(t *testing.T) {
 	variable := defaultVar("custom")
 	variable.Name = "var_custom"
 	variable.Label = "Label custom"
+	variable.Hide = 3 // unknown Hide value
 	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"85th"}, Valid: true}, Value: "85"}
 	variable.Options = []sdk.Option{
 		{Text: "50th", Value: "50"},
@@ -148,6 +151,7 @@ func TestConvertCustomVar(t *testing.T) {
 	req.Equal("var_custom", custom.Name)
 	req.Equal("Label custom", custom.Label)
 	req.Equal("85", custom.Default)
+	req.Empty(custom.Hide)
 	req.True(reflect.DeepEqual(custom.ValuesMap, map[string]string{
 		"50th": "50",
 		"85th": "85",
@@ -174,6 +178,7 @@ func TestConvertDatasourceVar(t *testing.T) {
 
 	req.Equal("var_datasource", dsVar.Name)
 	req.Equal("Label datasource", dsVar.Label)
+	req.Empty(dsVar.Hide)
 	req.False(dsVar.IncludeAll)
 }
 
@@ -183,6 +188,7 @@ func TestConvertConstVar(t *testing.T) {
 	variable := defaultVar("const")
 	variable.Name = "var_const"
 	variable.Label = "Label const"
+	variable.Hide = 0
 	variable.Current = sdk.Current{Text: &sdk.StringSliceString{Value: []string{"85th"}, Valid: true}, Value: "85"}
 	variable.Options = []sdk.Option{
 		{Text: "85th", Value: "85"},
@@ -202,6 +208,7 @@ func TestConvertConstVar(t *testing.T) {
 	req.Equal("var_const", constant.Name)
 	req.Equal("Label const", constant.Label)
 	req.Equal("85th", constant.Default)
+	req.Empty(constant.Hide)
 	req.True(reflect.DeepEqual(constant.ValuesMap, map[string]string{
 		"85th": "85",
 		"99th": "99",
@@ -216,6 +223,7 @@ func TestConvertQueryVar(t *testing.T) {
 	variable.Name = "var_query"
 	variable.Label = "Query"
 	variable.IncludeAll = true
+	variable.Hide = 1
 	variable.Current = sdk.Current{Value: "$__all"}
 	variable.Datasource = &datasource
 	variable.Query = "prom_query"
@@ -234,6 +242,7 @@ func TestConvertQueryVar(t *testing.T) {
 	req.Equal("Query", query.Label)
 	req.Equal(datasource, query.Datasource)
 	req.Equal("prom_query", query.Request)
+	req.Equal("label", query.Hide)
 	req.True(query.IncludeAll)
 	req.True(query.DefaultAll)
 }
@@ -246,6 +255,24 @@ func TestConvertRow(t *testing.T) {
 	row := converter.convertRow(sdk.Panel{CommonPanel: sdk.CommonPanel{Title: "Row title"}})
 
 	req.Equal("Row title", row.Name)
+}
+
+func TestConvertCollapsedRow(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+
+	row := converter.convertRow(sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Title: "Row title",
+		},
+		RowPanel: &sdk.RowPanel{
+			Collapsed: true,
+		},
+	})
+
+	req.Equal("Row title", row.Name)
+	req.True(row.Collapse)
 }
 
 func TestConvertTargetFailsIfNoValidTargetIsGiven(t *testing.T) {
@@ -629,6 +656,9 @@ func TestConvertSingleStatPanel(t *testing.T) {
 		SinglestatPanel: &sdk.SinglestatPanel{
 			Format:          "none",
 			ValueName:       "current",
+			ValueFontSize:   "120%",
+			PrefixFontSize:  strPtr("80%"),
+			PostfixFontSize: strPtr("80%"),
 			Colors:          []string{"blue", "red", "green"},
 			ColorBackground: true,
 			ColorValue:      true,
@@ -643,6 +673,9 @@ func TestConvertSingleStatPanel(t *testing.T) {
 	req.Equal("panel desc", converted.SingleStat.Description)
 	req.Equal("none", converted.SingleStat.Unit)
 	req.Equal("current", converted.SingleStat.ValueType)
+	req.Equal("120%", converted.SingleStat.ValueFontSize)
+	req.Equal("80%", converted.SingleStat.PrefixFontSize)
+	req.Equal("80%", converted.SingleStat.PostfixFontSize)
 	req.Equal(height, converted.SingleStat.Height)
 	req.Equal(datasource, converted.SingleStat.Datasource)
 	req.True(reflect.DeepEqual(converted.SingleStat.Colors, [3]string{
@@ -687,7 +720,7 @@ func TestConvertHeatmapPanel(t *testing.T) {
 	req.Equal(datasource, converted.Heatmap.Datasource)
 	req.True(converted.Heatmap.ReverseYBuckets)
 	req.True(converted.Heatmap.HideZeroBuckets)
-	req.True(converted.Heatmap.HightlightCards)
+	req.True(converted.Heatmap.HighlightCards)
 	req.Equal("time_series_buckets", converted.Heatmap.DataFormat)
 }
 

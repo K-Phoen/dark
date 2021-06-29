@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"io"
 	"io/ioutil"
+	"strconv"
 	"strings"
 
 	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
 	grabanaDashboard "github.com/K-Phoen/grabana/dashboard"
 	grabana "github.com/K-Phoen/grabana/decoder"
+	"github.com/K-Phoen/grabana/singlestat"
 	grabanaTable "github.com/K-Phoen/grabana/table"
 	"github.com/K-Phoen/grabana/target/stackdriver"
 	"github.com/grafana-tools/sdk"
@@ -174,6 +176,7 @@ func (converter *JSON) convertIntervalVar(variable sdk.TemplateVar, dashboard *g
 		Label:   variable.Label,
 		Default: defaultOption(variable.Current),
 		Values:  make([]string, 0, len(variable.Options)),
+		Hide:    converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -191,6 +194,7 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 		ValuesMap:  make(map[string]string, len(variable.Options)),
 		AllValue:   variable.AllValue,
 		IncludeAll: variable.IncludeAll,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -215,6 +219,7 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 		IncludeAll: variable.IncludeAll,
 		DefaultAll: variable.Current.Value == "$__all",
 		AllValue:   variable.AllValue,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})
@@ -227,6 +232,7 @@ func (converter *JSON) convertDatasourceVar(variable sdk.TemplateVar, dashboard 
 		Type:       variable.Query,
 		Regex:      variable.Regex,
 		IncludeAll: variable.IncludeAll,
+		Hide:       converter.convertVarHide(variable),
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Datasource: datasource})
@@ -238,6 +244,7 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 		Label:     variable.Label,
 		Default:   strings.Join(variable.Current.Text.Value, ","),
 		ValuesMap: make(map[string]string, len(variable.Options)),
+		Hide:      converter.convertVarHide(variable),
 	}
 
 	for _, opt := range variable.Options {
@@ -245,6 +252,20 @@ func (converter *JSON) convertConstVar(variable sdk.TemplateVar, dashboard *grab
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Const: constant})
+}
+
+func (converter *JSON) convertVarHide(variable sdk.TemplateVar) string {
+	switch variable.Hide {
+	case 0:
+		return ""
+	case 1:
+		return "label"
+	case 2:
+		return "variable"
+	default:
+		converter.logger.Warn("unknown hide value for variable %s", zap.String("variable", variable.Name))
+		return ""
+	}
 }
 
 func (converter *JSON) convertPanels(panels []*sdk.Panel, dashboard *grabana.DashboardModel) {
@@ -306,11 +327,16 @@ func (converter *JSON) convertRow(panel sdk.Panel) *grabana.DashboardRow {
 	if panel.Repeat != nil {
 		repeat = *panel.Repeat
 	}
+	collapse := false
+	if panel.RowPanel != nil && panel.RowPanel.Collapsed {
+		collapse = true
+	}
 
 	return &grabana.DashboardRow{
-		Name:   panel.Title,
-		Repeat: repeat,
-		Panels: nil,
+		Name:     panel.Title,
+		Repeat:   repeat,
+		Collapse: collapse,
+		Panels:   nil,
 	}
 }
 
@@ -329,6 +355,9 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 
 	if panel.Description != nil {
 		graph.Description = *panel.Description
+	}
+	if panel.Repeat != nil {
+		graph.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
 		graph.Height = *panel.Height
@@ -520,17 +549,21 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 		Span:            panelSpan(panel),
 		Transparent:     panel.Transparent,
 		HideZeroBuckets: panel.HeatmapPanel.HideZeroBuckets,
-		HightlightCards: panel.HeatmapPanel.HighlightCards,
+		HighlightCards:  panel.HeatmapPanel.HighlightCards,
 		ReverseYBuckets: panel.HeatmapPanel.ReverseYBuckets,
 		Tooltip: &grabana.HeatmapTooltip{
 			Show:          panel.HeatmapPanel.Tooltip.Show,
 			ShowHistogram: panel.HeatmapPanel.Tooltip.ShowHistogram,
 			Decimals:      &panel.HeatmapPanel.TooltipDecimals,
 		},
+		YAxis: converter.convertHeatmapYAxis(panel),
 	}
 
 	if panel.Description != nil {
 		heatmap.Description = *panel.Description
+	}
+	if panel.Repeat != nil {
+		heatmap.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
 		heatmap.Height = *panel.Height
@@ -561,18 +594,51 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 	return grabana.DashboardPanel{Heatmap: heatmap}
 }
 
+func (converter *JSON) convertHeatmapYAxis(panel sdk.Panel) *grabana.HeatmapYAxis {
+	panelAxis := panel.HeatmapPanel.YAxis
+
+	axis := &grabana.HeatmapYAxis{
+		Decimals: panelAxis.Decimals,
+		Unit:     panelAxis.Format,
+	}
+
+	if panelAxis.Max != nil {
+		max, err := strconv.ParseFloat(*panelAxis.Max, 64)
+		if err != nil {
+			converter.logger.Warn("could not parse max value on heatmap Y axis %s: %s", zap.String("value", *panelAxis.Max), zap.Error(err))
+		} else {
+			axis.Max = &max
+		}
+	}
+
+	if panelAxis.Min != nil {
+		min, err := strconv.ParseFloat(*panelAxis.Min, 64)
+		if err != nil {
+			converter.logger.Warn("could not parse min value on heatmap Y axis %s: %s", zap.String("value", *panelAxis.Min), zap.Error(err))
+		} else {
+			axis.Min = &min
+		}
+	}
+
+	return axis
+}
+
 func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel {
 	singleStat := &grabana.DashboardSingleStat{
-		Title:       panel.Title,
-		Span:        panelSpan(panel),
-		Unit:        panel.SinglestatPanel.Format,
-		Decimals:    &panel.SinglestatPanel.Decimals,
-		ValueType:   panel.SinglestatPanel.ValueName,
-		Transparent: panel.Transparent,
+		Title:         panel.Title,
+		Span:          panelSpan(panel),
+		Unit:          panel.SinglestatPanel.Format,
+		Decimals:      &panel.SinglestatPanel.Decimals,
+		ValueType:     panel.SinglestatPanel.ValueName,
+		Transparent:   panel.Transparent,
+		ValueFontSize: panel.SinglestatPanel.ValueFontSize,
 	}
 
 	if panel.Description != nil {
 		singleStat.Description = *panel.Description
+	}
+	if panel.Repeat != nil {
+		singleStat.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
 		singleStat.Height = *panel.Height
@@ -612,6 +678,17 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		singleStat.SparkLine = "bottom"
 	}
 
+	// Font sizes
+	if panel.SinglestatPanel.PrefixFontSize != nil && *panel.SinglestatPanel.PrefixFontSize != "" {
+		singleStat.PrefixFontSize = *panel.SinglestatPanel.PrefixFontSize
+	}
+	if panel.SinglestatPanel.PostfixFontSize != nil && *panel.SinglestatPanel.PostfixFontSize != "" {
+		singleStat.PostfixFontSize = *panel.SinglestatPanel.PostfixFontSize
+	}
+
+	// ranges to text mapping
+	singleStat.RangesToText = converter.convertSingleStatRangesToText(panel)
+
 	for _, target := range panel.SinglestatPanel.Targets {
 		graphTarget := converter.convertTarget(target)
 		if graphTarget == nil {
@@ -622,6 +699,35 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 	}
 
 	return grabana.DashboardPanel{SingleStat: singleStat}
+}
+
+func (converter *JSON) convertSingleStatRangesToText(panel sdk.Panel) []singlestat.RangeMap {
+	if panel.SinglestatPanel.MappingType == nil || *panel.SinglestatPanel.MappingType != 2 {
+		return nil
+	}
+
+	mappings := make([]singlestat.RangeMap, 0, len(panel.SinglestatPanel.RangeMaps))
+	for _, mapping := range panel.SinglestatPanel.RangeMaps {
+		converted := singlestat.RangeMap{
+			From: "",
+			To:   "",
+			Text: "",
+		}
+
+		if mapping.From != nil {
+			converted.From = *mapping.From
+		}
+		if mapping.To != nil {
+			converted.To = *mapping.To
+		}
+		if mapping.Text != nil {
+			converted.Text = *mapping.Text
+		}
+
+		mappings = append(mappings, converted)
+	}
+
+	return mappings
 }
 
 func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
