@@ -7,11 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/K-Phoen/grabana/singlestat"
-
 	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
 	grabanaDashboard "github.com/K-Phoen/grabana/dashboard"
 	grabana "github.com/K-Phoen/grabana/decoder"
+	"github.com/K-Phoen/grabana/singlestat"
 	grabanaTable "github.com/K-Phoen/grabana/table"
 	"github.com/K-Phoen/grabana/target/stackdriver"
 	"github.com/grafana-tools/sdk"
@@ -357,6 +356,9 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Description != nil {
 		graph.Description = *panel.Description
 	}
+	if panel.Repeat != nil {
+		graph.Repeat = *panel.Repeat
+	}
 	if panel.Height != nil {
 		graph.Height = *panel.Height
 	}
@@ -560,6 +562,9 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Description != nil {
 		heatmap.Description = *panel.Description
 	}
+	if panel.Repeat != nil {
+		heatmap.Repeat = *panel.Repeat
+	}
 	if panel.Height != nil {
 		heatmap.Height = *panel.Height
 	}
@@ -631,6 +636,9 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 
 	if panel.Description != nil {
 		singleStat.Description = *panel.Description
+	}
+	if panel.Repeat != nil {
+		singleStat.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
 		singleStat.Height = *panel.Height
