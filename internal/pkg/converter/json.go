@@ -64,7 +64,7 @@ func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, folder s
 	manifest := k8sDashboard{
 		APIVersion: v1.SchemeGroupVersion.String(),
 		Kind:       "GrafanaDashboard",
-		Metadata:   map[string]string{"name": name, "namespace": "default"},
+		Metadata:   map[string]string{"name": name},
 		Folder:     folder,
 		Spec:       dashboard,
 	}
