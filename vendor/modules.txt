@@ -1,6 +1,7 @@
 # cloud.google.com/go v0.46.3
 cloud.google.com/go/compute/metadata
-# github.com/K-Phoen/grabana v0.17.1
+# github.com/K-Phoen/grabana v0.17.2
+## explicit
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
 github.com/K-Phoen/grabana/axis
@@ -28,6 +29,7 @@ github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
 github.com/PuerkitoBio/urlesc
 # github.com/caarlos0/env v3.5.0+incompatible
+## explicit
 github.com/caarlos0/env
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
@@ -48,6 +50,7 @@ github.com/go-openapi/swag
 github.com/go-playground/locales
 github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.17.0
+## explicit
 github.com/go-playground/universal-translator
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/proto
@@ -75,6 +78,7 @@ github.com/googleapis/gnostic/extensions
 # github.com/gosimple/slug v1.9.0
 github.com/gosimple/slug
 # github.com/grafana-tools/sdk v0.0.0-20210402150123-f7c763c3738c
+## explicit
 github.com/grafana-tools/sdk
 # github.com/hashicorp/golang-lru v0.5.1
 github.com/hashicorp/golang-lru
@@ -88,6 +92,7 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
 # github.com/leodido/go-urn v1.2.0
+## explicit
 github.com/leodido/go-urn
 # github.com/mailru/easyjson v0.7.6
 github.com/mailru/easyjson/buffer
@@ -106,10 +111,12 @@ github.com/prometheus/common/model
 # github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be
 github.com/rainycape/unidecode
 # github.com/spf13/cobra v1.1.3
+## explicit
 github.com/spf13/cobra
 # github.com/spf13/pflag v1.0.5
 github.com/spf13/pflag
 # github.com/stretchr/testify v1.7.0
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # go.uber.org/atomic v1.6.0
@@ -117,6 +124,7 @@ go.uber.org/atomic
 # go.uber.org/multierr v1.5.0
 go.uber.org/multierr
 # go.uber.org/zap v1.16.0
+## explicit
 go.uber.org/zap
 go.uber.org/zap/buffer
 go.uber.org/zap/internal/bufferpool
@@ -203,15 +211,20 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
+# gopkg.in/go-playground/assert.v1 v1.2.1
+## explicit
 # gopkg.in/go-playground/validator.v9 v9.31.0
+## explicit
 gopkg.in/go-playground/validator.v9
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
 # gopkg.in/yaml.v2 v2.4.0
+## explicit
 gopkg.in/yaml.v2
 # gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c
 gopkg.in/yaml.v3
 # k8s.io/api v0.0.0-20200319202348-eb909d5fe0e7
+## explicit
 k8s.io/api/admissionregistration/v1
 k8s.io/api/admissionregistration/v1beta1
 k8s.io/api/apps/v1
@@ -253,6 +266,7 @@ k8s.io/api/storage/v1
 k8s.io/api/storage/v1alpha1
 k8s.io/api/storage/v1beta1
 # k8s.io/apimachinery v0.0.0-20200319202151-147abd67b880
+## explicit
 k8s.io/apimachinery/pkg/api/errors
 k8s.io/apimachinery/pkg/api/meta
 k8s.io/apimachinery/pkg/api/resource
@@ -296,6 +310,7 @@ k8s.io/apimachinery/pkg/watch
 k8s.io/apimachinery/third_party/forked/golang/json
 k8s.io/apimachinery/third_party/forked/golang/reflect
 # k8s.io/client-go v0.0.0-20200319202630-365234d2fcf0
+## explicit
 k8s.io/client-go/discovery
 k8s.io/client-go/discovery/fake
 k8s.io/client-go/kubernetes
@@ -370,6 +385,7 @@ k8s.io/client-go/util/jsonpath
 k8s.io/client-go/util/keyutil
 k8s.io/client-go/util/workqueue
 # k8s.io/code-generator v0.0.0-20200319201949-6bb2b634cece
+## explicit
 k8s.io/code-generator
 k8s.io/code-generator/cmd/client-gen
 k8s.io/code-generator/cmd/client-gen/args
@@ -415,6 +431,7 @@ k8s.io/gengo/namer
 k8s.io/gengo/parser
 k8s.io/gengo/types
 # k8s.io/klog v1.0.0
+## explicit
 k8s.io/klog
 # k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c
 k8s.io/kube-openapi/cmd/openapi-gen/args

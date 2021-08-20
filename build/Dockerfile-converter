@@ -1,7 +1,7 @@
 # Build
-FROM golang:1.14-alpine3.11 AS build
+FROM golang:1.16-alpine3.14 AS build
 
-RUN apk --update --no-cache add make=4.2.1-r2
+RUN apk --update --no-cache add make=4.3-r0
 
 WORKDIR /app
 COPY . /app
@@ -10,9 +10,9 @@ RUN make converter_build
 
 # Run
 
-FROM alpine:3.11
+FROM alpine:3.14
 ENTRYPOINT ["/app/dark-converter"]
 WORKDIR /workspace
-RUN apk --update --no-cache add ca-certificates=20191127-r2 && update-ca-certificates
+RUN apk --update --no-cache add ca-certificates=20191127-r5 && update-ca-certificates
 
 COPY --from=build /app/dark-converter /app/dark-converter

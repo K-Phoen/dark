@@ -1,9 +1,9 @@
 module github.com/K-Phoen/dark
 
-go 1.13
+go 1.16
 
 require (
-	github.com/K-Phoen/grabana v0.17.1
+	github.com/K-Phoen/grabana v0.17.2
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20210402150123-f7c763c3738c
