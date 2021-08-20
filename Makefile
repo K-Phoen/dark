@@ -10,9 +10,9 @@ VERSION?=latest
 
 WITH_COVERAGE?=false
 ifeq ($(WITH_COVERAGE),true)
-GOCMD_TEST?=go test -mod=vendor -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
+GOCMD_TEST?=go test -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
 else
-GOCMD_TEST?=go test -mod=vendor
+GOCMD_TEST?=go test
 endif
 
 ##@ General
@@ -35,11 +35,11 @@ help: ## Display this help.
 
 .PHONY: controller_build
 controller_build: ## Build controller binary.
-	$(GOCMD) build -mod vendor -o dark-controller $(CONTROLLER_MAIN_SRC)
+	$(GOCMD) build -o dark-controller $(CONTROLLER_MAIN_SRC)
 
 .PHONY: converter_build
 converter_build: ## Build converter binary.
-	$(GOCMD) build -mod vendor -o dark-converter $(CONVERTER_MAIN_SRC)
+	$(GOCMD) build -o dark-converter $(CONVERTER_MAIN_SRC)
 
 .PHONY: build
 build: controller_build converter_build ## Build all binaries.
