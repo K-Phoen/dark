@@ -41,7 +41,7 @@ func TestConvertInvalidJSONToK8SManifest(t *testing.T) {
 	req := require.New(t)
 
 	converter := NewJSON(zap.NewNop())
-	err := converter.ToK8SManifest(bytes.NewBufferString(""), bytes.NewBufferString(""), "Folder", "test-dashboard")
+	err := converter.ToK8SManifest(bytes.NewBufferString(""), bytes.NewBufferString(""), K8SManifestOptions{Name: "test-dashboard", Folder: "Folder"})
 
 	req.Error(err)
 }
@@ -50,9 +50,27 @@ func TestConvertValidJSONK8SManifest(t *testing.T) {
 	req := require.New(t)
 
 	converter := NewJSON(zap.NewNop())
-	err := converter.ToK8SManifest(bytes.NewBufferString("{}"), bytes.NewBufferString(""), "Folder", "test-dashboard")
+	err := converter.ToK8SManifest(bytes.NewBufferString("{}"), bytes.NewBufferString(""), K8SManifestOptions{Name: "test-dashboard", Folder: "Folder"})
 
 	req.NoError(err)
+}
+
+func TestConvertK8SManifestWithNoFolder(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.ToK8SManifest(bytes.NewBufferString("{}"), bytes.NewBufferString(""), K8SManifestOptions{Name: "name"})
+
+	req.Error(err)
+}
+
+func TestConvertK8SManifestWithNoName(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	err := converter.ToK8SManifest(bytes.NewBufferString("{}"), bytes.NewBufferString(""), K8SManifestOptions{Folder: "not empty"})
+
+	req.Error(err)
 }
 
 func TestConvertGeneralSettings(t *testing.T) {

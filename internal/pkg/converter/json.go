@@ -2,6 +2,7 @@ package converter
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"strconv"
@@ -24,6 +25,24 @@ type k8sDashboard struct {
 	Metadata   map[string]string
 	Folder     string
 	Spec       *grabana.DashboardModel
+}
+
+type K8SManifestOptions struct {
+	Folder    string
+	Name      string
+	Namespace string
+}
+
+func (options K8SManifestOptions) validate() error {
+	if options.Folder == "" {
+		return fmt.Errorf("folder name is required")
+	}
+
+	if options.Name == "" {
+		return fmt.Errorf("dashboard name is required")
+	}
+
+	return nil
 }
 
 type JSON struct {
@@ -54,7 +73,11 @@ func (converter *JSON) ToYAML(input io.Reader, output io.Writer) error {
 	return err
 }
 
-func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, folder string, name string) error {
+func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, options K8SManifestOptions) error {
+	if err := options.validate(); err != nil {
+		return err
+	}
+
 	dashboard, err := converter.parseInput(input)
 	if err != nil {
 		converter.logger.Error("could parse input", zap.Error(err))
@@ -64,9 +87,13 @@ func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, folder s
 	manifest := k8sDashboard{
 		APIVersion: v1.SchemeGroupVersion.String(),
 		Kind:       "GrafanaDashboard",
-		Metadata:   map[string]string{"name": name, "namespace": "default"},
-		Folder:     folder,
+		Metadata:   map[string]string{"name": options.Name},
+		Folder:     options.Folder,
 		Spec:       dashboard,
+	}
+
+	if options.Namespace != "" {
+		manifest.Metadata["namespace"] = options.Namespace
 	}
 
 	converted, err := yaml.Marshal(manifest)
