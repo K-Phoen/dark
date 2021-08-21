@@ -1,11 +1,11 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 	"time"
 
 	"github.com/K-Phoen/dark/internal"
-
 	"github.com/K-Phoen/dark/internal/pkg/dashboards"
 	"github.com/K-Phoen/grabana"
 	"k8s.io/client-go/kubernetes"
@@ -28,6 +28,8 @@ type config struct {
 
 	GrafanaHost  string `env:"GRAFANA_HOST" validate:"required"`
 	GrafanaToken string `env:"GRAFANA_TOKEN" validate:"required"`
+
+	InsecureSkipVerify bool `env:"INSECURE_SKIP_VERIFY"`
 }
 
 func (cfg *config) loadFromEnv() error {
@@ -37,6 +39,7 @@ func (cfg *config) loadFromEnv() error {
 	if err := validator.New().Struct(*cfg); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -63,7 +66,7 @@ func main() {
 
 	darkInformerFactory := informers.NewSharedInformerFactory(darkClient, time.Second*30)
 
-	grabanaClient := grabana.NewClient(&http.Client{}, cfg.GrafanaHost, grabana.WithAPIToken(cfg.GrafanaToken))
+	grabanaClient := grabana.NewClient(makeHTTPClient(cfg), cfg.GrafanaHost, grabana.WithAPIToken(cfg.GrafanaToken))
 	dashboardCreator := dashboards.NewCreator(grabanaClient)
 
 	controller := internal.NewController(kubeClient, darkClient, darkInformerFactory.Controller().V1().GrafanaDashboards(), dashboardCreator)
@@ -77,5 +80,14 @@ func main() {
 
 	if err = controller.Run(2, stopCh); err != nil {
 		klog.Fatalf("Error running controller: %s", err.Error())
+	}
+}
+
+func makeHTTPClient(cfg config) *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: cfg.InsecureSkipVerify},
+		},
+		Timeout: 10 * time.Second, // Large, but better than no timeout.
 	}
 }
