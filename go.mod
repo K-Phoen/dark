@@ -8,12 +8,12 @@ require (
 	github.com/go-playground/universal-translator v0.17.0 // indirect
 	github.com/grafana-tools/sdk v0.0.0-20210402150123-f7c763c3738c
 	github.com/leodido/go-urn v1.2.0 // indirect
-	github.com/spf13/cobra v1.1.3
+	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
-	go.uber.org/zap v1.16.0
+	go.uber.org/zap v1.19.0
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
-	gopkg.in/yaml.v2 v2.4.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 	k8s.io/api v0.0.0-20200319202348-eb909d5fe0e7
 	k8s.io/apimachinery v0.0.0-20200319202151-147abd67b880
 	k8s.io/client-go v0.0.0-20200319202630-365234d2fcf0
