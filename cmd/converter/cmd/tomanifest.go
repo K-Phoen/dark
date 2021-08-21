@@ -9,7 +9,8 @@ import (
 )
 
 func ToManifestCommand(logger *zap.Logger) *cobra.Command {
-	var inputFile, outputFile, folder string
+	var inputFile, outputFile string
+	var options converter.K8SManifestOptions
 
 	var cmd = &cobra.Command{
 		Use:   "convert-k8s-manifest",
@@ -21,25 +22,28 @@ func ToManifestCommand(logger *zap.Logger) *cobra.Command {
 				logger.Fatal("Could not open input file", zap.Error(err))
 			}
 
-			output, err := os.OpenFile(outputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0755)
+			output, err := os.OpenFile(outputFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
 			if err != nil {
 				logger.Fatal("Could not open output file", zap.Error(err))
 			}
 
+			options.Name = args[0]
+
 			conv := converter.NewJSON(logger)
-			if err := conv.ToK8SManifest(input, output, folder, args[0]); err != nil {
+			if err := conv.ToK8SManifest(input, output, options); err != nil {
 				logger.Fatal("Could not convert dashboard", zap.Error(err))
 			}
 		},
 	}
 
-	cmd.Flags().StringVarP(&inputFile, "input", "i", "", "input file")
+	cmd.Flags().StringVarP(&inputFile, "input", "i", "", "Input file")
 	_ = cmd.MarkFlagRequired("input")
 	_ = cmd.MarkFlagFilename("input")
-	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "input file")
+	cmd.Flags().StringVarP(&outputFile, "output", "o", "", "Input file")
 	_ = cmd.MarkFlagRequired("output")
 	_ = cmd.MarkFlagFilename("output")
-	cmd.Flags().StringVar(&folder, "folder", "General", "dashboard folder")
+	cmd.Flags().StringVar(&options.Folder, "folder", "Dark", "Dashboard folder")
+	cmd.Flags().StringVarP(&options.Namespace, "namespace", "n", "", "Manifest namespace")
 
 	return cmd
 }
