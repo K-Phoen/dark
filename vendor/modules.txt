@@ -1,6 +1,6 @@
 # cloud.google.com/go v0.81.0
 cloud.google.com/go/compute/metadata
-# github.com/K-Phoen/grabana v0.17.2
+# github.com/K-Phoen/grabana v0.17.3
 ## explicit
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert

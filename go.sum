@@ -51,8 +51,8 @@ github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6L
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/K-Phoen/grabana v0.17.2 h1:4shaGJvRBUsFGy9bRowZGeu9GQabbq+sGaJ2vib6y9M=
-github.com/K-Phoen/grabana v0.17.2/go.mod h1:87aCoolZ6W6Nx4pSlx7j47Ayl+rK8sROqXoy5+L7ydw=
+github.com/K-Phoen/grabana v0.17.3 h1:7Dm3JRKcuP2V58ob5UCSVk3aPUl0E8+XtSgps2RmjQ8=
+github.com/K-Phoen/grabana v0.17.3/go.mod h1:87aCoolZ6W6Nx4pSlx7j47Ayl+rK8sROqXoy5+L7ydw=
 github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible/go.mod h1:r7JcOSlj0wfOMncg0iLm8Leh48TZaKVeNIfJntJ2wa0=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
