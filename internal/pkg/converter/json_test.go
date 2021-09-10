@@ -615,8 +615,10 @@ func TestConvertTextPanelWithMarkdown(t *testing.T) {
 			Type:        "text",
 		},
 		TextPanel: &sdk.TextPanel{
-			Mode:    "markdown",
-			Content: "# hello world",
+			Options: struct {
+				Content string `json:"content"`
+				Mode    string `json:"mode"`
+			}{Content: "# hello world", Mode: "markdown"},
 		},
 	}
 
@@ -641,8 +643,11 @@ func TestConvertTextPanelWithHTML(t *testing.T) {
 			Description: strPtr("panel description"),
 		},
 		TextPanel: &sdk.TextPanel{
-			Mode:    "html",
-			Content: "<h1>hello world</h1>",
+			Mode: "html",
+			Options: struct {
+				Content string `json:"content"`
+				Mode    string `json:"mode"`
+			}{Content: "<h1>hello world</h1>", Mode: "html"},
 		},
 	}
 

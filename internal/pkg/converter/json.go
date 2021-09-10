@@ -821,10 +821,11 @@ func (converter *JSON) convertText(panel sdk.Panel) grabana.DashboardPanel {
 		text.Height = *panel.Height
 	}
 
-	if panel.TextPanel.Mode == "markdown" {
-		text.Markdown = panel.TextPanel.Content
+	if panel.TextPanel.Options.Mode == "markdown" {
+		text.Markdown = panel.TextPanel.Options.Content
 	} else {
-		text.HTML = panel.TextPanel.Content
+		fmt.Printf("%#v\n", panel.TextPanel)
+		text.HTML = panel.TextPanel.Options.Content
 	}
 
 	return grabana.DashboardPanel{Text: text}
