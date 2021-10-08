@@ -123,6 +123,32 @@ docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-ya
 docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-k8s-manifest -i dashboard.json -o converted-dashboard.yaml --folder Dark --namespace monitoring test-dashboard
 ```
 
+## Integrating with ArgoCD
+
+ArgoCD supports [health checks for custom resources](https://argo-cd.readthedocs.io/en/stable/operator-manual/health/#way-1-define-a-custom-health-check-in-argocd-cm-configmap).
+To enable it for GrafanaDashboards, add the following code to your `argo-cm` ConfigMap:
+
+```
+data:
+  resource.customizations.health.k8s.kevingomez.fr_GrafanaDashboard: |                                                                                                                                               
+    hs = {}                                                                                                                                                                                                          
+    if obj.status ~= nil then                                                                                                                                                                                        
+      if obj.status.status ~= "OK" then                                                                                                                                                                              
+        hs.status = "Degraded"                                                                                                                                                                                       
+        hs.message = obj.status.message                                                                                                                                                                              
+        return hs                                                                                                                                                                                                    
+      else                                                                                                                                                                                                           
+        hs.status = "Healthy"                                                                                                                                                                                        
+        hs.message = obj.status.message                                                                                                                                                                              
+        return hs                                                                                                                                                                                                    
+      end                                                                                                                                                                                                            
+    end                                                                                                                                                                                                              
+                                                                                                                                                                                                                     
+    hs.status = "Progressing"                                                                                                                                                                                            
+    hs.message = "Status unknown"                                                                                                                                                                                    
+    return hs 
+```
+
 ## Adopters
 
 [Companies using DARK](ADOPTERS.md).
