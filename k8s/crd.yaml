@@ -18,6 +18,14 @@ spec:
       # One and only one version must be marked as the storage version.
       storage: true
 
+      additionalPrinterColumns:
+        - jsonPath: .status.status
+          name: Status
+          type: string
+        - jsonPath: .status.message
+          name: Message
+          type: string
+
       subresources:
         status: {}
 
@@ -31,6 +39,13 @@ spec:
             spec:
               type: object
               x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                message:
+                  type: string
+                status:
+                  type: string
 
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>

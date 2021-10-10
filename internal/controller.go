@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"context"
 	"fmt"
 	"strings"
 	"time"
@@ -12,6 +13,7 @@ import (
 	listers "github.com/K-Phoen/dark/internal/pkg/generated/listers/controller/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
@@ -165,6 +167,9 @@ func (c *Controller) processNextWorkItem() bool {
 		// put back on the workqueue and attempted again after a back-off
 		// period.
 		defer c.workqueue.Done(obj)
+
+		ctx := context.Background()
+
 		var key string
 		var ok bool
 		// We expect strings to come off the workqueue. These are of the
@@ -191,7 +196,7 @@ func (c *Controller) processNextWorkItem() bool {
 		} else {
 			// Run the syncHandler, passing it the namespace/name string of the
 			// GrafanaDashboard resource to be synced.
-			if err := c.syncHandler(key); err != nil {
+			if err := c.syncHandler(ctx, key); err != nil {
 				// Put the item back on the workqueue to handle any transient errors.
 				c.workqueue.AddRateLimited(key)
 				return fmt.Errorf("error syncing '%s': %w, requeuing", key, err)
@@ -217,7 +222,7 @@ func (c *Controller) processNextWorkItem() bool {
 // syncHandler compares the actual state with the desired, and attempts to
 // converge the two. It then updates the Status block of the GrafanaDashboard resource
 // with the current status of the resource.
-func (c *Controller) syncHandler(key string) error {
+func (c *Controller) syncHandler(ctx context.Context, key string) error {
 	// Convert the namespace/name string into a distinct namespace and name
 	namespace, name, err := cache.SplitMetaNamespaceKey(key)
 	if err != nil {
@@ -242,12 +247,39 @@ func (c *Controller) syncHandler(key string) error {
 	if err := c.dashboardCreator.FromRawSpec(dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
 		utilruntime.HandleError(fmt.Errorf("could not create '%s' dashboard from spec: %w", dashboard.ObjectMeta.Name, err))
 		c.recorder.Event(dashboard, corev1.EventTypeWarning, WarningNotSynced, fmt.Sprintf("could not create dashboard from spec: %s", err))
+		c.updateDashboardStatus(ctx, dashboard, err)
+
 		return nil
 	}
 
 	c.recorder.Event(dashboard, corev1.EventTypeNormal, SuccessSynced, MessageResourceSynced)
+	c.updateDashboardStatus(ctx, dashboard, nil)
 
 	return nil
+}
+
+func (c *Controller) updateDashboardStatus(ctx context.Context, dashboard *v1.GrafanaDashboard, err error) {
+	// NEVER modify objects from the store. It's a read-only, local cache.
+	// You can use DeepCopy() to make a deep copy of original object and modify this copy
+	// Or create a copy manually for better performance
+	dashboardCopy := dashboard.DeepCopy()
+
+	if err == nil {
+		dashboardCopy.Status.Status = "OK"
+		dashboardCopy.Status.Message = "Synchronized"
+	} else {
+		dashboardCopy.Status.Status = "Error"
+		dashboardCopy.Status.Message = err.Error()
+	}
+
+	// If the CustomResourceSubresources feature gate is not enabled,
+	// we must use Update instead of UpdateStatus to update the Status block of the Foo resource.
+	// UpdateStatus will not allow changes to the Spec of the resource,
+	// which is ideal for ensuring nothing other than resource status has been updated.
+	_, err = c.darkClientSet.ControllerV1().GrafanaDashboards(dashboardCopy.Namespace).UpdateStatus(ctx, dashboardCopy, metav1.UpdateOptions{})
+	if err != nil {
+		klog.Info(fmt.Sprintf("error while updating dashboard status: %s", err))
+	}
 }
 
 func (c *Controller) deletionHandler(uid string) {

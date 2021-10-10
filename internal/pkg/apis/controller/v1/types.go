@@ -23,6 +23,7 @@ type GrafanaDashboard struct {
 
 // GrafanaDashboardStatus is the status for a GrafanaDashboard resource
 type GrafanaDashboardStatus struct {
+	Status  string `json:"status"`
 	Message string `json:"message"`
 }
 
