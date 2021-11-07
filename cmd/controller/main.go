@@ -18,8 +18,8 @@ import (
 	clientset "github.com/K-Phoen/dark/internal/pkg/generated/clientset/versioned"
 	informers "github.com/K-Phoen/dark/internal/pkg/generated/informers/externalversions"
 	"github.com/K-Phoen/dark/internal/pkg/signals"
-	"github.com/caarlos0/env"
-	"gopkg.in/go-playground/validator.v9"
+	environment "github.com/caarlos0/env/v6"
+	"github.com/go-playground/validator/v10"
 )
 
 type config struct {
@@ -33,7 +33,7 @@ type config struct {
 }
 
 func (cfg *config) loadFromEnv() error {
-	if err := env.Parse(cfg); err != nil {
+	if err := environment.Parse(cfg); err != nil {
 		return err
 	}
 	if err := validator.New().Struct(*cfg); err != nil {
