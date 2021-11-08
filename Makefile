@@ -35,7 +35,7 @@ help: ## Display this help.
 
 .PHONY: controller_build
 controller_build: ## Build controller binary.
-	$(GOCMD) build -o dark-controller $(CONTROLLER_MAIN_SRC)
+	$(GOCMD) build -ldflags "-X main.serviceVersion=$(VERSION)" -o dark-controller $(CONTROLLER_MAIN_SRC)
 
 .PHONY: converter_build
 converter_build: ## Build converter binary.

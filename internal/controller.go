@@ -11,6 +11,7 @@ import (
 	samplescheme "github.com/K-Phoen/dark/internal/pkg/generated/clientset/versioned/scheme"
 	informers "github.com/K-Phoen/dark/internal/pkg/generated/informers/externalversions/controller/v1"
 	listers "github.com/K-Phoen/dark/internal/pkg/generated/listers/controller/v1"
+	"go.uber.org/zap"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,7 +23,6 @@ import (
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/workqueue"
-	"k8s.io/klog"
 )
 
 const controllerAgentName = "dark-controller"
@@ -46,6 +46,8 @@ type dashboardCreator interface {
 
 // Controller is the controller implementation for GrafanaDashboard resources
 type Controller struct {
+	logger *zap.Logger
+
 	// kubeclientset is a standard kubernetes clientset
 	kubeclientset kubernetes.Interface
 	// darkClientSet is a clientset for our own API group
@@ -68,18 +70,21 @@ type Controller struct {
 }
 
 // NewController returns a new sample controller
-func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer, dashboardCreator dashboardCreator) *Controller {
+func NewController(logger *zap.Logger, kubeclientset kubernetes.Interface, darkClientSet clientset.Interface, dashboardInformer informers.GrafanaDashboardInformer, dashboardCreator dashboardCreator) *Controller {
 	// Create event broadcaster
 	// Add dark-controller types to the default Kubernetes Scheme so Events can be
 	// logged for dark-controller types.
 	utilruntime.Must(samplescheme.AddToScheme(scheme.Scheme))
-	klog.V(4).Info("Creating event broadcaster")
+	logger.Info("creating event broadcaster")
 	eventBroadcaster := record.NewBroadcaster()
-	eventBroadcaster.StartLogging(klog.Infof)
+	eventBroadcaster.StartLogging(func(format string, args ...interface{}) {
+		logger.Info(fmt.Sprintf(format, args...))
+	})
 	eventBroadcaster.StartRecordingToSink(&typedcorev1.EventSinkImpl{Interface: kubeclientset.CoreV1().Events("")})
 	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, corev1.EventSource{Component: controllerAgentName})
 
 	controller := &Controller{
+		logger:           logger,
 		kubeclientset:    kubeclientset,
 		darkClientSet:    darkClientSet,
 		dashboardsLister: dashboardInformer.Lister(),
@@ -89,7 +94,7 @@ func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.I
 		dashboardCreator: dashboardCreator,
 	}
 
-	klog.Info("Setting up event handlers")
+	logger.Info("setting up event handlers")
 	// Set up an event handler for when GrafanaDashboard resources change
 	dashboardInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueueDashboard,
@@ -113,30 +118,30 @@ func NewController(kubeclientset kubernetes.Interface, darkClientSet clientset.I
 
 // Run will set up the event handlers for types we are interested in, as well
 // as syncing informer caches and starting workers. It will block until stopCh
-// is closed, at which point it will shutdown the workqueue and wait for
+// is closed, at which point it will shutdown the work-queue and wait for
 // workers to finish processing their current work items.
 func (c *Controller) Run(threadiness int, stopCh <-chan struct{}) error {
 	defer utilruntime.HandleCrash()
 	defer c.workqueue.ShutDown()
 
 	// Start the informer factories to begin populating the informer caches
-	klog.Info("Starting ", controllerAgentName)
+	c.logger.Info("starting main controller loop")
 
 	// Wait for the caches to be synced before starting workers
-	klog.Info("Waiting for informer caches to sync")
+	c.logger.Info("waiting for informer caches to sync")
 	if ok := cache.WaitForCacheSync(stopCh, c.dashboardsSynced); !ok {
 		return fmt.Errorf("failed to wait for caches to sync")
 	}
 
-	klog.Info("Starting workers")
+	c.logger.Info("starting controller workers")
 	// Launch two workers to process GrafanaDashboard resources
 	for i := 0; i < threadiness; i++ {
 		go wait.Until(c.runWorker, time.Second, stopCh)
 	}
 
-	klog.Info("Started workers")
+	c.logger.Info("started workers")
 	<-stopCh
-	klog.Info("Shutting down workers")
+	c.logger.Info("shutting down workers")
 
 	return nil
 }
@@ -192,17 +197,17 @@ func (c *Controller) processNextWorkItem() bool {
 			// Run the deletionHandler, passing it the uid of the dashboard to delete.
 			c.deletionHandler(parts[1])
 
-			klog.Infof("Successfully deleted '%s'", key)
+			c.logger.Info("successfully deleted dashboard", zap.String("key", key))
 		} else {
 			// Run the syncHandler, passing it the namespace/name string of the
 			// GrafanaDashboard resource to be synced.
 			if err := c.syncHandler(ctx, key); err != nil {
-				// Put the item back on the workqueue to handle any transient errors.
+				// Put the item back on the work-queue to handle any transient errors.
 				c.workqueue.AddRateLimited(key)
 				return fmt.Errorf("error syncing '%s': %w, requeuing", key, err)
 			}
 
-			klog.Infof("Successfully synced '%s'", key)
+			c.logger.Info("Successfully synced dashboard", zap.String("key", key))
 		}
 
 		// Finally, if no error occurs we Forget this item so it does not
@@ -248,6 +253,7 @@ func (c *Controller) syncHandler(ctx context.Context, key string) error {
 		utilruntime.HandleError(fmt.Errorf("could not create '%s' dashboard from spec: %w", dashboard.ObjectMeta.Name, err))
 		c.recorder.Event(dashboard, corev1.EventTypeWarning, WarningNotSynced, fmt.Sprintf("could not create dashboard from spec: %s", err))
 		c.updateDashboardStatus(ctx, dashboard, err)
+		c.logger.Warn("error while updating dashboard", zap.Error(err), zap.String("namespace", dashboard.Namespace), zap.String("name", dashboard.Name))
 
 		return nil
 	}
@@ -278,7 +284,7 @@ func (c *Controller) updateDashboardStatus(ctx context.Context, dashboard *v1.Gr
 	// which is ideal for ensuring nothing other than resource status has been updated.
 	_, err = c.darkClientSet.ControllerV1().GrafanaDashboards(dashboardCopy.Namespace).UpdateStatus(ctx, dashboardCopy, metav1.UpdateOptions{})
 	if err != nil {
-		klog.Info(fmt.Sprintf("error while updating dashboard status: %s", err))
+		c.logger.Warn("error while updating dashboard status", zap.Error(err), zap.String("namespace", dashboard.Namespace), zap.String("name", dashboard.Name))
 	}
 }
 
