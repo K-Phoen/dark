@@ -42,7 +42,6 @@ func New(config Config) *Worker {
 }
 
 func (worker *Worker) Init(logger *zap.Logger) error {
-	fmt.Printf("config %#v\n", worker.config)
 	restCfg, err := clientcmd.BuildConfigFromFlags(worker.config.MasterURL, worker.config.KubeConfig)
 	if err != nil {
 		return fmt.Errorf("error building kubeconfig: %w", err)
