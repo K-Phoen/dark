@@ -1,0 +1,41 @@
+linters:
+  enable:
+    # default
+    - deadcode
+    - errcheck
+    - golint
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - structcheck
+    - typecheck
+    - unused
+    - varcheck
+    # added
+    - depguard
+    - dupl
+    - gochecknoinits
+    - goconst
+    - gocritic
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - interfacer
+    - maligned
+    - misspell
+    - nakedret
+    - prealloc
+    - scopelint
+    - stylecheck
+    - unconvert
+    - unparam
+  disable:
+    - gochecknoglobals # too perversive
+    - lll # hard to fulfill
+
+run:
+  modules-download-mode: vendor
+  skip-dirs:
+    - vendor
