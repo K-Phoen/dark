@@ -454,7 +454,7 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 		CrossSeriesReducer: "REDUCE_MEAN",
 		PerSeriesAligner:   "ALIGN_DELTA",
 		AlignmentPeriod:    "stackdriver-auto",
-		GroupBys:           []string{"field"},
+		GroupBy:            []string{"field"},
 		AliasBy:            "legend",
 		RefID:              "A",
 		Filters: []string{

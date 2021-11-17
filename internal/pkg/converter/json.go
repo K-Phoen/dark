@@ -277,12 +277,15 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 		Name:       variable.Name,
 		Label:      variable.Label,
 		Datasource: datasource,
-		Request:    variable.Query,
 		Regex:      variable.Regex,
 		IncludeAll: variable.IncludeAll,
 		DefaultAll: variable.Current.Value == "$__all",
 		AllValue:   variable.AllValue,
 		Hide:       converter.convertVarHide(variable),
+	}
+
+	if variable.Query != nil {
+		query.Request = variable.Query.(string)
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})
@@ -292,10 +295,13 @@ func (converter *JSON) convertDatasourceVar(variable sdk.TemplateVar, dashboard 
 	datasource := &grabana.VariableDatasource{
 		Name:       variable.Name,
 		Label:      variable.Label,
-		Type:       variable.Query,
 		Regex:      variable.Regex,
 		IncludeAll: variable.IncludeAll,
 		Hide:       converter.convertVarHide(variable),
+	}
+
+	if variable.Query != nil {
+		datasource.Type = variable.Query.(string)
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Datasource: datasource})
@@ -423,7 +429,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		graph.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
-		graph.Height = *panel.Height
+		graph.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
 		graph.Datasource = *panel.Datasource
@@ -629,7 +635,7 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 		heatmap.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
-		heatmap.Height = *panel.Height
+		heatmap.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
 		heatmap.Datasource = *panel.Datasource
@@ -704,7 +710,7 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		singleStat.Repeat = *panel.Repeat
 	}
 	if panel.Height != nil {
-		singleStat.Height = *panel.Height
+		singleStat.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
 		singleStat.Datasource = *panel.Datasource
@@ -804,7 +810,7 @@ func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
 		table.Description = *panel.Description
 	}
 	if panel.Height != nil {
-		table.Height = *panel.Height
+		table.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
 		table.Datasource = *panel.Datasource
@@ -854,7 +860,7 @@ func (converter *JSON) convertText(panel sdk.Panel) grabana.DashboardPanel {
 		text.Description = *panel.Description
 	}
 	if panel.Height != nil {
-		text.Height = *panel.Height
+		text.Height = *(panel.Height).(*string)
 	}
 
 	if panel.TextPanel.Options.Mode == "markdown" {
@@ -1005,7 +1011,7 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			Filters:     converter.convertStackdriverFilters(target),
 			Aggregation: aggregation,
 			Alignment:   alignment,
-			GroupBy:     target.GroupBys,
+			GroupBy:     target.GroupBy,
 			Legend:      target.AliasBy,
 			Ref:         target.RefID,
 			Hidden:      target.Hide,
