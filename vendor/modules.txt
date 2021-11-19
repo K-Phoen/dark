@@ -1,7 +1,7 @@
 # cloud.google.com/go v0.81.0
 ## explicit; go 1.11
 cloud.google.com/go/compute/metadata
-# github.com/K-Phoen/grabana v0.17.6
+# github.com/K-Phoen/grabana v0.18.0
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
@@ -25,6 +25,9 @@ github.com/K-Phoen/grabana/variable/custom
 github.com/K-Phoen/grabana/variable/datasource
 github.com/K-Phoen/grabana/variable/interval
 github.com/K-Phoen/grabana/variable/query
+# github.com/K-Phoen/sdk v0.0.0-20211119151408-adef1e5fdd11
+## explicit; go 1.16
+github.com/K-Phoen/sdk
 # github.com/PuerkitoBio/purell v1.1.1
 ## explicit
 github.com/PuerkitoBio/purell
@@ -110,9 +113,6 @@ github.com/gosimple/slug
 # github.com/gosimple/unidecode v1.0.1
 ## explicit; go 1.16
 github.com/gosimple/unidecode
-# github.com/grafana-tools/sdk v0.0.0-20211109141249-6856e1821d44
-## explicit; go 1.13
-github.com/grafana-tools/sdk
 # github.com/hashicorp/golang-lru v0.5.1
 ## explicit
 github.com/hashicorp/golang-lru
