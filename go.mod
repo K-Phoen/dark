@@ -3,7 +3,7 @@ module github.com/K-Phoen/dark
 go 1.17
 
 require (
-	github.com/K-Phoen/grabana v0.18.0
+	github.com/K-Phoen/grabana v0.18.1
 	github.com/K-Phoen/sdk v0.0.0-20211119151408-adef1e5fdd11
 	github.com/spf13/cobra v1.2.1
 	github.com/stretchr/testify v1.7.0
