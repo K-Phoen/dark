@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	grabana "github.com/K-Phoen/grabana/decoder"
-	"github.com/grafana-tools/sdk"
+	"github.com/K-Phoen/sdk"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )
@@ -454,7 +454,7 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 		CrossSeriesReducer: "REDUCE_MEAN",
 		PerSeriesAligner:   "ALIGN_DELTA",
 		AlignmentPeriod:    "stackdriver-auto",
-		GroupBy:            []string{"field"},
+		GroupBys:           []string{"field"},
 		AliasBy:            "legend",
 		RefID:              "A",
 		Filters: []string{

@@ -14,7 +14,7 @@ import (
 	"github.com/K-Phoen/grabana/singlestat"
 	grabanaTable "github.com/K-Phoen/grabana/table"
 	"github.com/K-Phoen/grabana/target/stackdriver"
-	"github.com/grafana-tools/sdk"
+	"github.com/K-Phoen/sdk"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
 )
@@ -1011,7 +1011,7 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			Filters:     converter.convertStackdriverFilters(target),
 			Aggregation: aggregation,
 			Alignment:   alignment,
-			GroupBy:     target.GroupBy,
+			GroupBy:     target.GroupBys,
 			Legend:      target.AliasBy,
 			Ref:         target.RefID,
 			Hidden:      target.Hide,
