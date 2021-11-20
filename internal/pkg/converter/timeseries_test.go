@@ -148,3 +148,99 @@ func TestConvertTimeSeriesLegendCalculations(t *testing.T) {
 		req.Contains(legend, expectedItem)
 	}
 }
+
+func TestConvertTimeSeriesVisualizationGradient(t *testing.T) {
+	testCases := []struct {
+		mode     string
+		expected string
+	}{
+		{
+			mode:     "none",
+			expected: "none",
+		},
+		{
+			mode:     "hue",
+			expected: "hue",
+		},
+		{
+			mode:     "opacity",
+			expected: "opacity",
+		},
+		{
+			mode:     "scheme",
+			expected: "scheme",
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+
+		t.Run(tc.mode, func(t *testing.T) {
+			req := require.New(t)
+
+			panel := sdk.Panel{
+				CommonPanel: sdk.CommonPanel{},
+				TimeseriesPanel: &sdk.TimeseriesPanel{
+					Options: sdk.TimeseriesOptions{},
+					FieldConfig: sdk.FieldConfig{
+						Defaults: sdk.FieldConfigDefaults{
+							Custom: sdk.FieldConfigCustom{
+								GradientMode: tc.mode,
+							},
+						},
+					},
+				},
+			}
+
+			converter := NewJSON(zap.NewNop())
+			tsViz := converter.convertTimeSeriesVisualization(panel)
+
+			req.Equal(tc.expected, tsViz.GradientMode)
+		})
+	}
+}
+
+func TestConvertTimeSeriesVisualizationTooltipMode(t *testing.T) {
+	testCases := []struct {
+		mode     string
+		expected string
+	}{
+		{
+			mode:     "none",
+			expected: "none",
+		},
+		{
+			mode:     "single",
+			expected: "single_series",
+		},
+		{
+			mode:     "multi",
+			expected: "all_series",
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+
+		t.Run(tc.mode, func(t *testing.T) {
+			req := require.New(t)
+
+			panel := sdk.Panel{
+				CommonPanel: sdk.CommonPanel{},
+				TimeseriesPanel: &sdk.TimeseriesPanel{
+					Options: sdk.TimeseriesOptions{
+						Tooltip: sdk.TimeseriesTooltipOptions{
+							Mode: tc.mode,
+						},
+					},
+					FieldConfig: sdk.FieldConfig{},
+				},
+			}
+
+			converter := NewJSON(zap.NewNop())
+			tsViz := converter.convertTimeSeriesVisualization(panel)
+
+			req.Equal(tc.expected, tsViz.Tooltip)
+		})
+	}
+}

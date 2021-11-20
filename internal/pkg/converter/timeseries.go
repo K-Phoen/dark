@@ -12,7 +12,7 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		Transparent:   panel.Transparent,
 		Alert:         converter.convertAlert(panel),
 		Legend:        converter.convertTimeSeriesLegend(panel.TimeseriesPanel.Options.Legend),
-		Visualization: nil,
+		Visualization: converter.convertTimeSeriesVisualization(panel),
 		Axis:          nil,
 	}
 
@@ -39,6 +39,35 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 	}
 
 	return grabana.DashboardPanel{TimeSeries: tsPanel}
+}
+
+func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.TimeSeriesVisualization {
+	tsViz := &grabana.TimeSeriesVisualization{
+		FillOpacity: &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.FillOpacity,
+		PointSize:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.PointSize,
+	}
+
+	// Tooltip mode
+	if panel.TimeseriesPanel.Options.Tooltip.Mode == "none" {
+		tsViz.Tooltip = "none"
+	} else if panel.TimeseriesPanel.Options.Tooltip.Mode == "multi" {
+		tsViz.Tooltip = "all_series"
+	} else {
+		tsViz.Tooltip = "single_series"
+	}
+
+	// Gradient mode
+	if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "none" {
+		tsViz.GradientMode = "none"
+	} else if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "hue" {
+		tsViz.GradientMode = "hue"
+	} else if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "scheme" {
+		tsViz.GradientMode = "scheme"
+	} else {
+		tsViz.GradientMode = "opacity"
+	}
+
+	return tsViz
 }
 
 func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOptions) []string {
