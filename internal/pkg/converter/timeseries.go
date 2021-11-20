@@ -13,7 +13,7 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		Alert:         converter.convertAlert(panel),
 		Legend:        converter.convertTimeSeriesLegend(panel.TimeseriesPanel.Options.Legend),
 		Visualization: converter.convertTimeSeriesVisualization(panel),
-		Axis:          nil,
+		Axis:          converter.convertTimeSeriesAxis(panel),
 	}
 
 	if panel.Description != nil {
@@ -39,6 +39,60 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 	}
 
 	return grabana.DashboardPanel{TimeSeries: tsPanel}
+}
+
+func (converter *JSON) convertTimeSeriesAxis(panel sdk.Panel) *grabana.TimeSeriesAxis {
+	fieldConfig := panel.TimeseriesPanel.FieldConfig
+
+	tsAxis := &grabana.TimeSeriesAxis{
+		Unit:  fieldConfig.Defaults.Unit,
+		Label: fieldConfig.Defaults.Custom.AxisLabel,
+	}
+
+	// decimals
+	if fieldConfig.Defaults.Decimals != nil {
+		tsAxis.Decimals = fieldConfig.Defaults.Decimals
+	}
+
+	// boundaries
+	if fieldConfig.Defaults.Min != nil {
+		tsAxis.Min = fieldConfig.Defaults.Min
+	}
+	if fieldConfig.Defaults.Max != nil {
+		tsAxis.Max = fieldConfig.Defaults.Max
+	}
+	if fieldConfig.Defaults.Custom.AxisSoftMin != nil {
+		tsAxis.SoftMin = fieldConfig.Defaults.Custom.AxisSoftMin
+	}
+	if fieldConfig.Defaults.Custom.AxisSoftMax != nil {
+		tsAxis.SoftMax = fieldConfig.Defaults.Custom.AxisSoftMax
+	}
+
+	// placement
+	switch fieldConfig.Defaults.Custom.AxisPlacement {
+	case "hidden":
+		tsAxis.Display = "hidden"
+	case "left":
+		tsAxis.Display = "left"
+	case "right":
+		tsAxis.Display = "right"
+	case "auto":
+		tsAxis.Display = "auto"
+	}
+
+	// scale
+	switch fieldConfig.Defaults.Custom.ScaleDistribution.Type {
+	case "linear":
+		tsAxis.Scale = "linear"
+	case "log":
+		if fieldConfig.Defaults.Custom.ScaleDistribution.Log == 2 {
+			tsAxis.Scale = "log2"
+		} else {
+			tsAxis.Scale = "log10"
+		}
+	}
+
+	return tsAxis
 }
 
 func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.TimeSeriesVisualization {
