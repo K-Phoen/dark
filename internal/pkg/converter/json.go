@@ -185,6 +185,8 @@ func (converter *JSON) convertDataPanel(panel sdk.Panel) (grabana.DashboardPanel
 		return converter.convertTable(panel), true
 	case "text":
 		return converter.convertText(panel), true
+	case "timeseries":
+		return converter.convertTimeSeries(panel), true
 	default:
 		converter.logger.Warn("unhandled panel type: skipped", zap.String("type", panel.Type), zap.String("title", panel.Title))
 	}
