@@ -452,7 +452,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	return grabana.DashboardPanel{Graph: graph}
 }
 
-func (converter *JSON) convertAlert(panel sdk.Panel) *grabana.GraphAlert {
+func (converter *JSON) convertAlert(panel sdk.Panel) *grabana.Alert {
 	if panel.Alert == nil {
 		return nil
 	}
@@ -464,7 +464,7 @@ func (converter *JSON) convertAlert(panel sdk.Panel) *grabana.GraphAlert {
 		notifications = append(notifications, notification.UID)
 	}
 
-	alert := &grabana.GraphAlert{
+	alert := &grabana.Alert{
 		Title:            sdkAlert.Name,
 		Message:          sdkAlert.Message,
 		EvaluateEvery:    sdkAlert.Frequency,
