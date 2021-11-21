@@ -120,7 +120,7 @@ docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-ya
 ## Converting Grafana JSON dashboard to a Kubernetes manifest
 
 ```sh
-docker run --rm -it -v $(pwd):/workspace kphoen/dark-converter:latest convert-k8s-manifest -i dashboard.json -o converted-dashboard.yaml --folder Dark --namespace monitoring test-dashboard
+docker run --rm -it -u $(id -u):$(id -g) -v $(pwd):/workspace kphoen/dark-converter:latest convert-k8s-manifest -i dashboard.json -o converted-dashboard.yaml --folder Dark --namespace monitoring test-dashboard
 ```
 
 ## Integrating with ArgoCD
