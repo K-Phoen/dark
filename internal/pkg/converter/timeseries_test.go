@@ -26,7 +26,15 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 			Height:      height,
 			Datasource:  &datasource,
 		},
-		TimeseriesPanel: &sdk.TimeseriesPanel{},
+		TimeseriesPanel: &sdk.TimeseriesPanel{
+			Targets: []sdk.Target{
+				{
+					Expr:         "prometheus_query",
+					LegendFormat: "{{ field }}",
+					RefID:        "A",
+				},
+			},
+		},
 	}
 
 	converted, ok := converter.convertDataPanel(panel)
@@ -40,6 +48,7 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 	req.Equal("timeseries description", convertedTs.Description)
 	req.Equal(height, convertedTs.Height)
 	req.Equal(datasource, convertedTs.Datasource)
+	req.Len(convertedTs.Targets, 1)
 }
 
 func TestConvertTimeSeriesLegendDisplay(t *testing.T) {
