@@ -9,3 +9,7 @@ func stringInSlice(search string, haystack []string) bool {
 
 	return false
 }
+
+func intPtr(input int) *int {
+	return &input
+}
