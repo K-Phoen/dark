@@ -8,11 +8,12 @@ COPY . /app
 
 RUN make controller_build
 
-# Run
+# Use distroless as minimal base image to package the manager binary
+# Refer to https://github.com/GoogleContainerTools/distroless for more details
+FROM gcr.io/distroless/static:nonroot
 
-FROM alpine:3.14
 ENTRYPOINT ["/app/dark-controller"]
 WORKDIR /app
-RUN apk --update --no-cache add ca-certificates=20191127-r5 && update-ca-certificates
+USER 65532:65532
 
 COPY --from=build /app/dark-controller /app/dark-controller
