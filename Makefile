@@ -13,6 +13,13 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+WITH_COVERAGE?=false
+ifeq ($(WITH_COVERAGE),true)
+GOCMD_TEST?=go test -coverpkg=./... -coverprofile=coverage.txt -covermode=atomic ./...
+else
+GOCMD_TEST?=go test
+endif
+
 # Setting SHELL to bash allows bash commands to be executed by recipes.
 # This is a requirement for 'setup-envtest.sh' in the test target.
 # Options are set to exit when a recipe line exits non-zero or a piped command fails.
@@ -59,7 +66,7 @@ vet: ## Run go vet against code.
 
 .PHONY: test
 test: envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GOCMD_TEST) ./...
 
 .PHONY: lint
 lint: ## Lints the code base.

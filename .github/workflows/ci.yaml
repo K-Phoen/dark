@@ -31,7 +31,7 @@ jobs:
         with:
           go-version: '1.16'
 
-      - run: make tests
+      - run: make test
         env:
           WITH_COVERAGE: true
 
