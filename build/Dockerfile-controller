@@ -1,19 +1,16 @@
-# Build
-FROM golang:1.17-alpine3.14 AS build
+# Build the manager binary
+FROM golang:1.16 as builder
 
-RUN apk --update --no-cache add make=4.3-r0
+WORKDIR /workspace
+ADD . /workspace
 
-WORKDIR /app
-COPY . /app
-
-RUN make controller_build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
-
-ENTRYPOINT ["/app/dark-controller"]
-WORKDIR /app
+WORKDIR /
+COPY --from=builder /workspace/manager .
 USER 65532:65532
 
-COPY --from=build /app/dark-controller /app/dark-controller
+ENTRYPOINT ["/manager"]

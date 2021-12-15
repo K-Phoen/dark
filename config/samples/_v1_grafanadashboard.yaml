@@ -1,0 +1,6 @@
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+  name: grafanadashboard-sample
+spec:
+  # TODO(user): Add fields here
