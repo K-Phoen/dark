@@ -1,7 +1,7 @@
 domain: k8s.kevingomez.fr
 layout:
 - go.kubebuilder.io/v3
-projectName: dark-kubebuilder
+projectName: dark
 repo: github.com/K-Phoen/dark
 resources:
 - api:
