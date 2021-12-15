@@ -7,7 +7,7 @@ import (
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
-	"github.com/K-Phoen/dark/internal/controllers"
+	"github.com/K-Phoen/dark/internal/pkg/controllers"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
