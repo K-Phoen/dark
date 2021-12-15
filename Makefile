@@ -1,5 +1,6 @@
 REGISTRY?=kphoen
 CONTROLLER_IMAGE=$(REGISTRY)/dark
+CONVERTER_IMAGE=$(REGISTRY)/dark-converter
 
 VERSION?=latest
 
@@ -75,20 +76,38 @@ lint: ## Lints the code base.
 ##@ Build
 
 .PHONY: build
-build: generate fmt vet ## Build manager binary.
+build-manager: generate fmt vet ## Build manager binary.
 	go build -o bin/manager cmd/controller/main.go
 
+.PHONY: build
+build-converter: fmt vet ## Build converter binary.
+	go build -o bin/converter cmd/converter/main.go
+
 .PHONY: run
-run: manifests generate fmt vet ## Run a controller from your host.
+run: ## Run a controller from your host.
 	go run cmd/controller/main.go
 
-.PHONY: docker-build
-docker-build: ## Build docker image with the manager.
+.PHONY: docker-build-manager
+docker-build-manager: ## Build docker image with the manager.
 	DOCKER_BUILDKIT=1 docker build -f build/Dockerfile-controller -t ${CONTROLLER_IMAGE}:${VERSION} .
 
-.PHONY: docker-push
-docker-push: ## Push docker image with the manager.
+.PHONY: docker-build-converter
+docker-build-converter: ## Build docker image with the converter.
+	DOCKER_BUILDKIT=1 docker build -f build/Dockerfile-converter -t ${CONVERTER_IMAGE}:${VERSION} .
+
+.PHONY: docker-build
+docker-build: docker-build-manager docker-build-converter ## Build all docker images.
+
+.PHONY: docker-push-manager
+docker-push-manager: docker-build-converter ## Push docker image with the manager.
 	docker push ${CONTROLLER_IMAGE}:${VERSION}
+
+.PHONY: docker-push-converter
+docker-push-converter: docker-build-converter ## Push docker image with the converter.
+	docker push ${CONVERTER_IMAGE}:${VERSION}
+
+.PHONY: docker-push
+docker-push: docker-push-manager docker-push-converter ## Push all docker images.
 
 ##@ Deployment
 
