@@ -76,11 +76,11 @@ lint: ## Lints the code base.
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
-	go build -o bin/manager main.go
+	go build -o bin/manager cmd/controller/main.go
 
 .PHONY: run
 run: manifests generate fmt vet ## Run a controller from your host.
-	go run ./main.go
+	go run cmd/controller/main.go
 
 .PHONY: docker-build
 docker-build: ## Build docker image with the manager.
