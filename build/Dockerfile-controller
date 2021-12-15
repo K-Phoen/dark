@@ -2,7 +2,7 @@
 FROM golang:1.16 as builder
 
 WORKDIR /workspace
-ADD . /workspace
+COPY . /workspace
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o manager main.go
 
