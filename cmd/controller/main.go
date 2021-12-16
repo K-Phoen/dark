@@ -6,12 +6,15 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
 	"github.com/K-Phoen/dark/internal/pkg/controllers"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
@@ -37,6 +40,7 @@ func main() {
 	var probeAddr string
 	var grafanaHost string
 	var grafanaToken string
+	var insecureSkipVerify bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -44,18 +48,26 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.StringVar(&grafanaHost, "grafana-host", "http://localhost:3000", "The host to use to reach Grafana.")
 	flag.StringVar(&grafanaToken, "grafana-api-key", "", "The API key to use to authenticate to Grafana.")
+	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skips SSL certificates verification. Useful when self-signed certificates are used, but can be insecure. Enabled at your own risks.")
 	opts := zap.Options{
 		Development: true,
 	}
 	opts.BindFlags(flag.CommandLine)
-	flag.Parse()
+
+	must(viper.BindEnv("grafana-host", "GRAFANA_HOST"))
+	must(viper.BindEnv("grafana-token", "GRAFANA_TOKEN"))
+	must(viper.BindEnv("insecure-skip-verify", "INSECURE_SKIP_VERIFY"))
+
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	pflag.Parse()
+	must(viper.BindPFlags(pflag.CommandLine))
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	grafanaDashboardsConfig := controllers.GrafanaDashboardConfig{
-		GrafanaHost:        grafanaHost,
-		GrafanaToken:       grafanaToken,
-		InsecureSkipVerify: false,
+		GrafanaHost:        viper.GetString("grafana-host"),
+		GrafanaToken:       viper.GetString("grafana-token"),
+		InsecureSkipVerify: viper.GetBool("insecure-skip-verify"),
 	}
 
 	// controllers setup
@@ -92,6 +104,13 @@ func main() {
 	setupLog.Info("starting manager")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
 		setupLog.Error(err, "problem running manager")
+		os.Exit(1)
+	}
+}
+
+func must(err error) {
+	if err != nil {
+		setupLog.Error(err, "")
 		os.Exit(1)
 	}
 }
