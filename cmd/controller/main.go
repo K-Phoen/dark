@@ -35,11 +35,15 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+	var grafanaHost string
+	var grafanaToken string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
+	flag.StringVar(&grafanaHost, "grafana-host", "http://localhost:3000", "The host to use to reach Grafana.")
+	flag.StringVar(&grafanaToken, "grafana-api-key", "", "The API key to use to authenticate to Grafana.")
 	opts := zap.Options{
 		Development: true,
 	}
@@ -49,8 +53,8 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	grafanaDashboardsConfig := controllers.GrafanaDashboardConfig{
-		GrafanaHost:        "",
-		GrafanaToken:       "",
+		GrafanaHost:        grafanaHost,
+		GrafanaToken:       grafanaToken,
 		InsecureSkipVerify: false,
 	}
 
