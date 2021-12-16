@@ -42,13 +42,13 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 	req.True(ok)
 	req.NotNil(converted.TimeSeries)
 
-	convertedTs := converted.TimeSeries
-	req.True(convertedTs.Transparent)
-	req.Equal("test timeseries", convertedTs.Title)
-	req.Equal("timeseries description", convertedTs.Description)
-	req.Equal(height, convertedTs.Height)
-	req.Equal(datasource, convertedTs.Datasource)
-	req.Len(convertedTs.Targets, 1)
+	convertedTS := converted.TimeSeries
+	req.True(convertedTS.Transparent)
+	req.Equal("test timeseries", convertedTS.Title)
+	req.Equal("timeseries description", convertedTS.Description)
+	req.Equal(height, convertedTS.Height)
+	req.Equal(datasource, convertedTS.Datasource)
+	req.Len(convertedTS.Targets, 1)
 }
 
 func TestConvertTimeSeriesLegendDisplay(t *testing.T) {

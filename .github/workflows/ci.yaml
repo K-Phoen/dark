@@ -11,7 +11,8 @@ jobs:
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v2
         with:
-          golangci_lint_flags: "--config=golangci.yaml"
+          go_version: '1.17'
+          golangci_lint_flags: "--config=build/golangci.yaml"
           reporter: github-pr-review
 
       - name: hadolint
