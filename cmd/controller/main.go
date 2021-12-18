@@ -44,8 +44,8 @@ func main() {
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
-		"Enable leader election for controller manager. "+
-			"Enabling this will ensure there is only one active controller manager.")
+		"Enable leader election for controller operator. "+
+			"Enabling this will ensure there is only one active controller operator.")
 	flag.StringVar(&grafanaHost, "grafana-host", "http://localhost:3000", "The host to use to reach Grafana.")
 	flag.StringVar(&grafanaToken, "grafana-api-key", "", "The API key to use to authenticate to Grafana.")
 	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skips SSL certificates verification. Useful when self-signed certificates are used, but can be insecure. Enabled at your own risks.")
@@ -80,7 +80,7 @@ func main() {
 		LeaderElectionID:       "2351aaad.k8s.kevingomez.fr",
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start manager")
+		setupLog.Error(err, "unable to start operator")
 		os.Exit(1)
 	}
 
@@ -101,9 +101,9 @@ func main() {
 	}
 
 	// main runtime loop
-	setupLog.Info("starting manager")
+	setupLog.Info("starting operator")
 	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error(err, "problem running operator")
 		os.Exit(1)
 	}
 }

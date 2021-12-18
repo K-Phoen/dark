@@ -1,40 +1,51 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: dark
   labels:
-    control-plane: controller-manager
-  name: system
+    app: dark
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: controller-manager
-  namespace: system
-  labels:
-    control-plane: controller-manager
+  name: dark
+  namespace: dark
 spec:
+  replicas: 1
   selector:
     matchLabels:
-      control-plane: controller-manager
-  replicas: 1
+      app: dark
   template:
     metadata:
       annotations:
-        kubectl.kubernetes.io/default-container: manager
+        prometheus.io/port: "8080"
+        prometheus.io/scrape: "true"
       labels:
-        control-plane: controller-manager
+        app: dark
     spec:
+      serviceAccountName: dark-operator
+
       securityContext:
         runAsNonRoot: true
+
       containers:
-      - command:
-        - /manager
+      - name: dark
+        image: kphoen/dark:latest
+
+        command:
+          - /operator
         args:
-        - --leader-elect
-        image: controller:latest
-        name: manager
+          - --zap-devel=false
+
+        env:
+          - name: GRAFANA_HOST
+            value: http://grafana.monitoring.svc.cluster.local
+          - name: GRAFANA_TOKEN
+            value: 'this should really be in a secret'
+
         securityContext:
           allowPrivilegeEscalation: false
+
         livenessProbe:
           httpGet:
             path: /healthz
@@ -47,14 +58,13 @@ spec:
             port: 8081
           initialDelaySeconds: 5
           periodSeconds: 10
-        # TODO(user): Configure the resources accordingly based on the project requirements.
-        # More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+
         resources:
           limits:
-            cpu: 500m
-            memory: 128Mi
+            memory: 80Mi
+            cpu: 50m
           requests:
-            cpu: 10m
-            memory: 64Mi
-      serviceAccountName: controller-manager
+            memory: 30Mi
+            cpu: 5m
+
       terminationGracePeriodSeconds: 10

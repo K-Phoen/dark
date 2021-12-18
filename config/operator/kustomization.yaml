@@ -1,0 +1,6 @@
+resources:
+- dark.yaml
+
+generatorOptions:
+  disableNameSuffixHash: true
+

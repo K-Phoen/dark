@@ -1,12 +1,12 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: manager-rolebinding
+  name: dark-operator-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: manager-role
+  name: dark-operator-role
 subjects:
 - kind: ServiceAccount
-  name: controller-manager
-  namespace: system
+  name: dark-operator
+  namespace: dark
