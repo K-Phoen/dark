@@ -27,8 +27,7 @@ jobs:
         env:
           VERSION: latest
 
-      - run: make push
+      - run: make docker-push
         if: steps.semver.outputs.tag
         env:
           VERSION: ${{ steps.semver.outputs.tag }}
-

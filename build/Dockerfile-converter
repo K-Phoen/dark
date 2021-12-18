@@ -1,19 +1,16 @@
-# Build
-FROM golang:1.17-alpine3.14 AS build
+# Build the converter binary
+FROM golang:1.17-alpine3.14 as builder
 
-RUN apk --update --no-cache add make=4.3-r0
+WORKDIR /workspace
+COPY . /workspace
 
-WORKDIR /app
-COPY . /app
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o converter cmd/converter/main.go
 
-RUN make converter_build
-
-# Use distroless as minimal base image to package the manager binary
+# Use distroless as minimal base image to package the converter binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
 FROM gcr.io/distroless/static:nonroot
-
-ENTRYPOINT ["/app/dark-converter"]
-WORKDIR /workspace
+WORKDIR /
+COPY --from=builder /workspace/converter .
 USER 65532:65532
 
-COPY --from=build /app/dark-converter /app/dark-converter
+ENTRYPOINT ["/converter"]

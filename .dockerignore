@@ -1,2 +1,4 @@
-k8s
 .git
+.github
+bin
+config

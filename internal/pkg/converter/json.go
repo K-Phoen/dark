@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	v1 "github.com/K-Phoen/dark/internal/pkg/apis/controller/v1"
+	v1 "github.com/K-Phoen/dark/api/v1"
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
 	"go.uber.org/zap"
@@ -79,7 +79,7 @@ func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, options 
 	}
 
 	manifest := k8sDashboard{
-		APIVersion: v1.SchemeGroupVersion.String(),
+		APIVersion: v1.GroupVersion.String(),
 		Kind:       "GrafanaDashboard",
 		Metadata:   map[string]string{"name": options.Name},
 		Folder:     options.Folder,

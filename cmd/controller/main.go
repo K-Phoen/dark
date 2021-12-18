@@ -1,43 +1,116 @@
 package main
 
 import (
-	"fmt"
+	"flag"
+	"os"
 
-	"github.com/K-Phoen/dark/internal/pkg/worker"
-	"github.com/voi-oss/svc"
-	"go.uber.org/zap"
+	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
+	// to ensure that exec-entrypoint and run can make use of them.
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	// enables GCP auth
-	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
+	"github.com/K-Phoen/dark/internal/pkg/controllers"
+	"github.com/spf13/pflag"
+	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	//+kubebuilder:scaffold:imports
 )
 
-// serviceVersion will be populated by the build script with the sha of the last git commit.
-var serviceVersion = "snapshot"
+var (
+	scheme   = runtime.NewScheme()
+	setupLog = ctrl.Log.WithName("setup")
+)
+
+func init() {
+	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
+
+	utilruntime.Must(k8skevingomezfrv1.AddToScheme(scheme))
+	//+kubebuilder:scaffold:scheme
+}
 
 func main() {
-	cfg := worker.Config{}
+	// config definition
+	var metricsAddr string
+	var enableLeaderElection bool
+	var probeAddr string
+	var grafanaHost string
+	var grafanaToken string
+	var insecureSkipVerify bool
+	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
+	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
+	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
+		"Enable leader election for controller operator. "+
+			"Enabling this will ensure there is only one active controller operator.")
+	flag.StringVar(&grafanaHost, "grafana-host", "http://localhost:3000", "The host to use to reach Grafana.")
+	flag.StringVar(&grafanaToken, "grafana-api-key", "", "The API key to use to authenticate to Grafana.")
+	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skips SSL certificates verification. Useful when self-signed certificates are used, but can be insecure. Enabled at your own risks.")
+	opts := zap.Options{
+		Development: true,
+	}
+	opts.BindFlags(flag.CommandLine)
 
-	// Read up global configs
-	if err := svc.LoadFromEnv(&cfg); err != nil {
-		panic(fmt.Sprintf("could not load configuration: %s", err))
+	must(viper.BindEnv("grafana-host", "GRAFANA_HOST"))
+	must(viper.BindEnv("grafana-token", "GRAFANA_TOKEN"))
+	must(viper.BindEnv("insecure-skip-verify", "INSECURE_SKIP_VERIFY"))
+
+	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
+	pflag.Parse()
+	must(viper.BindPFlags(pflag.CommandLine))
+
+	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+
+	grafanaDashboardsConfig := controllers.GrafanaDashboardConfig{
+		GrafanaHost:        viper.GetString("grafana-host"),
+		GrafanaToken:       viper.GetString("grafana-token"),
+		InsecureSkipVerify: viper.GetBool("insecure-skip-verify"),
 	}
 
-	// SVC supervisor Init
-	options := []svc.Option{
-		svc.WithMetrics(),
-		svc.WithHealthz(),
-		svc.WithMetricsHandler(),
-		svc.WithHTTPServer("9090"),
-		svc.WithStackdriverLogger(zap.InfoLevel),
+	// controllers setup
+	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+		Scheme:                 scheme,
+		MetricsBindAddress:     metricsAddr,
+		Port:                   9443,
+		HealthProbeBindAddress: probeAddr,
+		LeaderElection:         enableLeaderElection,
+		LeaderElectionID:       "2351aaad.k8s.kevingomez.fr",
+	})
+	if err != nil {
+		setupLog.Error(err, "unable to start operator")
+		os.Exit(1)
 	}
 
-	// SVC supervisor Init
-	service, err := svc.New("dark", serviceVersion, options...)
-	svc.MustInit(service, err)
+	if err = controllers.StartGrafanaDashboardReconciler(mgr, grafanaDashboardsConfig); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
+		os.Exit(1)
+	}
+	//+kubebuilder:scaffold:builder
 
-	// Workers definition
-	service.AddWorker("dashboards-controller", worker.New(cfg))
+	// liveness and readiness probes
+	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up health check")
+		os.Exit(1)
+	}
+	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
+		setupLog.Error(err, "unable to set up ready check")
+		os.Exit(1)
+	}
 
-	// Service main loop
-	service.Run()
+	// main runtime loop
+	setupLog.Info("starting operator")
+	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+		setupLog.Error(err, "problem running operator")
+		os.Exit(1)
+	}
+}
+
+func must(err error) {
+	if err != nil {
+		setupLog.Error(err, "")
+		os.Exit(1)
+	}
 }

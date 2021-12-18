@@ -102,22 +102,24 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 	}
 
 	// Tooltip mode
-	if panel.TimeseriesPanel.Options.Tooltip.Mode == "none" {
+	switch panel.TimeseriesPanel.Options.Tooltip.Mode {
+	case "none":
 		tsViz.Tooltip = "none"
-	} else if panel.TimeseriesPanel.Options.Tooltip.Mode == "multi" {
+	case "multi":
 		tsViz.Tooltip = "all_series"
-	} else {
+	default:
 		tsViz.Tooltip = "single_series"
 	}
 
 	// Gradient mode
-	if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "none" {
+	switch panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode {
+	case "none":
 		tsViz.GradientMode = "none"
-	} else if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "hue" {
+	case "hue":
 		tsViz.GradientMode = "hue"
-	} else if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.GradientMode == "scheme" {
+	case "scheme":
 		tsViz.GradientMode = "scheme"
-	} else {
+	default:
 		tsViz.GradientMode = "opacity"
 	}
 
@@ -128,11 +130,12 @@ func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOption
 	options := []string{}
 
 	// Display mode
-	if legend.DisplayMode == "list" {
+	switch legend.DisplayMode {
+	case "list":
 		options = append(options, "as_list")
-	} else if legend.DisplayMode == "hidden" {
+	case "hidden":
 		options = append(options, "hide")
-	} else {
+	default:
 		options = append(options, "as_table")
 	}
 

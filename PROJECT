@@ -1,0 +1,15 @@
+domain: k8s.kevingomez.fr
+layout:
+- go.kubebuilder.io/v3
+projectName: dark
+repo: github.com/K-Phoen/dark
+resources:
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.kevingomez.fr
+  kind: GrafanaDashboard
+  path: github.com/K-Phoen/dark/api/v1
+  version: v1
+version: "3"
