@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/K-Phoen/grabana v0.19.1
-	github.com/K-Phoen/sdk v0.0.0-20211119151408-adef1e5fdd11
+	github.com/K-Phoen/sdk v0.8.1
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
 	github.com/spf13/cobra v1.2.1
@@ -17,6 +17,8 @@ require (
 	k8s.io/client-go v0.22.1
 	sigs.k8s.io/controller-runtime v0.10.0
 )
+
+replace github.com/K-Phoen/grabana => ../grabana
 
 require (
 	cloud.google.com/go v0.81.0 // indirect
@@ -41,7 +43,7 @@ require (
 	github.com/google/gofuzz v1.1.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/googleapis/gnostic v0.5.5 // indirect
-	github.com/gosimple/slug v1.11.2 // indirect
+	github.com/gosimple/slug v1.12.0 // indirect
 	github.com/gosimple/unidecode v1.0.1 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect

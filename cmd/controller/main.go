@@ -1,15 +1,17 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
+	"net/http"
 	"os"
+	"time"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
-	"github.com/K-Phoen/dark/internal/pkg/controllers"
+	"github.com/K-Phoen/grabana"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,6 +20,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+
+	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
+	k8skevingomezfrv1alpha1 "github.com/K-Phoen/dark/api/v1alpha1"
+	"github.com/K-Phoen/dark/internal/pkg/controllers"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -30,6 +36,7 @@ func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 
 	utilruntime.Must(k8skevingomezfrv1.AddToScheme(scheme))
+	utilruntime.Must(k8skevingomezfrv1alpha1.AddToScheme(scheme))
 	//+kubebuilder:scaffold:scheme
 }
 
@@ -64,11 +71,15 @@ func main() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
-	grafanaDashboardsConfig := controllers.GrafanaDashboardConfig{
-		GrafanaHost:        viper.GetString("grafana-host"),
-		GrafanaToken:       viper.GetString("grafana-token"),
+	httpClient := makeHTTPClient(&tls.Config{
+		//nolint:gosec
 		InsecureSkipVerify: viper.GetBool("insecure-skip-verify"),
-	}
+	})
+	grabanaClient := grabana.NewClient(
+		httpClient,
+		viper.GetString("grafana-host"),
+		grabana.WithAPIToken(viper.GetString("grafana-token")),
+	)
 
 	// controllers setup
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
@@ -84,8 +95,12 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = controllers.StartGrafanaDashboardReconciler(mgr, grafanaDashboardsConfig); err != nil {
+	if err = controllers.StartGrafanaDashboardReconciler(mgr, grabanaClient); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
+		os.Exit(1)
+	}
+	if err = controllers.StartDatasourceReconciler(mgr, grabanaClient); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "Datasource")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
@@ -112,5 +127,14 @@ func must(err error) {
 	if err != nil {
 		setupLog.Error(err, "")
 		os.Exit(1)
+	}
+}
+
+func makeHTTPClient(tlsConfig *tls.Config) *http.Client {
+	return &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: tlsConfig,
+		},
+		Timeout: 10 * time.Second, // Large, but better than no timeout.
 	}
 }

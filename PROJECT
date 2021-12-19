@@ -12,4 +12,12 @@ resources:
   kind: GrafanaDashboard
   path: github.com/K-Phoen/dark/api/v1
   version: v1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.kevingomez.fr
+  kind: Datasource
+  path: github.com/K-Phoen/dark/api/v1alpha1
+  version: v1alpha1
 version: "3"
