@@ -99,7 +99,7 @@ docker-build-converter: ## Build docker image with the converter.
 docker-build: docker-build-manager docker-build-converter ## Build all docker images.
 
 .PHONY: docker-push-manager
-docker-push-manager: docker-build-converter ## Push docker image with the manager.
+docker-push-manager: docker-build-manager ## Push docker image with the manager.
 	docker push ${CONTROLLER_IMAGE}:${VERSION}
 
 .PHONY: docker-push-converter
