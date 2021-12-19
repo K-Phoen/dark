@@ -1,0 +1,40 @@
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+  name: dark-reconciliations
+
+folder: DARK
+spec:
+  title: Dark operator reconciliations
+  editable: false
+  shared_crosshair: true
+  tags: [dark, generated]
+  auto_refresh: 5s
+  time: [now-1h, now]
+
+  variables:
+  - interval:
+      name: interval
+      label: "Interval"
+      default: 10m
+      values: [1m, 5m, 10m, 30m, 1h, 2h, 4h, 8h]
+
+  rows:
+    - name: Overview
+      panels:
+      - timeseries:
+          title: GrafanaDashboards reconciliations status
+          description: Reconciliation status of GrafanaDashboards manifests
+          targets:
+            - prometheus:
+                query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[$interval])) by (result)
+                legend: '{{ result }}'
+
+      - timeseries:
+          title: Datasources reconciliations status
+          description: Reconciliation status of Datasources manifests
+          targets:
+            - prometheus:
+                query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[$interval])) by (result)
+                legend: '{{ result }}'
+

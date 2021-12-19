@@ -1,0 +1,9 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: Datasource
+metadata:
+  name: dark-prometheus
+spec:
+  prometheus:
+    default: true
+    name: dark-prometheus
+    url: "http://dark-prometheus-server"
