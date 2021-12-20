@@ -60,8 +60,9 @@ type PrometheusDatasource struct {
 	// +kubebuilder:validation:Enum=POST;GET
 	HTTPMethod string `json:"http_method,omitempty"`
 	// +kubebuilder:validation:Enum=proxy;direct
-	AccessMode string     `json:"access_mode,omitempty"`
-	BasicAuth  *BasicAuth `json:"basic_auth,omitempty"`
+	AccessMode    string      `json:"access_mode,omitempty"`
+	BasicAuth     *BasicAuth  `json:"basic_auth,omitempty"`
+	CACertificate *ValueOrRef `json:"ca_certificate,omitempty"`
 }
 
 type BasicAuth struct {

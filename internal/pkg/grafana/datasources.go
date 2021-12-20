@@ -119,6 +119,14 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 
 		opts = append(opts, basicOpts)
 	}
+	if promSpec.CACertificate != nil {
+		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *promSpec.CACertificate)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, prometheus.WithCertificate(caCertificate))
+	}
 
 	return opts, nil
 }
