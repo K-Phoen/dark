@@ -1,0 +1,16 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: Datasource
+metadata:
+  name: dark-prometheus-basic-auth
+spec:
+  prometheus:
+    default: false
+    url: "http://dark-prometheus-server"
+    basic_auth:
+      username:
+        value: joe
+      password:
+        valueFrom:
+          secretKeyRef:
+            name: prometheus-basic-auth-secret
+            key: password

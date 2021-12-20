@@ -1,6 +1,7 @@
 package v1alpha1
 
 import (
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -59,5 +60,21 @@ type PrometheusDatasource struct {
 	// +kubebuilder:validation:Enum=POST;GET
 	HTTPMethod string `json:"http_method,omitempty"`
 	// +kubebuilder:validation:Enum=proxy;direct
-	AccessMode string `json:"access_mode,omitempty"`
+	AccessMode string     `json:"access_mode,omitempty"`
+	BasicAuth  *BasicAuth `json:"basic_auth,omitempty"`
+}
+
+type BasicAuth struct {
+	Username ValueOrRef `json:"username"`
+	Password ValueOrRef `json:"password"`
+}
+
+type ValueOrRef struct {
+	// Only one of the following may be specified.
+	Value    string    `json:"value,omitempty"`
+	ValueRef *ValueRef `json:"valueFrom,omitempty"`
+}
+
+type ValueRef struct {
+	SecretKeyRef *v1.SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
 }
