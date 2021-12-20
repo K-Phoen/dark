@@ -10,26 +10,33 @@ import (
 	"github.com/K-Phoen/grabana/datasource"
 	"github.com/K-Phoen/grabana/datasource/prometheus"
 	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/types"
 )
 
 var ErrDatasourceNotConfigured = fmt.Errorf("datasource not configured")
 var ErrInvalidAccessMode = fmt.Errorf("invalid access mode")
 
+type refReader interface {
+	RefToValue(ctx context.Context, namespace string, ref v1alpha1.ValueOrRef) (string, error)
+}
+
 type Datasources struct {
 	logger        logr.Logger
 	grabanaClient *grabana.Client
+	refReader     refReader
 }
 
-func NewDatasources(logger logr.Logger, grabanaClient *grabana.Client) *Datasources {
+func NewDatasources(logger logr.Logger, grabanaClient *grabana.Client, refReader refReader) *Datasources {
 	return &Datasources{
 		logger:        logger,
 		grabanaClient: grabanaClient,
+		refReader:     refReader,
 	}
 }
 
-func (datasources *Datasources) SpecToModel(name string, spec v1alpha1.DatasourceSpec) (datasource.Datasource, error) {
+func (datasources *Datasources) SpecToModel(ctx context.Context, objectRef types.NamespacedName, spec v1alpha1.DatasourceSpec) (datasource.Datasource, error) {
 	if spec.Prometheus != nil {
-		return prometheusSpecToModel(name, spec.Prometheus)
+		return datasources.prometheusSpecToModel(ctx, objectRef, spec.Prometheus)
 	}
 
 	return nil, ErrDatasourceNotConfigured
@@ -51,16 +58,16 @@ func (datasources *Datasources) Delete(ctx context.Context, name string) error {
 	return err
 }
 
-func prometheusSpecToModel(name string, ds *v1alpha1.PrometheusDatasource) (datasource.Datasource, error) {
-	opts, err := prometheusSpecToOptions(ds)
+func (datasources *Datasources) prometheusSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.PrometheusDatasource) (datasource.Datasource, error) {
+	opts, err := datasources.prometheusSpecToOptions(ctx, objectRef, ds)
 	if err != nil {
 		return nil, err
 	}
 
-	return prometheus.New(name, ds.URL, opts...), nil
+	return prometheus.New(objectRef.Name, ds.URL, opts...), nil
 }
 
-func prometheusSpecToOptions(promSpec *v1alpha1.PrometheusDatasource) ([]prometheus.Option, error) {
+func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, objectRef types.NamespacedName, promSpec *v1alpha1.PrometheusDatasource) ([]prometheus.Option, error) {
 	opts := []prometheus.Option{}
 
 	if promSpec.Default != nil && *promSpec.Default {
@@ -104,6 +111,35 @@ func prometheusSpecToOptions(promSpec *v1alpha1.PrometheusDatasource) ([]prometh
 	if promSpec.HTTPMethod != "" {
 		opts = append(opts, prometheus.HTTPMethod(promSpec.HTTPMethod))
 	}
+	if promSpec.BasicAuth != nil {
+		basicOpts, err := datasources.basicAuthOptions(ctx, objectRef.Namespace, promSpec.BasicAuth)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, basicOpts)
+	}
+	if promSpec.CACertificate != nil {
+		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *promSpec.CACertificate)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, prometheus.WithCertificate(caCertificate))
+	}
 
 	return opts, nil
+}
+
+func (datasources *Datasources) basicAuthOptions(ctx context.Context, namespace string, auth *v1alpha1.BasicAuth) (prometheus.Option, error) {
+	username, err := datasources.refReader.RefToValue(ctx, namespace, auth.Username)
+	if err != nil {
+		return nil, err
+	}
+	password, err := datasources.refReader.RefToValue(ctx, namespace, auth.Password)
+	if err != nil {
+		return nil, err
+	}
+
+	return prometheus.BasicAuth(username, password), nil
 }

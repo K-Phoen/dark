@@ -5,10 +5,12 @@ import (
 
 	"github.com/K-Phoen/dark/api/v1alpha1"
 	"github.com/K-Phoen/dark/internal/pkg/grafana"
+	"github.com/K-Phoen/dark/internal/pkg/kubernetes"
 	"github.com/K-Phoen/grabana"
 	"github.com/K-Phoen/grabana/datasource"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,7 +21,7 @@ import (
 const datasourcesFinalizerName = "datasources.k8s.kevingomez.fr/finalizer"
 
 type datasourcesManager interface {
-	SpecToModel(name string, spec v1alpha1.DatasourceSpec) (datasource.Datasource, error)
+	SpecToModel(ctx context.Context, objectRef types.NamespacedName, spec v1alpha1.DatasourceSpec) (datasource.Datasource, error)
 	Upsert(ctx context.Context, model datasource.Datasource) error
 	Delete(ctx context.Context, name string) error
 }
@@ -88,7 +90,7 @@ func (r *DatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, nil
 	}
 
-	datasourceModel, err := r.Datasources.SpecToModel(datasourceManifest.Name, datasourceManifest.Spec)
+	datasourceModel, err := r.Datasources.SpecToModel(ctx, req.NamespacedName, datasourceManifest.Spec)
 	if err != nil {
 		logger.Error(err, "unable to convert Datasource manifest into a Grabana model")
 
@@ -119,13 +121,16 @@ func (r *DatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources/finalizers,verbs=update
+//+kubebuilder:rbac:groups="",resources=events,verbs=create;patch
+//+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
 
 func StartDatasourceReconciler(logger logr.Logger, ctrlManager ctrl.Manager, grabanaClient *grabana.Client) error {
+	refReader := kubernetes.NewValueRefReader(logger, ctrlManager.GetClient())
 	reconciler := &DatasourceReconciler{
 		Client:      ctrlManager.GetClient(),
 		Scheme:      ctrlManager.GetScheme(),
 		Recorder:    ctrlManager.GetEventRecorderFor("grafanadashboard-controller"),
-		Datasources: grafana.NewDatasources(logger, grabanaClient),
+		Datasources: grafana.NewDatasources(logger, grabanaClient, refReader),
 	}
 
 	return reconciler.SetupWithManager(ctrlManager)
