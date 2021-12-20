@@ -69,7 +69,8 @@ func main() {
 	pflag.Parse()
 	must(viper.BindPFlags(pflag.CommandLine))
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
+	logger := zap.New(zap.UseFlagOptions(&opts))
+	ctrl.SetLogger(logger)
 
 	httpClient := makeHTTPClient(&tls.Config{
 		//nolint:gosec
@@ -99,7 +100,7 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "GrafanaDashboard")
 		os.Exit(1)
 	}
-	if err = controllers.StartDatasourceReconciler(mgr, grabanaClient); err != nil {
+	if err = controllers.StartDatasourceReconciler(logger, mgr, grabanaClient); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Datasource")
 		os.Exit(1)
 	}

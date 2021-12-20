@@ -5,5 +5,4 @@ metadata:
 spec:
   prometheus:
     default: true
-    name: dark-prometheus
     url: "http://dark-prometheus-server"

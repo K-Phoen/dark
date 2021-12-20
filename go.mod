@@ -3,8 +3,9 @@ module github.com/K-Phoen/dark
 go 1.17
 
 require (
-	github.com/K-Phoen/grabana v0.19.1
+	github.com/K-Phoen/grabana v0.20.0
 	github.com/K-Phoen/sdk v0.8.1
+	github.com/go-logr/logr v0.4.0
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.15.0
 	github.com/spf13/cobra v1.2.1
@@ -17,8 +18,6 @@ require (
 	k8s.io/client-go v0.22.1
 	sigs.k8s.io/controller-runtime v0.10.0
 )
-
-replace github.com/K-Phoen/grabana => ../grabana
 
 require (
 	cloud.google.com/go v0.81.0 // indirect
@@ -34,7 +33,6 @@ require (
 	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
-	github.com/go-logr/logr v0.4.0 // indirect
 	github.com/go-logr/zapr v0.4.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect

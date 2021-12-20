@@ -2,12 +2,15 @@ package v1alpha1
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 // Important: Run "make" to regenerate code after modifying this file
+
+func init() {
+	SchemeBuilder.Register(&Datasource{}, &DatasourceList{})
+}
 
 // DatasourceStatus defines the observed state of Datasource
 type DatasourceStatus struct {
@@ -26,9 +29,8 @@ type Datasource struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	//+kubebuilder:pruning:PreserveUnknownFields
-	Spec   runtime.RawExtension `json:"spec"`
-	Status DatasourceStatus     `json:"status,omitempty"`
+	Spec   DatasourceSpec   `json:"spec"`
+	Status DatasourceStatus `json:"status,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -40,6 +42,22 @@ type DatasourceList struct {
 	Items           []Datasource `json:"items"`
 }
 
-func init() {
-	SchemeBuilder.Register(&Datasource{}, &DatasourceList{})
+type DatasourceSpec struct {
+	Prometheus *PrometheusDatasource `json:"prometheus,omitempty"`
+}
+
+type PrometheusDatasource struct {
+	// +kubebuilder:validation:Required
+	URL                string   `json:"url"`
+	Default            *bool    `json:"default,omitempty"`
+	ForwardOauth       *bool    `json:"forward_oauth,omitempty"`
+	ForwardCredentials *bool    `json:"forward_credentials,omitempty"`
+	SkipTLSVerify      *bool    `json:"skip_tls_verify,omitempty"`
+	ForwardCookies     []string `json:"forward_cookies,omitempty"`
+	ScrapeInterval     string   `json:"scrape_interval,omitempty"`
+	QueryTimeout       string   `json:"query_timeout,omitempty"`
+	// +kubebuilder:validation:Enum=POST;GET
+	HTTPMethod string `json:"http_method,omitempty"`
+	// +kubebuilder:validation:Enum=proxy;direct
+	AccessMode string `json:"access_mode,omitempty"`
 }

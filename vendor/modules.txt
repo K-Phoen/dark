@@ -20,7 +20,7 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/K-Phoen/grabana v0.19.1 => ../grabana
+# github.com/K-Phoen/grabana v0.20.0
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
@@ -685,4 +685,3 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.2.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# github.com/K-Phoen/grabana => ../grabana

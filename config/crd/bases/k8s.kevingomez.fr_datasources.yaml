@@ -45,8 +45,41 @@ spec:
           metadata:
             type: object
           spec:
+            properties:
+              prometheus:
+                properties:
+                  access_mode:
+                    enum:
+                    - proxy
+                    - direct
+                    type: string
+                  default:
+                    type: boolean
+                  forward_cookies:
+                    items:
+                      type: string
+                    type: array
+                  forward_credentials:
+                    type: boolean
+                  forward_oauth:
+                    type: boolean
+                  http_method:
+                    enum:
+                    - POST
+                    - GET
+                    type: string
+                  query_timeout:
+                    type: string
+                  scrape_interval:
+                    type: string
+                  skip_tls_verify:
+                    type: boolean
+                  url:
+                    type: string
+                required:
+                - url
+                type: object
             type: object
-            x-kubernetes-preserve-unknown-fields: true
           status:
             description: DatasourceStatus defines the observed state of Datasource
             properties:
