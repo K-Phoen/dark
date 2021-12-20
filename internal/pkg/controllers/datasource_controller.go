@@ -119,6 +119,7 @@ func (r *DatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=k8s.kevingomez.fr,resources=datasources/finalizers,verbs=update
+//+kubebuilder:rbac:groups=,resources=events,verbs=create;patch
 
 func StartDatasourceReconciler(logger logr.Logger, ctrlManager ctrl.Manager, grabanaClient *grabana.Client) error {
 	reconciler := &DatasourceReconciler{
