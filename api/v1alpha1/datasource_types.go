@@ -44,7 +44,8 @@ type DatasourceList struct {
 }
 
 type DatasourceSpec struct {
-	Prometheus *PrometheusDatasource `json:"prometheus,omitempty"`
+	Prometheus  *PrometheusDatasource  `json:"prometheus,omitempty"`
+	Stackdriver *StackdriverDatasource `json:"stackdriver,omitempty"`
 }
 
 type PrometheusDatasource struct {
@@ -63,6 +64,11 @@ type PrometheusDatasource struct {
 	AccessMode    string      `json:"access_mode,omitempty"`
 	BasicAuth     *BasicAuth  `json:"basic_auth,omitempty"`
 	CACertificate *ValueOrRef `json:"ca_certificate,omitempty"`
+}
+
+type StackdriverDatasource struct {
+	Default           *bool       `json:"default,omitempty"`
+	JWTAuthentication *ValueOrRef `json:"jwt_authentication,omitempty"`
 }
 
 type BasicAuth struct {

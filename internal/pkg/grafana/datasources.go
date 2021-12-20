@@ -9,6 +9,7 @@ import (
 	"github.com/K-Phoen/grabana"
 	"github.com/K-Phoen/grabana/datasource"
 	"github.com/K-Phoen/grabana/datasource/prometheus"
+	"github.com/K-Phoen/grabana/datasource/stackdriver"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/types"
 )
@@ -37,6 +38,9 @@ func NewDatasources(logger logr.Logger, grabanaClient *grabana.Client, refReader
 func (datasources *Datasources) SpecToModel(ctx context.Context, objectRef types.NamespacedName, spec v1alpha1.DatasourceSpec) (datasource.Datasource, error) {
 	if spec.Prometheus != nil {
 		return datasources.prometheusSpecToModel(ctx, objectRef, spec.Prometheus)
+	}
+	if spec.Stackdriver != nil {
+		return datasources.stackdriverSpecToModel(ctx, objectRef, spec.Stackdriver)
 	}
 
 	return nil, ErrDatasourceNotConfigured
@@ -142,4 +146,22 @@ func (datasources *Datasources) basicAuthOptions(ctx context.Context, namespace 
 	}
 
 	return prometheus.BasicAuth(username, password), nil
+}
+
+func (datasources *Datasources) stackdriverSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.StackdriverDatasource) (datasource.Datasource, error) {
+	opts := []stackdriver.Option{}
+
+	if ds.Default != nil && *ds.Default {
+		opts = append(opts, stackdriver.Default())
+	}
+	if ds.JWTAuthentication != nil {
+		jwtKey, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *ds.JWTAuthentication)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, stackdriver.JWTAuthentication(jwtKey))
+	}
+
+	return stackdriver.New(objectRef.Name, opts...), nil
 }
