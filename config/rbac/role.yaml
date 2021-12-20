@@ -3,8 +3,35 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
+  creationTimestamp: null
   name: dark-operator-role
 rules:
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - datasources
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - datasources/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - datasources/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - k8s.kevingomez.fr
   resources:

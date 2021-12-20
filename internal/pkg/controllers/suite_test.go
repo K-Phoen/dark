@@ -14,6 +14,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
+	k8skevingomezfrv1alpha1 "github.com/K-Phoen/dark/api/v1alpha1"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -45,6 +46,9 @@ var _ = BeforeSuite(func() {
 	Expect(cfg).NotTo(BeNil())
 
 	err = k8skevingomezfrv1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	err = k8skevingomezfrv1alpha1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
 	//+kubebuilder:scaffold:scheme

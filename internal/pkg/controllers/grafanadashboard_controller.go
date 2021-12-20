@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"crypto/tls"
 
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
 	"github.com/K-Phoen/dark/internal/pkg/grafana"
@@ -22,13 +21,6 @@ type dashboardManager interface {
 	Delete(ctx context.Context, uid string) error
 }
 
-type GrafanaDashboardConfig struct {
-	GrafanaHost  string
-	GrafanaToken string
-
-	InsecureSkipVerify bool
-}
-
 // GrafanaDashboardReconciler reconciles a GrafanaDashboard object
 type GrafanaDashboardReconciler struct {
 	client.Client
@@ -39,13 +31,7 @@ type GrafanaDashboardReconciler struct {
 	Dashboards dashboardManager
 }
 
-func StartGrafanaDashboardReconciler(ctrlManager ctrl.Manager, config GrafanaDashboardConfig) error {
-	httpClient := makeHTTPClient(&tls.Config{
-		//nolint:gosec
-		InsecureSkipVerify: config.InsecureSkipVerify,
-	})
-	grabanaClient := grabana.NewClient(httpClient, config.GrafanaHost, grabana.WithAPIToken(config.GrafanaToken))
-
+func StartGrafanaDashboardReconciler(ctrlManager ctrl.Manager, grabanaClient *grabana.Client) error {
 	reconciler := &GrafanaDashboardReconciler{
 		Client:     ctrlManager.GetClient(),
 		Scheme:     ctrlManager.GetScheme(),

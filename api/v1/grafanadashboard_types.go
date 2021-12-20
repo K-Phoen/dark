@@ -9,15 +9,6 @@ import (
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 // Important: Run "make" to regenerate code after modifying this file
 
-// GrafanaDashboardSpec defines the desired state of GrafanaDashboard
-type GrafanaDashboardSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
-	// Important: Run "make" to regenerate code after modifying this file
-
-	// Foo is an example field of GrafanaDashboard. Edit grafanadashboard_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
-}
-
 // GrafanaDashboardStatus defines the observed state of a GrafanaDashboard
 type GrafanaDashboardStatus struct {
 	Status  string `json:"status"`

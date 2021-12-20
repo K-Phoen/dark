@@ -21,6 +21,5 @@ comment:
 
 ignore:
   - "cmd/"
-  - "internal/pkg/generated"
-  - "internal/pkg/apis"
-  - "internal/pkg/signals"
+  - "api/v1/zz_generated.deepcopy.go"
+  - "api/v1alpha1/zz_generated.deepcopy.go"

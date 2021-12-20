@@ -56,10 +56,10 @@ github.com/Azure/go-autorest/tracing v0.6.0 h1:TYi4+3m5t6K48TGI9AUdb+IzbnSxvnvUM
 github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBpUA79WCAKPPZVC2DeU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/K-Phoen/grabana v0.19.1 h1:hgC/puYzRNQwtpLkbvFQHzjZwf6f/XHttlDqrFQ62mo=
-github.com/K-Phoen/grabana v0.19.1/go.mod h1:e6GwAnk6L0g+tba2yhKdzWvDah8cPPlwPptyrnkK8ng=
-github.com/K-Phoen/sdk v0.0.0-20211119151408-adef1e5fdd11 h1:bcJqfzSQge+pyJ1beMzUmf3bh9bRyIzEFu8PXUx8Hgk=
-github.com/K-Phoen/sdk v0.0.0-20211119151408-adef1e5fdd11/go.mod h1:fnbOsbRksULSfcXjOI6W1/HISz5o/u1iEhF/fLedqTg=
+github.com/K-Phoen/grabana v0.20.0 h1:Wt+6mS5wg9hR0lMa0ZLWG5NCNH7BJQaRmbYnAyqrblg=
+github.com/K-Phoen/grabana v0.20.0/go.mod h1:C07Dzgfy7WM9pt8u8EPP5LlFJnb3MeYNyb3aKTms3uA=
+github.com/K-Phoen/sdk v0.8.1 h1:Z4niyQJKXZcBbBULLFw55axv56SxlL3REBZjNn1B/HA=
+github.com/K-Phoen/sdk v0.8.1/go.mod h1:fnbOsbRksULSfcXjOI6W1/HISz5o/u1iEhF/fLedqTg=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMomdKFjzJNB0c=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=
@@ -265,8 +265,8 @@ github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 h1:EGx4pi6eqNxGa
 github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1/go.mod h1:wJfORRmW1u3UXTncJ5qlYoELFm8eSnnEO6hX4iZ3EWY=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
 github.com/gosimple/slug v1.1.1/go.mod h1:ER78kgg1Mv0NQGlXiDe57DpCyfbNywXXZ9mIorhxAf0=
-github.com/gosimple/slug v1.11.2 h1:MxFR0TmQ/qz0KvIrBbf4phu+G0RBgpwxOn6jPKFKFOw=
-github.com/gosimple/slug v1.11.2/go.mod h1:UiRaFH+GEilHstLUmcBgWcI42viBN7mAb818JrYOeFQ=
+github.com/gosimple/slug v1.12.0 h1:xzuhj7G7cGtd34NXnW/yF0l+AGNfWqwgh/IXgFy7dnc=
+github.com/gosimple/slug v1.12.0/go.mod h1:UiRaFH+GEilHstLUmcBgWcI42viBN7mAb818JrYOeFQ=
 github.com/gosimple/unidecode v1.0.1 h1:hZzFTMMqSswvf0LBJZCZgThIZrpDHFXux9KeGmn6T/o=
 github.com/gosimple/unidecode v1.0.1/go.mod h1:CP0Cr1Y1kogOtx0bJblKzsVWrqYaqfNOnHzpgWw4Awc=
 github.com/gregjones/httpcache v0.0.0-20180305231024-9cad4c3443a7/go.mod h1:FecbI9+v66THATjSRHfNgh1IVFe/9kFxbXtjV0ctIMA=

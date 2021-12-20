@@ -1,0 +1,33 @@
+project_name: grabana
+
+# Make sure to check the documentation at https://goreleaser.com
+builds:
+  - id: grabana
+    binary: grabana
+    main: ./cmd/cli
+
+    ldflags:
+      - -X main.version={{.Version}}
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+
+archives:
+  - id: grabana
+    builds: [grabana]
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
