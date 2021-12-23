@@ -47,6 +47,7 @@ type DatasourceSpec struct {
 	Prometheus  *PrometheusDatasource  `json:"prometheus,omitempty"`
 	Stackdriver *StackdriverDatasource `json:"stackdriver,omitempty"`
 	Jaeger      *JaegerDatasource      `json:"jaeger,omitempty"`
+	Loki        *LokiDatasource        `json:"loki,omitempty"`
 }
 
 type PrometheusDatasource struct {
@@ -65,6 +66,22 @@ type PrometheusDatasource struct {
 	AccessMode    string      `json:"access_mode,omitempty"`
 	BasicAuth     *BasicAuth  `json:"basic_auth,omitempty"`
 	CACertificate *ValueOrRef `json:"ca_certificate,omitempty"`
+}
+
+type LokiDatasource struct {
+	// +kubebuilder:validation:Required
+	URL     string `json:"url"`
+	Default *bool  `json:"default,omitempty"`
+
+	ForwardOauth       *bool       `json:"forward_oauth,omitempty"`
+	ForwardCredentials *bool       `json:"forward_credentials,omitempty"`
+	SkipTLSVerify      *bool       `json:"skip_tls_verify,omitempty"`
+	ForwardCookies     []string    `json:"forward_cookies,omitempty"`
+	Timeout            string      `json:"timeout,omitempty"`
+	BasicAuth          *BasicAuth  `json:"basic_auth,omitempty"`
+	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
+
+	MaximumLines *int `json:"maximum_lines,omitempty"`
 }
 
 type StackdriverDatasource struct {
