@@ -20,13 +20,14 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/K-Phoen/grabana v0.20.1
+# github.com/K-Phoen/grabana v0.20.2
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
 github.com/K-Phoen/grabana/axis
 github.com/K-Phoen/grabana/dashboard
 github.com/K-Phoen/grabana/datasource
+github.com/K-Phoen/grabana/datasource/jaeger
 github.com/K-Phoen/grabana/datasource/prometheus
 github.com/K-Phoen/grabana/datasource/stackdriver
 github.com/K-Phoen/grabana/decoder

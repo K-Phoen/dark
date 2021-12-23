@@ -8,6 +8,7 @@ import (
 	"github.com/K-Phoen/dark/api/v1alpha1"
 	"github.com/K-Phoen/grabana"
 	"github.com/K-Phoen/grabana/datasource"
+	"github.com/K-Phoen/grabana/datasource/jaeger"
 	"github.com/K-Phoen/grabana/datasource/prometheus"
 	"github.com/K-Phoen/grabana/datasource/stackdriver"
 	"github.com/go-logr/logr"
@@ -42,6 +43,9 @@ func (datasources *Datasources) SpecToModel(ctx context.Context, objectRef types
 	if spec.Stackdriver != nil {
 		return datasources.stackdriverSpecToModel(ctx, objectRef, spec.Stackdriver)
 	}
+	if spec.Jaeger != nil {
+		return datasources.jaegerSpecToModel(ctx, objectRef, spec.Jaeger)
+	}
 
 	return nil, ErrDatasourceNotConfigured
 }
@@ -62,6 +66,63 @@ func (datasources *Datasources) Delete(ctx context.Context, name string) error {
 	return err
 }
 
+func (datasources *Datasources) jaegerSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.JaegerDatasource) (datasource.Datasource, error) {
+	opts, err := datasources.jaegerSpecToOptions(ctx, objectRef, ds)
+	if err != nil {
+		return nil, err
+	}
+
+	return jaeger.New(objectRef.Name, ds.URL, opts...), nil
+}
+func (datasources *Datasources) jaegerSpecToOptions(ctx context.Context, objectRef types.NamespacedName, spec *v1alpha1.JaegerDatasource) ([]jaeger.Option, error) {
+	opts := []jaeger.Option{}
+
+	if spec.Default != nil && *spec.Default {
+		opts = append(opts, jaeger.Default())
+	}
+	if spec.ForwardOauth != nil && *spec.ForwardOauth {
+		opts = append(opts, jaeger.ForwardOauthIdentity())
+	}
+	if spec.ForwardCredentials != nil && *spec.ForwardCredentials {
+		opts = append(opts, jaeger.WithCredentials())
+	}
+	if spec.SkipTLSVerify != nil && *spec.SkipTLSVerify {
+		opts = append(opts, jaeger.SkipTLSVerify())
+	}
+	if len(spec.ForwardCookies) != 0 {
+		opts = append(opts, jaeger.ForwardCookies(spec.ForwardCookies...))
+	}
+	if spec.Timeout != "" {
+		timeout, err := time.ParseDuration(spec.Timeout)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, jaeger.Timeout(timeout))
+	}
+	if spec.BasicAuth != nil {
+		username, password, err := datasources.basicAuthCredentials(ctx, objectRef.Namespace, spec.BasicAuth)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, jaeger.BasicAuth(username, password))
+	}
+	if spec.CACertificate != nil {
+		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *spec.CACertificate)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, jaeger.WithCertificate(caCertificate))
+	}
+	if spec.NodeGraph != nil && *spec.NodeGraph {
+		opts = append(opts, jaeger.WithNodeGraph())
+	}
+
+	return opts, nil
+}
+
 func (datasources *Datasources) prometheusSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.PrometheusDatasource) (datasource.Datasource, error) {
 	opts, err := datasources.prometheusSpecToOptions(ctx, objectRef, ds)
 	if err != nil {
@@ -71,60 +132,60 @@ func (datasources *Datasources) prometheusSpecToModel(ctx context.Context, objec
 	return prometheus.New(objectRef.Name, ds.URL, opts...), nil
 }
 
-func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, objectRef types.NamespacedName, promSpec *v1alpha1.PrometheusDatasource) ([]prometheus.Option, error) {
+func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, objectRef types.NamespacedName, spec *v1alpha1.PrometheusDatasource) ([]prometheus.Option, error) {
 	opts := []prometheus.Option{}
 
-	if promSpec.Default != nil && *promSpec.Default {
+	if spec.Default != nil && *spec.Default {
 		opts = append(opts, prometheus.Default())
 	}
-	if promSpec.ForwardOauth != nil && *promSpec.ForwardOauth {
+	if spec.ForwardOauth != nil && *spec.ForwardOauth {
 		opts = append(opts, prometheus.ForwardOauthIdentity())
 	}
-	if promSpec.ForwardCredentials != nil && *promSpec.ForwardCredentials {
+	if spec.ForwardCredentials != nil && *spec.ForwardCredentials {
 		opts = append(opts, prometheus.WithCredentials())
 	}
-	if promSpec.SkipTLSVerify != nil && *promSpec.SkipTLSVerify {
+	if spec.SkipTLSVerify != nil && *spec.SkipTLSVerify {
 		opts = append(opts, prometheus.SkipTLSVerify())
 	}
-	if len(promSpec.ForwardCookies) != 0 {
-		opts = append(opts, prometheus.ForwardCookies(promSpec.ForwardCookies...))
+	if len(spec.ForwardCookies) != 0 {
+		opts = append(opts, prometheus.ForwardCookies(spec.ForwardCookies...))
 	}
-	if promSpec.ScrapeInterval != "" {
-		interval, err := time.ParseDuration(promSpec.ScrapeInterval)
+	if spec.ScrapeInterval != "" {
+		interval, err := time.ParseDuration(spec.ScrapeInterval)
 		if err != nil {
 			return nil, err
 		}
 
 		opts = append(opts, prometheus.ScrapeInterval(interval))
 	}
-	if promSpec.QueryTimeout != "" {
-		timeout, err := time.ParseDuration(promSpec.QueryTimeout)
+	if spec.QueryTimeout != "" {
+		timeout, err := time.ParseDuration(spec.QueryTimeout)
 		if err != nil {
 			return nil, err
 		}
 
 		opts = append(opts, prometheus.QueryTimeout(timeout))
 	}
-	if promSpec.AccessMode != "" {
-		if promSpec.AccessMode != "proxy" && promSpec.AccessMode != "direct" {
+	if spec.AccessMode != "" {
+		if spec.AccessMode != "proxy" && spec.AccessMode != "direct" {
 			return nil, ErrInvalidAccessMode
 		}
 
-		opts = append(opts, prometheus.AccessMode(prometheus.Access(promSpec.AccessMode)))
+		opts = append(opts, prometheus.AccessMode(prometheus.Access(spec.AccessMode)))
 	}
-	if promSpec.HTTPMethod != "" {
-		opts = append(opts, prometheus.HTTPMethod(promSpec.HTTPMethod))
+	if spec.HTTPMethod != "" {
+		opts = append(opts, prometheus.HTTPMethod(spec.HTTPMethod))
 	}
-	if promSpec.BasicAuth != nil {
-		basicOpts, err := datasources.basicAuthOptions(ctx, objectRef.Namespace, promSpec.BasicAuth)
+	if spec.BasicAuth != nil {
+		username, password, err := datasources.basicAuthCredentials(ctx, objectRef.Namespace, spec.BasicAuth)
 		if err != nil {
 			return nil, err
 		}
 
-		opts = append(opts, basicOpts)
+		opts = append(opts, prometheus.BasicAuth(username, password))
 	}
-	if promSpec.CACertificate != nil {
-		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *promSpec.CACertificate)
+	if spec.CACertificate != nil {
+		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *spec.CACertificate)
 		if err != nil {
 			return nil, err
 		}
@@ -135,17 +196,17 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 	return opts, nil
 }
 
-func (datasources *Datasources) basicAuthOptions(ctx context.Context, namespace string, auth *v1alpha1.BasicAuth) (prometheus.Option, error) {
+func (datasources *Datasources) basicAuthCredentials(ctx context.Context, namespace string, auth *v1alpha1.BasicAuth) (string, string, error) {
 	username, err := datasources.refReader.RefToValue(ctx, namespace, auth.Username)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 	password, err := datasources.refReader.RefToValue(ctx, namespace, auth.Password)
 	if err != nil {
-		return nil, err
+		return "", "", err
 	}
 
-	return prometheus.BasicAuth(username, password), nil
+	return username, password, nil
 }
 
 func (datasources *Datasources) stackdriverSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.StackdriverDatasource) (datasource.Datasource, error) {

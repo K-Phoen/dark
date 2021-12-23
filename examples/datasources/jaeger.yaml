@@ -1,0 +1,8 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: Datasource
+metadata:
+  name: dark-jaeger
+spec:
+  jaeger:
+    url: "http://dark-jaeger-server"
+    node_graph: true
