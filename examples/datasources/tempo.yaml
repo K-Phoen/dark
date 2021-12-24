@@ -4,7 +4,7 @@ metadata:
   name: dark-tempo
 spec:
   tempo:
-    url: "http://tempo.tempo.svc.cluster.local/"
+    url: "http://tempo.tempo.svc.cluster.local"
     trace_to_logs:
       tags: [job, instance, pod, namespace]
       datasource:

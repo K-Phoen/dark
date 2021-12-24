@@ -88,7 +88,7 @@ func (datasources *Datasources) datasourceUIDFromRef(ctx context.Context, ref *v
 	}
 
 	if ref.Name != "" {
-		return datasources.grabanaClient.GetDatasourceUIDByName(ctx, ref.UID)
+		return datasources.grabanaClient.GetDatasourceUIDByName(ctx, ref.Name)
 	}
 
 	return "", ErrInvalidDatasourceRef
