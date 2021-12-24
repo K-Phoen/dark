@@ -4,4 +4,10 @@ metadata:
   name: dark-loki
 spec:
   loki:
-    url: "http://dark-loki-server"
+    url: "http://loki.loki.svc.cluster.local:3100"
+    derived_fields:
+      - name: TraceID
+        matcherRegex: '(?:traceID|trace_id)=(\w+)'
+        url: '${__value.raw}'
+        datasource:
+          name: dark-tempo

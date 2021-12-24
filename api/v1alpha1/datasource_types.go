@@ -48,6 +48,7 @@ type DatasourceSpec struct {
 	Stackdriver *StackdriverDatasource `json:"stackdriver,omitempty"`
 	Jaeger      *JaegerDatasource      `json:"jaeger,omitempty"`
 	Loki        *LokiDatasource        `json:"loki,omitempty"`
+	Tempo       *TempoDatasource       `json:"tempo,omitempty"`
 }
 
 type PrometheusDatasource struct {
@@ -81,7 +82,51 @@ type LokiDatasource struct {
 	BasicAuth          *BasicAuth  `json:"basic_auth,omitempty"`
 	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
 
-	MaximumLines *int `json:"maximum_lines,omitempty"`
+	MaximumLines  *int               `json:"maximum_lines,omitempty"`
+	DerivedFields []LokiDerivedField `json:"derived_fields,omitempty"`
+}
+
+type LokiDerivedField struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+	// +kubebuilder:validation:Required
+	URL string `json:"url"`
+	// Used to parse and capture some part of the log message. You can use the captured groups in the template.
+	// +kubebuilder:validation:Required
+	Regex string `json:"matcherRegex"`
+	// Used to override the button label when this derived field is found in a log.
+	// Optional.
+	URLDisplayLabel string `json:"urlDisplayLabel,omitempty"`
+	// For internal links
+	// Optional.
+	Datasource *ValueOrDatasourceRef `json:"datasource,omitempty"`
+}
+
+type TempoDatasource struct {
+	// +kubebuilder:validation:Required
+	URL     string `json:"url"`
+	Default *bool  `json:"default,omitempty"`
+
+	ForwardOauth       *bool       `json:"forward_oauth,omitempty"`
+	ForwardCredentials *bool       `json:"forward_credentials,omitempty"`
+	SkipTLSVerify      *bool       `json:"skip_tls_verify,omitempty"`
+	ForwardCookies     []string    `json:"forward_cookies,omitempty"`
+	Timeout            string      `json:"timeout,omitempty"`
+	BasicAuth          *BasicAuth  `json:"basic_auth,omitempty"`
+	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
+
+	NodeGraph *bool `json:"node_graph,omitempty"`
+
+	TraceToLogs *TempoTraceToLogs `json:"trace_to_logs,omitempty"`
+}
+
+type TempoTraceToLogs struct {
+	Datasource     ValueOrDatasourceRef `json:"datasource"`
+	Tags           []string             `json:"tags,omitempty"`
+	SpanStartShift string               `json:"span_start_shift,omitempty"`
+	SpanEndShift   string               `json:"span_end_shift,omitempty"`
+	FilterByTrace  *bool                `json:"filter_by_trace,omitempty"`
+	FilterBySpan   *bool                `json:"filter_by_span,omitempty"`
 }
 
 type StackdriverDatasource struct {
@@ -118,4 +163,10 @@ type ValueOrRef struct {
 
 type ValueRef struct {
 	SecretKeyRef *v1.SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
+}
+
+type ValueOrDatasourceRef struct {
+	// Only one of the following may be specified.
+	UID  string `json:"uid,omitempty"`
+	Name string `json:"name,omitempty"`
 }
