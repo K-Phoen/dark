@@ -31,6 +31,7 @@ github.com/K-Phoen/grabana/datasource/jaeger
 github.com/K-Phoen/grabana/datasource/loki
 github.com/K-Phoen/grabana/datasource/prometheus
 github.com/K-Phoen/grabana/datasource/stackdriver
+github.com/K-Phoen/grabana/datasource/tempo
 github.com/K-Phoen/grabana/decoder
 github.com/K-Phoen/grabana/graph
 github.com/K-Phoen/grabana/graph/series

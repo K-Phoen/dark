@@ -48,6 +48,7 @@ type DatasourceSpec struct {
 	Stackdriver *StackdriverDatasource `json:"stackdriver,omitempty"`
 	Jaeger      *JaegerDatasource      `json:"jaeger,omitempty"`
 	Loki        *LokiDatasource        `json:"loki,omitempty"`
+	Tempo       *TempoDatasource       `json:"tempo,omitempty"`
 }
 
 type PrometheusDatasource struct {
@@ -99,6 +100,33 @@ type LokiDerivedField struct {
 	// For internal links
 	// Optional.
 	Datasource *ValueOrDatasourceRef `json:"datasource,omitempty"`
+}
+
+type TempoDatasource struct {
+	// +kubebuilder:validation:Required
+	URL     string `json:"url"`
+	Default *bool  `json:"default,omitempty"`
+
+	ForwardOauth       *bool       `json:"forward_oauth,omitempty"`
+	ForwardCredentials *bool       `json:"forward_credentials,omitempty"`
+	SkipTLSVerify      *bool       `json:"skip_tls_verify,omitempty"`
+	ForwardCookies     []string    `json:"forward_cookies,omitempty"`
+	Timeout            string      `json:"timeout,omitempty"`
+	BasicAuth          *BasicAuth  `json:"basic_auth,omitempty"`
+	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
+
+	NodeGraph *bool `json:"node_graph,omitempty"`
+
+	TraceToLogs *TempoTraceToLogs `json:"trace_to_logs,omitempty"`
+}
+
+type TempoTraceToLogs struct {
+	Datasource     ValueOrDatasourceRef `json:"datasource"`
+	Tags           []string             `json:"tags,omitempty"`
+	SpanStartShift string               `json:"span_start_shift,omitempty"`
+	SpanEndShift   string               `json:"span_end_shift,omitempty"`
+	FilterByTrace  *bool                `json:"filter_by_trace,omitempty"`
+	FilterBySpan   *bool                `json:"filter_by_span,omitempty"`
 }
 
 type StackdriverDatasource struct {

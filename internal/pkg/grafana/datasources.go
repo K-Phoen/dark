@@ -46,6 +46,9 @@ func (datasources *Datasources) SpecToModel(ctx context.Context, objectRef types
 	if spec.Loki != nil {
 		return datasources.lokiSpecToModel(ctx, objectRef, spec.Loki)
 	}
+	if spec.Tempo != nil {
+		return datasources.tempoSpecToModel(ctx, objectRef, spec.Tempo)
+	}
 
 	return nil, ErrDatasourceNotConfigured
 }

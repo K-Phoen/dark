@@ -470,6 +470,148 @@ spec:
                         type: object
                     type: object
                 type: object
+              tempo:
+                properties:
+                  basic_auth:
+                    properties:
+                      password:
+                        properties:
+                          value:
+                            description: Only one of the following may be specified.
+                            type: string
+                          valueFrom:
+                            properties:
+                              secretKeyRef:
+                                description: SecretKeySelector selects a key of a
+                                  Secret.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                            type: object
+                        type: object
+                      username:
+                        properties:
+                          value:
+                            description: Only one of the following may be specified.
+                            type: string
+                          valueFrom:
+                            properties:
+                              secretKeyRef:
+                                description: SecretKeySelector selects a key of a
+                                  Secret.
+                                properties:
+                                  key:
+                                    description: The key of the secret to select from.  Must
+                                      be a valid secret key.
+                                    type: string
+                                  name:
+                                    description: 'Name of the referent. More info:
+                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                      TODO: Add other useful fields. apiVersion, kind,
+                                      uid?'
+                                    type: string
+                                  optional:
+                                    description: Specify whether the Secret or its
+                                      key must be defined
+                                    type: boolean
+                                required:
+                                - key
+                                type: object
+                            type: object
+                        type: object
+                    required:
+                    - password
+                    - username
+                    type: object
+                  ca_certificate:
+                    properties:
+                      value:
+                        description: Only one of the following may be specified.
+                        type: string
+                      valueFrom:
+                        properties:
+                          secretKeyRef:
+                            description: SecretKeySelector selects a key of a Secret.
+                            properties:
+                              key:
+                                description: The key of the secret to select from.  Must
+                                  be a valid secret key.
+                                type: string
+                              name:
+                                description: 'Name of the referent. More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                  TODO: Add other useful fields. apiVersion, kind,
+                                  uid?'
+                                type: string
+                              optional:
+                                description: Specify whether the Secret or its key
+                                  must be defined
+                                type: boolean
+                            required:
+                            - key
+                            type: object
+                        type: object
+                    type: object
+                  default:
+                    type: boolean
+                  forward_cookies:
+                    items:
+                      type: string
+                    type: array
+                  forward_credentials:
+                    type: boolean
+                  forward_oauth:
+                    type: boolean
+                  node_graph:
+                    type: boolean
+                  skip_tls_verify:
+                    type: boolean
+                  timeout:
+                    type: string
+                  trace_to_logs:
+                    properties:
+                      datasource:
+                        properties:
+                          name:
+                            type: string
+                          uid:
+                            description: Only one of the following may be specified.
+                            type: string
+                        type: object
+                      filter_by_span:
+                        type: boolean
+                      filter_by_trace:
+                        type: boolean
+                      span_end_shift:
+                        type: string
+                      span_start_shift:
+                        type: string
+                      tags:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - datasource
+                    type: object
+                  url:
+                    type: string
+                required:
+                - url
+                type: object
             type: object
           status:
             description: DatasourceStatus defines the observed state of Datasource

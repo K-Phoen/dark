@@ -1,0 +1,11 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: Datasource
+metadata:
+  name: dark-tempo
+spec:
+  tempo:
+    url: "http://tempo.tempo.svc.cluster.local/"
+    trace_to_logs:
+      tags: [job, instance, pod, namespace]
+      datasource:
+        name: dark-loki
