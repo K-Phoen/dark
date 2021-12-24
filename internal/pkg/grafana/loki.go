@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/K-Phoen/dark/api/v1alpha1"
@@ -40,7 +41,7 @@ func (datasources *Datasources) lokiSpecToOptions(ctx context.Context, objectRef
 	if spec.Timeout != "" {
 		timeout, err := time.ParseDuration(spec.Timeout)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse timout: %w", err)
 		}
 
 		opts = append(opts, loki.Timeout(timeout))
@@ -56,7 +57,7 @@ func (datasources *Datasources) lokiSpecToOptions(ctx context.Context, objectRef
 	if spec.CACertificate != nil {
 		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *spec.CACertificate)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not extract CA certificate: %w", err)
 		}
 
 		opts = append(opts, loki.WithCertificate(caCertificate))
@@ -67,7 +68,7 @@ func (datasources *Datasources) lokiSpecToOptions(ctx context.Context, objectRef
 	if len(spec.DerivedFields) != 0 {
 		opt, err := datasources.lokiDerivedFields(ctx, spec.DerivedFields)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse derived fields: %w", err)
 		}
 
 		opts = append(opts, opt)
@@ -85,7 +86,7 @@ func (datasources *Datasources) lokiDerivedFields(ctx context.Context, specField
 		if field.Datasource != nil {
 			datasourceUID, err = datasources.datasourceUIDFromRef(ctx, field.Datasource)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not infer datasource UID from reference: %w", err)
 			}
 		}
 

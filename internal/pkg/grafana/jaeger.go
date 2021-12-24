@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/K-Phoen/dark/api/v1alpha1"
@@ -40,7 +41,7 @@ func (datasources *Datasources) jaegerSpecToOptions(ctx context.Context, objectR
 	if spec.Timeout != "" {
 		timeout, err := time.ParseDuration(spec.Timeout)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse timout: %w", err)
 		}
 
 		opts = append(opts, jaeger.Timeout(timeout))
@@ -56,7 +57,7 @@ func (datasources *Datasources) jaegerSpecToOptions(ctx context.Context, objectR
 	if spec.CACertificate != nil {
 		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *spec.CACertificate)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not extract CA certificate: %w", err)
 		}
 
 		opts = append(opts, jaeger.WithCertificate(caCertificate))

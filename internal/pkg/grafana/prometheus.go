@@ -2,6 +2,7 @@ package grafana
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/K-Phoen/dark/api/v1alpha1"
@@ -40,7 +41,7 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 	if spec.ScrapeInterval != "" {
 		interval, err := time.ParseDuration(spec.ScrapeInterval)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse scrape interval: %w", err)
 		}
 
 		opts = append(opts, prometheus.ScrapeInterval(interval))
@@ -48,7 +49,7 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 	if spec.QueryTimeout != "" {
 		timeout, err := time.ParseDuration(spec.QueryTimeout)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse query timout: %w", err)
 		}
 
 		opts = append(opts, prometheus.QueryTimeout(timeout))
@@ -74,7 +75,7 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 	if spec.CACertificate != nil {
 		caCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, *spec.CACertificate)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not extract CA certificate: %w", err)
 		}
 
 		opts = append(opts, prometheus.WithCertificate(caCertificate))
