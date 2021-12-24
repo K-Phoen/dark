@@ -261,6 +261,36 @@ spec:
                     type: object
                   default:
                     type: boolean
+                  derived_fields:
+                    items:
+                      properties:
+                        datasource:
+                          description: For internal links Optional.
+                          properties:
+                            name:
+                              type: string
+                            uid:
+                              description: Only one of the following may be specified.
+                              type: string
+                          type: object
+                        matcherRegex:
+                          description: Used to parse and capture some part of the
+                            log message. You can use the captured groups in the template.
+                          type: string
+                        name:
+                          type: string
+                        url:
+                          type: string
+                        urlDisplayLabel:
+                          description: Used to override the button label when this
+                            derived field is found in a log. Optional.
+                          type: string
+                      required:
+                      - matcherRegex
+                      - name
+                      - url
+                      type: object
+                    type: array
                   forward_cookies:
                     items:
                       type: string

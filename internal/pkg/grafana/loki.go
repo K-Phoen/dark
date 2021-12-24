@@ -64,6 +64,39 @@ func (datasources *Datasources) lokiSpecToOptions(ctx context.Context, objectRef
 	if spec.MaximumLines != nil && *spec.MaximumLines != 0 {
 		opts = append(opts, loki.MaximumLines(*spec.MaximumLines))
 	}
+	if len(spec.DerivedFields) != 0 {
+		opt, err := datasources.lokiDerivedFields(ctx, spec.DerivedFields)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, opt)
+	}
 
 	return opts, nil
+}
+
+func (datasources *Datasources) lokiDerivedFields(ctx context.Context, specFields []v1alpha1.LokiDerivedField) (loki.Option, error) {
+	var err error
+	fields := make([]loki.DerivedField, 0, len(specFields))
+
+	for _, field := range specFields {
+		datasourceUID := ""
+		if field.Datasource != nil {
+			datasourceUID, err = datasources.datasourceUIDFromRef(ctx, field.Datasource)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		fields = append(fields, loki.DerivedField{
+			Name:            field.Name,
+			URL:             field.URL,
+			Regex:           field.Regex,
+			URLDisplayLabel: field.URLDisplayLabel,
+			DatasourceUID:   datasourceUID,
+		})
+	}
+
+	return loki.DerivedFields(fields...), nil
 }

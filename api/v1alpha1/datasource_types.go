@@ -81,7 +81,24 @@ type LokiDatasource struct {
 	BasicAuth          *BasicAuth  `json:"basic_auth,omitempty"`
 	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
 
-	MaximumLines *int `json:"maximum_lines,omitempty"`
+	MaximumLines  *int               `json:"maximum_lines,omitempty"`
+	DerivedFields []LokiDerivedField `json:"derived_fields,omitempty"`
+}
+
+type LokiDerivedField struct {
+	// +kubebuilder:validation:Required
+	Name string `json:"name"`
+	// +kubebuilder:validation:Required
+	URL string `json:"url"`
+	// Used to parse and capture some part of the log message. You can use the captured groups in the template.
+	// +kubebuilder:validation:Required
+	Regex string `json:"matcherRegex"`
+	// Used to override the button label when this derived field is found in a log.
+	// Optional.
+	URLDisplayLabel string `json:"urlDisplayLabel,omitempty"`
+	// For internal links
+	// Optional.
+	Datasource *ValueOrDatasourceRef `json:"datasource,omitempty"`
 }
 
 type StackdriverDatasource struct {
@@ -118,4 +135,10 @@ type ValueOrRef struct {
 
 type ValueRef struct {
 	SecretKeyRef *v1.SecretKeySelector `json:"secretKeyRef,omitempty" protobuf:"bytes,4,opt,name=secretKeyRef"`
+}
+
+type ValueOrDatasourceRef struct {
+	// Only one of the following may be specified.
+	UID  string `json:"uid,omitempty"`
+	Name string `json:"name,omitempty"`
 }

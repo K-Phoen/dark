@@ -12,6 +12,7 @@ import (
 )
 
 var ErrDatasourceNotConfigured = fmt.Errorf("datasource not configured")
+var ErrInvalidDatasourceRef = fmt.Errorf("invalid datasource reference")
 var ErrInvalidAccessMode = fmt.Errorf("invalid access mode")
 
 type refReader interface {
@@ -76,4 +77,16 @@ func (datasources *Datasources) basicAuthCredentials(ctx context.Context, namesp
 	}
 
 	return username, password, nil
+}
+
+func (datasources *Datasources) datasourceUIDFromRef(ctx context.Context, ref *v1alpha1.ValueOrDatasourceRef) (string, error) {
+	if ref.UID != "" {
+		return ref.UID, nil
+	}
+
+	if ref.Name != "" {
+		return datasources.grabanaClient.GetDatasourceUIDByName(ctx, ref.UID)
+	}
+
+	return "", ErrInvalidDatasourceRef
 }
