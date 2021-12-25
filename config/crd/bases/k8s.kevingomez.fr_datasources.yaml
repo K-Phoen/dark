@@ -158,6 +158,31 @@ spec:
                     type: boolean
                   timeout:
                     type: string
+                  trace_to_logs:
+                    properties:
+                      datasource:
+                        properties:
+                          name:
+                            type: string
+                          uid:
+                            description: Only one of the following may be specified.
+                            type: string
+                        type: object
+                      filter_by_span:
+                        type: boolean
+                      filter_by_trace:
+                        type: boolean
+                      span_end_shift:
+                        type: string
+                      span_start_shift:
+                        type: string
+                      tags:
+                        items:
+                          type: string
+                        type: array
+                    required:
+                    - datasource
+                    type: object
                   url:
                     type: string
                 required:

@@ -130,10 +130,10 @@ type TempoDatasource struct {
 
 	NodeGraph *bool `json:"node_graph,omitempty"`
 
-	TraceToLogs *TempoTraceToLogs `json:"trace_to_logs,omitempty"`
+	TraceToLogs *TraceToLogs `json:"trace_to_logs,omitempty"`
 }
 
-type TempoTraceToLogs struct {
+type TraceToLogs struct {
 	Datasource     ValueOrDatasourceRef `json:"datasource"`
 	Tags           []string             `json:"tags,omitempty"`
 	SpanStartShift string               `json:"span_start_shift,omitempty"`
@@ -161,6 +161,8 @@ type JaegerDatasource struct {
 	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
 
 	NodeGraph *bool `json:"node_graph,omitempty"`
+
+	TraceToLogs *TraceToLogs `json:"trace_to_logs,omitempty"`
 }
 
 type BasicAuth struct {

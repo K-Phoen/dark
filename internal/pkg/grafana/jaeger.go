@@ -65,6 +65,52 @@ func (datasources *Datasources) jaegerSpecToOptions(ctx context.Context, objectR
 	if spec.NodeGraph != nil && *spec.NodeGraph {
 		opts = append(opts, jaeger.WithNodeGraph())
 	}
+	if spec.TraceToLogs != nil {
+		opt, err := datasources.jaegerTraceToLogs(ctx, spec.TraceToLogs)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, opt)
+	}
 
 	return opts, nil
+}
+
+//nolint:dupl
+func (datasources *Datasources) jaegerTraceToLogs(ctx context.Context, spec *v1alpha1.TraceToLogs) (jaeger.Option, error) {
+	opts := []jaeger.TraceToLogsOption{}
+
+	datasourceUID, err := datasources.datasourceUIDFromRef(ctx, &spec.Datasource)
+	if err != nil {
+		return nil, fmt.Errorf("could not infer datasource UID from reference: %w", err)
+	}
+
+	if len(spec.Tags) != 0 {
+		opts = append(opts, jaeger.Tags(spec.Tags...))
+	}
+	if spec.FilterByTrace != nil && *spec.FilterByTrace {
+		opts = append(opts, jaeger.FilterByTrace())
+	}
+	if spec.FilterBySpan != nil && *spec.FilterBySpan {
+		opts = append(opts, jaeger.FilterBySpan())
+	}
+	if spec.SpanStartShift != "" {
+		shift, err := time.ParseDuration(spec.SpanStartShift)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, jaeger.SpanStartShift(shift))
+	}
+	if spec.SpanEndShift != "" {
+		shift, err := time.ParseDuration(spec.SpanEndShift)
+		if err != nil {
+			return nil, err
+		}
+
+		opts = append(opts, jaeger.SpanEndShift(shift))
+	}
+
+	return jaeger.TraceToLogs(datasourceUID, opts...), nil
 }

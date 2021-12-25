@@ -75,6 +75,7 @@ func (datasources *Datasources) tempoSpecToOptions(ctx context.Context, objectRe
 	return opts, nil
 }
 
+//nolint:dupl
 func (datasources *Datasources) tempoTraceToLogs(ctx context.Context, spec *v1alpha1.TraceToLogs) (tempo.Option, error) {
 	opts := []tempo.TraceToLogsOption{}
 
