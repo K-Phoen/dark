@@ -11,6 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 )
 
+var ErrInvalidExemplar = fmt.Errorf("invalid exemplar")
+
 func (datasources *Datasources) prometheusSpecToModel(ctx context.Context, objectRef types.NamespacedName, ds *v1alpha1.PrometheusDatasource) (datasource.Datasource, error) {
 	opts, err := datasources.prometheusSpecToOptions(ctx, objectRef, ds)
 	if err != nil {
@@ -80,6 +82,42 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 
 		opts = append(opts, prometheus.WithCertificate(caCertificate))
 	}
+	if len(spec.Exemplars) != 0 {
+		exemplars, err := datasources.prometheusExemplars(ctx, spec.Exemplars)
+		if err != nil {
+			return nil, fmt.Errorf("could not extract prometheus exemplars: %w", err)
+		}
+
+		opts = append(opts, prometheus.Exemplars(exemplars...))
+	}
 
 	return opts, nil
+}
+
+func (datasources *Datasources) prometheusExemplars(ctx context.Context, specExemplars []v1alpha1.PrometheusExemplar) ([]prometheus.Exemplar, error) {
+	exemplars := make([]prometheus.Exemplar, 0, len(specExemplars))
+
+	for _, specExemplar := range specExemplars {
+		exemplar := prometheus.Exemplar{
+			LabelName: specExemplar.LabelName,
+		}
+
+		//nolint:gocritic
+		if exemplar.URL != "" {
+			exemplar.URL = specExemplar.URL
+		} else if exemplar.DatasourceUID != "" {
+			datasourceUID, err := datasources.datasourceUIDFromRef(ctx, specExemplar.Datasource)
+			if err != nil {
+				return nil, fmt.Errorf("could not infer datasource UID from reference: %w", err)
+			}
+
+			exemplar.DatasourceUID = datasourceUID
+		} else {
+			return nil, ErrInvalidExemplar
+		}
+
+		exemplars = append(exemplars, exemplar)
+	}
+
+	return exemplars, nil
 }
