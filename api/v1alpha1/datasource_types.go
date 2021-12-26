@@ -64,9 +64,22 @@ type PrometheusDatasource struct {
 	// +kubebuilder:validation:Enum=POST;GET
 	HTTPMethod string `json:"http_method,omitempty"`
 	// +kubebuilder:validation:Enum=proxy;direct
-	AccessMode    string      `json:"access_mode,omitempty"`
-	BasicAuth     *BasicAuth  `json:"basic_auth,omitempty"`
-	CACertificate *ValueOrRef `json:"ca_certificate,omitempty"`
+	AccessMode    string               `json:"access_mode,omitempty"`
+	BasicAuth     *BasicAuth           `json:"basic_auth,omitempty"`
+	CACertificate *ValueOrRef          `json:"ca_certificate,omitempty"`
+	Exemplars     []PrometheusExemplar `json:"exemplars,omitempty"`
+}
+
+type PrometheusExemplar struct {
+	LabelName string `json:"label_name"`
+
+	// The data source the exemplar is going to navigate to.
+	// Set this value for internal exemplar links.
+	Datasource *ValueOrDatasourceRef `json:"datasource,omitempty"`
+
+	// The URL of the trace backend the user would go to see its trace.
+	// Set this value for external exemplar links.
+	URL string `json:"url,omitempty"`
 }
 
 type LokiDatasource struct {
@@ -117,10 +130,10 @@ type TempoDatasource struct {
 
 	NodeGraph *bool `json:"node_graph,omitempty"`
 
-	TraceToLogs *TempoTraceToLogs `json:"trace_to_logs,omitempty"`
+	TraceToLogs *TraceToLogs `json:"trace_to_logs,omitempty"`
 }
 
-type TempoTraceToLogs struct {
+type TraceToLogs struct {
 	Datasource     ValueOrDatasourceRef `json:"datasource"`
 	Tags           []string             `json:"tags,omitempty"`
 	SpanStartShift string               `json:"span_start_shift,omitempty"`
@@ -148,6 +161,8 @@ type JaegerDatasource struct {
 	CACertificate      *ValueOrRef `json:"ca_certificate,omitempty"`
 
 	NodeGraph *bool `json:"node_graph,omitempty"`
+
+	TraceToLogs *TraceToLogs `json:"trace_to_logs,omitempty"`
 }
 
 type BasicAuth struct {
