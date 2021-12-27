@@ -109,6 +109,41 @@ docker-push-converter: docker-build-converter ## Push docker image with the conv
 .PHONY: docker-push
 docker-push: docker-push-manager docker-push-converter ## Push all docker images.
 
+##@ Development Environment
+.PHONY: dev-env-start
+dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision
+
+.PHONY: dev-env-create-cluster
+dev-env-create-cluster:
+	k3d cluster create --image="rancher/k3s:v1.21.7-k3s1" dark-dev
+
+.PHONY: dev-env-delete-cluster
+dev-env-delete-cluster:
+	k3d cluster delete dark-dev
+
+.PHONY: dev-env-provision
+dev-env-provision:
+	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo update
+	helm upgrade \
+		--install loki grafana/loki-stack \
+		--set grafana.enabled=true,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+	kubectl apply -f config/crd/bases
+
+.PHONY: dev-env-port-forward
+dev-env-port-forward:
+	@echo "Grafana credentials"
+	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+	@echo ""
+	@echo "Starting port forward"
+	kubectl port-forward svc/loki-grafana 3000:80
+
+.PHONY: dev-env-check-binaires
+dev-env-check-binaries:
+	@helm version >/dev/null 2>&1 || (echo "ERROR: helm is required."; exit 1)
+	@k3d version >/dev/null 2>&1 || (echo "ERROR: k3d is required."; exit 1)
+	@kubectl version --client >/dev/null 2>&1 || (echo "ERROR: kubectl is required."; exit 1)
+
 ##@ Deployment
 
 ifndef ignore-not-found
