@@ -110,6 +110,10 @@ docker-push-converter: docker-build-converter ## Push docker image with the conv
 docker-push: docker-push-manager docker-push-converter ## Push all docker images.
 
 ##@ Development Environment
+DEV_ENV_GRAFANA_URL=http://grafana.dark.localhost
+DEV_ENV_GRAFANA_ADMIN_PASSWORD=$(shell kubectl get secret loki-grafana -o go-template='{{ index . "data" "admin-password" | base64decode }}')
+DEV_ENV_GRAFANA_API_KEY=$(shell  curl --fail -XPOST -H "Content-Type: application/json" -d '{"name": "dark-dev-api-key-$(shell date +%s)", "role": "Admin"}' http://admin:$(DEV_ENV_GRAFANA_ADMIN_PASSWORD)@grafana.dark.localhost/api/auth/keys | jq .key)
+
 .PHONY: dev-env-start
 dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision dev-env-grafana-credentials
 
@@ -137,14 +141,21 @@ dev-env-provision:
 .PHONY: dev-env-grafana-credentials
 dev-env-grafana-credentials:
 	@echo "==============="
-	@echo "Grafana available at http://grafana.dark.localhost"
+	@echo "Grafana available at $(DEV_ENV_GRAFANA_URL)"
 	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+
+.PHONY: dev-env-run-controller
+dev-env-run-controler:
+	GRAFANA_HOST=$(DEV_ENV_GRAFANA_URL) \
+	GRAFANA_TOKEN=$(DEV_ENV_GRAFANA_API_KEY) \
+	go run ./cmd/controller
 
 .PHONY: dev-env-check-binaires
 dev-env-check-binaries:
 	@helm version >/dev/null 2>&1 || (echo "ERROR: helm is required."; exit 1)
 	@k3d version >/dev/null 2>&1 || (echo "ERROR: k3d is required."; exit 1)
 	@kubectl version --client >/dev/null 2>&1 || (echo "ERROR: kubectl is required."; exit 1)
+	@jq --version >/dev/null 2>&1 ||(echo "ERROR: jq is required."; exit 1)
 
 ##@ Deployment
 
