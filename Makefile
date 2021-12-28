@@ -73,6 +73,54 @@ test: envtest ## Run tests.
 lint: ## Lints the code base.
 	docker run --rm -v $(shell pwd):/app -w /app golangci/golangci-lint:v1.43.0 golangci-lint run -c build/golangci.yaml
 
+DEV_CLUSTER_PORT?=8181
+DEV_GRAFANA_HOST=grafana.dark.localhost
+DEV_ENV_GRAFANA_ADMIN_PASSWORD=$(shell kubectl get secret loki-grafana -o go-template='{{ index . "data" "admin-password" | base64decode }}')
+DEV_GRAFANA_API_KEY=$(shell curl --fail -XPOST -H "Content-Type: application/json" -d '{"name": "dark-dev-api-key-$(shell date +%s)", "role": "Admin"}' http://admin:$(DEV_ENV_GRAFANA_ADMIN_PASSWORD)@$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT)/api/auth/keys | jq .key)
+
+.PHONY: dev-env-start
+dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision dev-env-info ## Start a development k3d cluster.
+
+.PHONY: dev-env-create-cluster
+dev-env-create-cluster: ## Create a development k3d cluster.
+	k3d cluster create \
+		--image="rancher/k3s:v1.21.7-k3s1" \
+		-p "$(DEV_CLUSTER_PORT):80@loadbalancer" \
+		dark-dev
+
+.PHONY: dev-env-remove
+dev-env-remove: ## Remove the development k3d cluster.
+	k3d cluster delete dark-dev
+
+.PHONY: dev-env-provision
+dev-env-provision: ## Provision the development k3d cluster with useful tools (Grafana, Prometheus, Loki, ...).
+	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo update
+	helm upgrade \
+		--install loki grafana/loki-stack \
+		--set grafana.enabled=true,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+	kubectl apply -f config/crd/bases
+	kubectl apply -f config/dev-env
+
+.PHONY: dev-env-info
+dev-env-info: ## Print useful information for the dev environment (URL, credentials, ...).
+	@echo "==============="
+	@echo "Grafana available at http://$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT)"
+	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+
+.PHONY: dev-env-check-binaires
+dev-env-check-binaries: ## Check that the required binary are present.
+	@helm version >/dev/null 2>&1 || (echo "ERROR: helm is required."; exit 1)
+	@k3d version >/dev/null 2>&1 || (echo "ERROR: k3d is required."; exit 1)
+	@kubectl version --client >/dev/null 2>&1 || (echo "ERROR: kubectl is required."; exit 1)
+	@jq --version >/dev/null 2>&1 ||(echo "ERROR: jq is required."; exit 1)
+
+.PHONY: run
+run: ## Run a controller from your host.
+	GRAFANA_HOST=http://$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT) \
+	GRAFANA_TOKEN=$(DEV_GRAFANA_API_KEY) \
+	go run ./cmd/controller
+
 ##@ Build
 
 .PHONY: build
@@ -82,10 +130,6 @@ build-manager: generate fmt vet ## Build manager binary.
 .PHONY: build
 build-converter: fmt vet ## Build converter binary.
 	go build -o bin/converter cmd/converter/main.go
-
-.PHONY: run
-run: ## Run a controller from your host.
-	go run cmd/controller/main.go
 
 .PHONY: docker-build-manager
 docker-build-manager: ## Build docker image with the manager.
@@ -108,54 +152,6 @@ docker-push-converter: docker-build-converter ## Push docker image with the conv
 
 .PHONY: docker-push
 docker-push: docker-push-manager docker-push-converter ## Push all docker images.
-
-##@ Development Environment
-DEV_ENV_GRAFANA_URL=http://grafana.dark.localhost
-DEV_ENV_GRAFANA_ADMIN_PASSWORD=$(shell kubectl get secret loki-grafana -o go-template='{{ index . "data" "admin-password" | base64decode }}')
-DEV_ENV_GRAFANA_API_KEY=$(shell  curl --fail -XPOST -H "Content-Type: application/json" -d '{"name": "dark-dev-api-key-$(shell date +%s)", "role": "Admin"}' http://admin:$(DEV_ENV_GRAFANA_ADMIN_PASSWORD)@grafana.dark.localhost/api/auth/keys | jq .key)
-
-.PHONY: dev-env-start
-dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision dev-env-grafana-credentials
-
-.PHONY: dev-env-create-cluster
-dev-env-create-cluster:
-	k3d cluster create \
-		--image="rancher/k3s:v1.21.7-k3s1" \
-		-p "80:80@loadbalancer" \
-		dark-dev
-
-.PHONY: dev-env-delete-cluster
-dev-env-delete-cluster:
-	k3d cluster delete dark-dev
-
-.PHONY: dev-env-provision
-dev-env-provision:
-	helm repo add grafana https://grafana.github.io/helm-charts
-	helm repo update
-	helm upgrade \
-		--install loki grafana/loki-stack \
-		--set grafana.enabled=true,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
-	kubectl apply -f config/crd/bases
-	kubectl apply -f config/dev-env
-
-.PHONY: dev-env-grafana-credentials
-dev-env-grafana-credentials:
-	@echo "==============="
-	@echo "Grafana available at $(DEV_ENV_GRAFANA_URL)"
-	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
-
-.PHONY: dev-env-run-controller
-dev-env-run-controler:
-	GRAFANA_HOST=$(DEV_ENV_GRAFANA_URL) \
-	GRAFANA_TOKEN=$(DEV_ENV_GRAFANA_API_KEY) \
-	go run ./cmd/controller
-
-.PHONY: dev-env-check-binaires
-dev-env-check-binaries:
-	@helm version >/dev/null 2>&1 || (echo "ERROR: helm is required."; exit 1)
-	@k3d version >/dev/null 2>&1 || (echo "ERROR: k3d is required."; exit 1)
-	@kubectl version --client >/dev/null 2>&1 || (echo "ERROR: kubectl is required."; exit 1)
-	@jq --version >/dev/null 2>&1 ||(echo "ERROR: jq is required."; exit 1)
 
 ##@ Deployment
 
