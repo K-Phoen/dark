@@ -75,8 +75,8 @@ lint: ## Lints the code base.
 
 DEV_CLUSTER_PORT?=8181
 DEV_GRAFANA_HOST=grafana.dark.localhost
-DEV_ENV_GRAFANA_ADMIN_PASSWORD=$(shell kubectl get secret loki-grafana -o go-template='{{ index . "data" "admin-password" | base64decode }}')
-DEV_GRAFANA_API_KEY=$(shell curl --fail -XPOST -H "Content-Type: application/json" -d '{"name": "dark-dev-api-key-$(shell date +%s)", "role": "Admin"}' http://admin:$(DEV_ENV_GRAFANA_ADMIN_PASSWORD)@$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT)/api/auth/keys | jq .key)
+DEV_GRAFANA_PASSWORD=$(shell kubectl get secret loki-grafana -o go-template='{{ index . "data" "admin-password" | base64decode }}')
+DEV_GRAFANA_API_KEY=$(shell curl --fail -XPOST -H "Content-Type: application/json" -d '{"name": "dark-dev-api-key-$(shell date +%s)", "role": "Admin"}' http://admin:$(DEV_GRAFANA_PASSWORD)@$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT)/api/auth/keys | jq .key)
 
 .PHONY: dev-env-start
 dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision dev-env-info ## Start a development k3d cluster.
