@@ -111,11 +111,14 @@ docker-push: docker-push-manager docker-push-converter ## Push all docker images
 
 ##@ Development Environment
 .PHONY: dev-env-start
-dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision
+dev-env-start: dev-env-check-binaries dev-env-create-cluster dev-env-provision dev-env-grafana-credentials
 
 .PHONY: dev-env-create-cluster
 dev-env-create-cluster:
-	k3d cluster create --image="rancher/k3s:v1.21.7-k3s1" dark-dev
+	k3d cluster create \
+		--image="rancher/k3s:v1.21.7-k3s1" \
+		-p "80:80@loadbalancer" \
+		dark-dev
 
 .PHONY: dev-env-delete-cluster
 dev-env-delete-cluster:
@@ -129,14 +132,13 @@ dev-env-provision:
 		--install loki grafana/loki-stack \
 		--set grafana.enabled=true,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
 	kubectl apply -f config/crd/bases
+	kubectl apply -f config/dev-env
 
-.PHONY: dev-env-port-forward
-dev-env-port-forward:
-	@echo "Grafana credentials"
+.PHONY: dev-env-grafana-credentials
+dev-env-grafana-credentials:
+	@echo "==============="
+	@echo "Grafana available at http://grafana.dark.localhost"
 	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
-	@echo ""
-	@echo "Starting port forward"
-	kubectl port-forward svc/loki-grafana 3000:80
 
 .PHONY: dev-env-check-binaires
 dev-env-check-binaries:
