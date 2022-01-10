@@ -20,7 +20,7 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/K-Phoen/grabana v0.20.6
+# github.com/K-Phoen/grabana v0.20.8
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
@@ -37,11 +37,13 @@ github.com/K-Phoen/grabana/graph
 github.com/K-Phoen/grabana/graph/series
 github.com/K-Phoen/grabana/heatmap
 github.com/K-Phoen/grabana/heatmap/axis
+github.com/K-Phoen/grabana/logs
 github.com/K-Phoen/grabana/row
 github.com/K-Phoen/grabana/singlestat
 github.com/K-Phoen/grabana/table
 github.com/K-Phoen/grabana/target/graphite
 github.com/K-Phoen/grabana/target/influxdb
+github.com/K-Phoen/grabana/target/loki
 github.com/K-Phoen/grabana/target/prometheus
 github.com/K-Phoen/grabana/target/stackdriver
 github.com/K-Phoen/grabana/text
@@ -52,7 +54,7 @@ github.com/K-Phoen/grabana/variable/custom
 github.com/K-Phoen/grabana/variable/datasource
 github.com/K-Phoen/grabana/variable/interval
 github.com/K-Phoen/grabana/variable/query
-# github.com/K-Phoen/sdk v0.8.1
+# github.com/K-Phoen/sdk v0.8.3
 ## explicit; go 1.16
 github.com/K-Phoen/sdk
 # github.com/beorn7/perks v1.0.1
