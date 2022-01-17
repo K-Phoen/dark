@@ -16,6 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+//nolint:gosec (these are not hardcoded credentials -_-)
 const apiKeysFinalizerName = "apikeys.k8s.kevingomez.fr/finalizer"
 
 type apiKeyClient interface {
