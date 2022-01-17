@@ -18,9 +18,37 @@ rules:
   resources:
   - secrets
   verbs:
+  - create
+  - delete
   - get
   - list
   - watch
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - apikeys
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - apikeys/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - apikeys/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - k8s.kevingomez.fr
   resources:

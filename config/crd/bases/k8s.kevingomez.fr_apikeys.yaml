@@ -1,0 +1,82 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
+  name: apikeys.k8s.kevingomez.fr
+spec:
+  group: k8s.kevingomez.fr
+  names:
+    kind: APIKey
+    listKind: APIKeyList
+    plural: apikeys
+    shortNames:
+    - api-keys
+    - apikeys
+    - api-key
+    - apikey
+    - grafana-api-keys
+    singular: apikey
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: APIKey is the Schema for the apikeys API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: APIKeySpec defines the desired state of APIKey
+            properties:
+              role:
+                enum:
+                - admin
+                - editor
+                - viewer
+                type: string
+            required:
+            - role
+            type: object
+          status:
+            description: APIKeyStatus defines the observed state of APIKey
+            properties:
+              message:
+                type: string
+              status:
+                type: string
+            required:
+            - message
+            - status
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

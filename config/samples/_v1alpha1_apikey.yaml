@@ -1,0 +1,6 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: APIKey
+metadata:
+  name: apikey-dark
+spec:
+  role: admin

@@ -125,7 +125,8 @@ func (r *DatasourceReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;list;watch
 
 func StartDatasourceReconciler(logger logr.Logger, ctrlManager ctrl.Manager, grabanaClient *grabana.Client) error {
-	refReader := kubernetes.NewValueRefReader(logger, ctrlManager.GetClient())
+	refReader := kubernetes.NewValueRefReader(logger, kubernetes.NewSecrets(logger, ctrlManager.GetClient()))
+
 	reconciler := &DatasourceReconciler{
 		Client:      ctrlManager.GetClient(),
 		Scheme:      ctrlManager.GetScheme(),
@@ -143,23 +144,23 @@ func (r *DatasourceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func (r *DatasourceReconciler) updateStatus(ctx context.Context, datasource *v1alpha1.Datasource, err error) {
+func (r *DatasourceReconciler) updateStatus(ctx context.Context, manifest *v1alpha1.Datasource, err error) {
 	logger := log.FromContext(ctx)
 
 	// NEVER modify objects from the store. It's a read-only, local cache.
 	// You can use DeepCopy() to make a deep copy of original object and modify this copy
 	// Or create a copy manually for better performance
-	dashboardCopy := datasource.DeepCopy()
+	manifestCopy := manifest.DeepCopy()
 
 	if err == nil {
-		dashboardCopy.Status.Status = "OK"
-		dashboardCopy.Status.Message = "Synchronized"
+		manifestCopy.Status.Status = "OK"
+		manifestCopy.Status.Message = "Synchronized"
 	} else {
-		dashboardCopy.Status.Status = "Error"
-		dashboardCopy.Status.Message = err.Error()
+		manifestCopy.Status.Status = "Error"
+		manifestCopy.Status.Message = err.Error()
 	}
 
-	if err := r.Status().Update(ctx, dashboardCopy); err != nil {
+	if err := r.Status().Update(ctx, manifestCopy); err != nil {
 		logger.Error(err, "unable to update Datasource status")
 	}
 }
