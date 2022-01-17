@@ -20,4 +20,12 @@ resources:
   kind: Datasource
   path: github.com/K-Phoen/dark/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: k8s.kevingomez.fr
+  kind: APIKey
+  path: github.com/K-Phoen/dark/api/v1alpha1
+  version: v1alpha1
 version: "3"

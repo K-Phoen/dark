@@ -11,6 +11,9 @@ import (
 	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
+	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
+	k8skevingomezfrv1alpha1 "github.com/K-Phoen/dark/api/v1alpha1"
+	"github.com/K-Phoen/dark/internal/pkg/controllers"
 	"github.com/K-Phoen/grabana"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -20,10 +23,6 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
-
-	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
-	k8skevingomezfrv1alpha1 "github.com/K-Phoen/dark/api/v1alpha1"
-	"github.com/K-Phoen/dark/internal/pkg/controllers"
 	//+kubebuilder:scaffold:imports
 )
 
@@ -102,6 +101,10 @@ func main() {
 	}
 	if err = controllers.StartDatasourceReconciler(logger, mgr, grabanaClient); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Datasource")
+		os.Exit(1)
+	}
+	if err = controllers.StartAPIKeyReconciler(logger, mgr, grabanaClient); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "APIKey")
 		os.Exit(1)
 	}
 	//+kubebuilder:scaffold:builder
