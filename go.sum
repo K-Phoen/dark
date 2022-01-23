@@ -67,8 +67,8 @@ github.com/Azure/go-autorest/tracing v0.6.0/go.mod h1:+vhtPC754Xsa23ID7GlGsrdKBp
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
-github.com/K-Phoen/grabana v0.20.10 h1:3dJiMcoI20ZQ82lUkpbn0FD4F6VMyVkAGDqwz1tYalA=
-github.com/K-Phoen/grabana v0.20.10/go.mod h1:Ap5cn3XZwuAfW57OnXKR4T3Y0Zhp2qEnT/hxtZGme4c=
+github.com/K-Phoen/grabana v0.20.11 h1:TLnSYziXgRHcbFuZygMPPkkyZkq4pNoc0FQVisKVxXs=
+github.com/K-Phoen/grabana v0.20.11/go.mod h1:Ap5cn3XZwuAfW57OnXKR4T3Y0Zhp2qEnT/hxtZGme4c=
 github.com/K-Phoen/sdk v0.8.4 h1:KAH0ipC/4iWxslFudjy84Gm8fkaVRfekZK+BPAvoF30=
 github.com/K-Phoen/sdk v0.8.4/go.mod h1:fnbOsbRksULSfcXjOI6W1/HISz5o/u1iEhF/fLedqTg=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=

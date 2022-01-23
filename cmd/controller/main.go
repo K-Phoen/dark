@@ -107,6 +107,10 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "APIKey")
 		os.Exit(1)
 	}
+	if err = controllers.StartAlertManagerReconciler(logger, mgr, grabanaClient); err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "AlertManager")
+		os.Exit(1)
+	}
 	//+kubebuilder:scaffold:builder
 
 	// liveness and readiness probes

@@ -26,6 +26,32 @@ rules:
 - apiGroups:
   - k8s.kevingomez.fr
   resources:
+  - alertmanagers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - alertmanagers/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
+  - alertmanagers/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - k8s.kevingomez.fr
+  resources:
   - apikeys
   verbs:
   - create
