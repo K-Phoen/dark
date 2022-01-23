@@ -32,10 +32,9 @@ type EmailContactType struct {
 }
 
 type SlackContactType struct {
-	// TODO this should be a plain value or read from a secret
-	Webhook string `json:"webhook,omitempty"`
-	Title   string `json:"title,omitempty"`
-	Body    string `json:"body,omitempty"`
+	Webhook ValueOrRef `json:"webhook,omitempty"`
+	Title   string     `json:"title,omitempty"`
+	Body    string     `json:"body,omitempty"`
 }
 
 type RoutingPolicy struct {

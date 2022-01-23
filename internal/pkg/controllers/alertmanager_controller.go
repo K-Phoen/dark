@@ -5,6 +5,7 @@ import (
 
 	"github.com/K-Phoen/dark/api/v1alpha1"
 	"github.com/K-Phoen/dark/internal/pkg/grafana"
+	"github.com/K-Phoen/dark/internal/pkg/kubernetes"
 	"github.com/K-Phoen/grabana"
 	"github.com/go-logr/logr"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -113,11 +114,13 @@ func (r *AlertManagerReconciler) doReconcileManifest(ctx context.Context, manife
 }
 
 func StartAlertManagerReconciler(logger logr.Logger, ctrlManager ctrl.Manager, grabanaClient *grabana.Client) error {
+	refReader := kubernetes.NewValueRefReader(logger, kubernetes.NewSecrets(logger, ctrlManager.GetClient()))
+
 	reconciler := &AlertManagerReconciler{
 		Client:       ctrlManager.GetClient(),
 		Scheme:       ctrlManager.GetScheme(),
 		Recorder:     ctrlManager.GetEventRecorderFor("alertmanager-controller"),
-		alertManager: grafana.NewAlertManager(logger, grabanaClient),
+		alertManager: grafana.NewAlertManager(logger, grabanaClient, refReader),
 	}
 
 	return reconciler.SetupWithManager(ctrlManager)

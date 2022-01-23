@@ -18,12 +18,14 @@ var ErrInvalidRoutingRule = fmt.Errorf("invalid routing rule")
 type AlertManager struct {
 	logger        logr.Logger
 	grabanaClient *grabana.Client
+	refReader     refReader
 }
 
-func NewAlertManager(logger logr.Logger, grabanaClient *grabana.Client) *AlertManager {
+func NewAlertManager(logger logr.Logger, grabanaClient *grabana.Client, refReader refReader) *AlertManager {
 	return &AlertManager{
 		logger:        logger,
 		grabanaClient: grabanaClient,
+		refReader:     refReader,
 	}
 }
 
@@ -35,7 +37,7 @@ func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.Al
 	var managerOpts []alertmanager.Option
 
 	// contact points
-	contactPointsOpts, err := manager.contactPointsOpts(manifest)
+	contactPointsOpts, err := manager.contactPointsOpts(ctx, manifest)
 	if err != nil {
 		return err
 	}
@@ -60,11 +62,11 @@ func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.Al
 	return manager.grabanaClient.ConfigureAlertManager(ctx, alertmanager.New(managerOpts...))
 }
 
-func (manager *AlertManager) contactPointsOpts(manifest v1alpha1.AlertManager) ([]alertmanager.Contact, error) {
+func (manager *AlertManager) contactPointsOpts(ctx context.Context, manifest v1alpha1.AlertManager) ([]alertmanager.Contact, error) {
 	var opts []alertmanager.Contact
 
 	for _, contactPointSpec := range manifest.Spec.ContactPoints {
-		opt, err := manager.contactPointOpt(contactPointSpec)
+		opt, err := manager.contactPointOpt(ctx, manifest.Namespace, contactPointSpec)
 		if err != nil {
 			return nil, err
 		}
@@ -75,11 +77,11 @@ func (manager *AlertManager) contactPointsOpts(manifest v1alpha1.AlertManager) (
 	return opts, nil
 }
 
-func (manager *AlertManager) contactPointOpt(contactPointSpec v1alpha1.ContactPoint) (alertmanager.Contact, error) {
+func (manager *AlertManager) contactPointOpt(ctx context.Context, namespace string, contactPointSpec v1alpha1.ContactPoint) (alertmanager.Contact, error) {
 	var contactPointTypeOpts []alertmanager.ContactPointOption
 
 	for _, contactPointType := range contactPointSpec.Contacts {
-		opt, err := manager.contactPointTypeOpt(contactPointType)
+		opt, err := manager.contactPointTypeOpt(ctx, namespace, contactPointType)
 		if err != nil {
 			return alertmanager.Contact{}, err
 		}
@@ -90,12 +92,12 @@ func (manager *AlertManager) contactPointOpt(contactPointSpec v1alpha1.ContactPo
 	return alertmanager.ContactPoint(contactPointSpec.Name, contactPointTypeOpts...), nil
 }
 
-func (manager *AlertManager) contactPointTypeOpt(contactPointType v1alpha1.ContactPointType) (alertmanager.ContactPointOption, error) {
+func (manager *AlertManager) contactPointTypeOpt(ctx context.Context, namespace string, contactPointType v1alpha1.ContactPointType) (alertmanager.ContactPointOption, error) {
 	if contactPointType.Email != nil {
 		return manager.contactPointTypeEmail(*contactPointType.Email)
 	}
 	if contactPointType.Slack != nil {
-		return manager.contactPointTypeSlack(*contactPointType.Slack)
+		return manager.contactPointTypeSlack(ctx, namespace, *contactPointType.Slack)
 	}
 
 	return nil, ErrInvalidContactPointType
@@ -114,8 +116,13 @@ func (manager *AlertManager) contactPointTypeEmail(contactPointType v1alpha1.Ema
 	return email.To(contactPointType.To, opts...), nil
 }
 
-func (manager *AlertManager) contactPointTypeSlack(contactPointType v1alpha1.SlackContactType) (alertmanager.ContactPointOption, error) {
+func (manager *AlertManager) contactPointTypeSlack(ctx context.Context, namespace string, contactPointType v1alpha1.SlackContactType) (alertmanager.ContactPointOption, error) {
 	var opts []slack.Option
+
+	webhookURL, err := manager.refReader.RefToValue(ctx, namespace, contactPointType.Webhook)
+	if err != nil {
+		return nil, err
+	}
 
 	if contactPointType.Title != "" {
 		opts = append(opts, slack.Title(contactPointType.Title))
@@ -124,7 +131,7 @@ func (manager *AlertManager) contactPointTypeSlack(contactPointType v1alpha1.Sla
 		opts = append(opts, slack.Body(contactPointType.Body))
 	}
 
-	return slack.Webhook(contactPointType.Webhook, opts...), nil
+	return slack.Webhook(webhookURL, opts...), nil
 }
 
 func (manager *AlertManager) routingOpts(manifest v1alpha1.AlertManager) ([]alertmanager.RoutingPolicy, error) {
