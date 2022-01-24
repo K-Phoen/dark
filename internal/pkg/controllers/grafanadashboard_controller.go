@@ -3,6 +3,8 @@ package controllers
 import (
 	"context"
 
+	"sigs.k8s.io/controller-runtime/pkg/controller"
+
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
 	"github.com/K-Phoen/dark/internal/pkg/grafana"
 	"github.com/K-Phoen/grabana"
@@ -122,6 +124,9 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 func (r *GrafanaDashboardReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&k8skevingomezfrv1.GrafanaDashboard{}).
+		WithOptions(controller.Options{
+			MaxConcurrentReconciles: 5,
+		}).
 		Complete(r)
 }
 
