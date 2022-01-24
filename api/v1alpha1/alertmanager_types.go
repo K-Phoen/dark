@@ -21,8 +21,9 @@ type ContactPoint struct {
 }
 
 type ContactPointType struct {
-	Email *EmailContactType `json:"email,omitempty"`
-	Slack *SlackContactType `json:"slack,omitempty"`
+	Email    *EmailContactType    `json:"email,omitempty"`
+	Slack    *SlackContactType    `json:"slack,omitempty"`
+	Opsgenie *OpsgenieContactType `json:"opsgenie,omitempty"`
 }
 
 type EmailContactType struct {
@@ -35,6 +36,13 @@ type SlackContactType struct {
 	Webhook ValueOrRef `json:"webhook,omitempty"`
 	Title   string     `json:"title,omitempty"`
 	Body    string     `json:"body,omitempty"`
+}
+
+type OpsgenieContactType struct {
+	APIURL           string     `json:"api_url,omitempty"`
+	APIKey           ValueOrRef `json:"api_key,omitempty"`
+	AutoClose        bool       `json:"auto_close,omitempty"`
+	OverridePriority bool       `json:"override_priority,omitempty"`
 }
 
 type RoutingPolicy struct {

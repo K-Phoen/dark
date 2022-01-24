@@ -20,6 +20,16 @@ spec:
     - name: Team A
       contacts:
         - email: { to: ['team-a@unicorn.io'] }
+        - opsgenie:
+            api_url: https://api.eu.opsgenie.com/v2/alerts
+            api_key:
+              value: "shhhh, it's a secret"
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: opsgenie-api-secret
+              #    key: api-key
+            auto_close: true
+            override_priority: true
 
     - name: Team B
       contacts:

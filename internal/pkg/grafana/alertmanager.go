@@ -8,6 +8,7 @@ import (
 	"github.com/K-Phoen/grabana"
 	"github.com/K-Phoen/grabana/alertmanager"
 	"github.com/K-Phoen/grabana/alertmanager/email"
+	"github.com/K-Phoen/grabana/alertmanager/opsgenie"
 	"github.com/K-Phoen/grabana/alertmanager/slack"
 	"github.com/go-logr/logr"
 )
@@ -63,7 +64,7 @@ func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.Al
 }
 
 func (manager *AlertManager) contactPointsOpts(ctx context.Context, manifest v1alpha1.AlertManager) ([]alertmanager.Contact, error) {
-	var opts []alertmanager.Contact
+	opts := []alertmanager.Contact{}
 
 	for _, contactPointSpec := range manifest.Spec.ContactPoints {
 		opt, err := manager.contactPointOpt(ctx, manifest.Namespace, contactPointSpec)
@@ -78,7 +79,7 @@ func (manager *AlertManager) contactPointsOpts(ctx context.Context, manifest v1a
 }
 
 func (manager *AlertManager) contactPointOpt(ctx context.Context, namespace string, contactPointSpec v1alpha1.ContactPoint) (alertmanager.Contact, error) {
-	var contactPointTypeOpts []alertmanager.ContactPointOption
+	contactPointTypeOpts := []alertmanager.ContactPointOption{}
 
 	for _, contactPointType := range contactPointSpec.Contacts {
 		opt, err := manager.contactPointTypeOpt(ctx, namespace, contactPointType)
@@ -99,12 +100,15 @@ func (manager *AlertManager) contactPointTypeOpt(ctx context.Context, namespace 
 	if contactPointType.Slack != nil {
 		return manager.contactPointTypeSlack(ctx, namespace, *contactPointType.Slack)
 	}
+	if contactPointType.Opsgenie != nil {
+		return manager.contactPointTypeOpsgenie(ctx, namespace, *contactPointType.Opsgenie)
+	}
 
 	return nil, ErrInvalidContactPointType
 }
 
 func (manager *AlertManager) contactPointTypeEmail(contactPointType v1alpha1.EmailContactType) (alertmanager.ContactPointOption, error) {
-	var opts []email.Option
+	opts := []email.Option{}
 
 	if contactPointType.Single {
 		opts = append(opts, email.Single())
@@ -117,7 +121,7 @@ func (manager *AlertManager) contactPointTypeEmail(contactPointType v1alpha1.Ema
 }
 
 func (manager *AlertManager) contactPointTypeSlack(ctx context.Context, namespace string, contactPointType v1alpha1.SlackContactType) (alertmanager.ContactPointOption, error) {
-	var opts []slack.Option
+	opts := []slack.Option{}
 
 	webhookURL, err := manager.refReader.RefToValue(ctx, namespace, contactPointType.Webhook)
 	if err != nil {
@@ -134,8 +138,26 @@ func (manager *AlertManager) contactPointTypeSlack(ctx context.Context, namespac
 	return slack.Webhook(webhookURL, opts...), nil
 }
 
+func (manager *AlertManager) contactPointTypeOpsgenie(ctx context.Context, namespace string, contactPointType v1alpha1.OpsgenieContactType) (alertmanager.ContactPointOption, error) {
+	opts := []opsgenie.Option{}
+
+	apiKey, err := manager.refReader.RefToValue(ctx, namespace, contactPointType.APIKey)
+	if err != nil {
+		return nil, err
+	}
+
+	if contactPointType.OverridePriority {
+		opts = append(opts, opsgenie.OverridePriority())
+	}
+	if contactPointType.AutoClose {
+		opts = append(opts, opsgenie.AutoClose())
+	}
+
+	return opsgenie.With(contactPointType.APIURL, apiKey, opts...), nil
+}
+
 func (manager *AlertManager) routingOpts(manifest v1alpha1.AlertManager) ([]alertmanager.RoutingPolicy, error) {
-	var opts []alertmanager.RoutingPolicy
+	opts := []alertmanager.RoutingPolicy{}
 
 	for _, routingPolicy := range manifest.Spec.Routing {
 		opt, err := manager.routingPolicyOpt(routingPolicy)
@@ -150,7 +172,7 @@ func (manager *AlertManager) routingOpts(manifest v1alpha1.AlertManager) ([]aler
 }
 
 func (manager *AlertManager) routingPolicyOpt(policySpec v1alpha1.RoutingPolicy) (alertmanager.RoutingPolicy, error) {
-	var opts []alertmanager.RoutingPolicyOption
+	opts := []alertmanager.RoutingPolicyOption{}
 
 	for _, rule := range policySpec.Rules {
 		labelOpts, err := manager.routingLabelRules(rule)
@@ -167,8 +189,9 @@ func (manager *AlertManager) routingPolicyOpt(policySpec v1alpha1.RoutingPolicy)
 func (manager *AlertManager) routingLabelRules(rule v1alpha1.LabelsMatchingRule) ([]alertmanager.RoutingPolicyOption, error) {
 	var operatorFunc func(tag string, value string) alertmanager.RoutingPolicyOption
 	var labels map[string]string
-	var opts []alertmanager.RoutingPolicyOption
+	opts := []alertmanager.RoutingPolicyOption{}
 
+	//nolint:gocritic
 	if rule.Eq != nil {
 		operatorFunc = alertmanager.TagEq
 		labels = rule.Eq
