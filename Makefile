@@ -98,7 +98,7 @@ dev-env-provision: ## Provision the development k3d cluster with useful tools (G
 	helm repo update
 	helm upgrade \
 		--install loki grafana/loki-stack \
-		--set grafana.enabled=true,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+		--set grafana.enabled=true,grafana.image.tag=8.3.4,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
 	kubectl apply -f config/crd/bases
 	kubectl apply -f config/dev-env
 
