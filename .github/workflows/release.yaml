@@ -22,11 +22,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - run: make push
-        if: steps.semver.outputs.tag
-        env:
-          VERSION: latest
-
       - run: make docker-push
         if: steps.semver.outputs.tag
         env:
