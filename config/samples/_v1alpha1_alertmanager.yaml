@@ -1,0 +1,6 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: AlertManager
+metadata:
+  name: alertmanager-sample
+spec:
+  # TODO(user): Add fields here

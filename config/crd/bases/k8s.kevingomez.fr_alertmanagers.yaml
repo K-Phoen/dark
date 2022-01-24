@@ -1,0 +1,208 @@
+
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.7.0
+  creationTimestamp: null
+  name: alertmanagers.k8s.kevingomez.fr
+spec:
+  group: k8s.kevingomez.fr
+  names:
+    kind: AlertManager
+    listKind: AlertManagerList
+    plural: alertmanagers
+    singular: alertmanager
+  scope: Namespaced
+  versions:
+  - additionalPrinterColumns:
+    - jsonPath: .status.status
+      name: Status
+      type: string
+    - jsonPath: .status.message
+      name: Message
+      type: string
+    name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: AlertManager is the Schema for the alertmanagers API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: AlertManagerSpec defines the desired state of AlertManager
+            properties:
+              contact_points:
+                items:
+                  properties:
+                    contacts:
+                      items:
+                        properties:
+                          email:
+                            properties:
+                              message:
+                                type: string
+                              single:
+                                type: boolean
+                              to:
+                                items:
+                                  type: string
+                                type: array
+                            required:
+                            - to
+                            type: object
+                          opsgenie:
+                            properties:
+                              api_key:
+                                properties:
+                                  value:
+                                    description: Only one of the following may be
+                                      specified.
+                                    type: string
+                                  valueFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        description: SecretKeySelector selects a key
+                                          of a Secret.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                type: object
+                              api_url:
+                                type: string
+                              auto_close:
+                                type: boolean
+                              override_priority:
+                                type: boolean
+                            type: object
+                          slack:
+                            properties:
+                              body:
+                                type: string
+                              title:
+                                type: string
+                              webhook:
+                                properties:
+                                  value:
+                                    description: Only one of the following may be
+                                      specified.
+                                    type: string
+                                  valueFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        description: SecretKeySelector selects a key
+                                          of a Secret.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                type: object
+                            type: object
+                        type: object
+                      type: array
+                    name:
+                      type: string
+                  required:
+                  - contacts
+                  - name
+                  type: object
+                type: array
+              default_contact_point:
+                type: string
+              routing:
+                items:
+                  properties:
+                    if_labels:
+                      items:
+                        properties:
+                          eq:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          matches:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          neq:
+                            additionalProperties:
+                              type: string
+                            type: object
+                          not_matches:
+                            additionalProperties:
+                              type: string
+                            type: object
+                        type: object
+                      type: array
+                    to:
+                      type: string
+                  required:
+                  - to
+                  type: object
+                type: array
+            type: object
+          status:
+            description: AlertManagerStatus defines the observed state of AlertManager
+            properties:
+              message:
+                type: string
+              status:
+                type: string
+            required:
+            - message
+            - status
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []

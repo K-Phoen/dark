@@ -1,0 +1,50 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: AlertManager
+metadata:
+  name: alertmanager-sample
+spec:
+  default_contact_point: 'Team A'
+
+  contact_points:
+    - name: Platform
+      contacts:
+        - email: { to: ['platform@unicorn.io'] }
+        - slack:
+            webhook:
+              value: 'https://api.slack.com/messaging/webhooks'
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: slack-webhook-secret
+              #    key: webhook
+
+    - name: Team A
+      contacts:
+        - email: { to: ['team-a@unicorn.io'] }
+        - opsgenie:
+            api_url: https://api.eu.opsgenie.com/v2/alerts
+            api_key:
+              value: "shhhh, it's a secret"
+              #valueFrom:
+              #  secretKeyRef:
+              #    name: opsgenie-api-secret
+              #    key: api-key
+            auto_close: true
+            override_priority: true
+
+    - name: Team B
+      contacts:
+        - email: { to: ['team-b@unicorn.io'] }
+
+  routing:
+    - to: 'Platform'
+      if_labels:
+        - eq: { owner: platform }
+
+    - to: 'Team A'
+      if_labels:
+        - eq: { owner: team-a }
+
+    - to: 'Team B'
+      if_labels:
+        - eq: { owner: team-b }
+        - neq: { service: crashinator }
