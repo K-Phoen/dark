@@ -5,7 +5,7 @@ go 1.17
 require (
 	github.com/K-Phoen/grabana v0.20.11
 	github.com/K-Phoen/sdk v0.8.4
-	github.com/go-logr/logr v1.2.0
+	github.com/go-logr/logr v1.2.2
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
 	github.com/spf13/cobra v1.3.0
