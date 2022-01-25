@@ -31,7 +31,14 @@ func NewAlertManager(logger logr.Logger, grabanaClient *grabana.Client, refReade
 }
 
 func (manager *AlertManager) Reset(ctx context.Context) error {
-	return nil
+	config := alertmanager.New(
+		alertmanager.ContactPoints(
+			alertmanager.ContactPoint("grafana-default-email", email.To([]string{"<example@email.com>"})),
+		),
+		alertmanager.DefaultContactPoint("grafana-default-email"),
+	)
+
+	return manager.grabanaClient.ConfigureAlertManager(ctx, config)
 }
 
 func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.AlertManager) error {
