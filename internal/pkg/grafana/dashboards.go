@@ -42,7 +42,12 @@ func (creator *Creator) FromRawSpec(ctx context.Context, folderName string, uid 
 }
 
 func (creator *Creator) Delete(ctx context.Context, uid string) error {
-	return creator.grabanaClient.DeleteDashboard(ctx, uid)
+	err := creator.grabanaClient.DeleteDashboard(ctx, uid)
+	if err != nil && err != grabana.ErrDashboardNotFound {
+		return err
+	}
+
+	return nil
 }
 
 func (creator *Creator) upsertDashboard(ctx context.Context, folderName string, dashboardBuilder dashboard.Builder) error {
