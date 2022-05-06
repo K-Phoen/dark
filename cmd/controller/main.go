@@ -89,6 +89,7 @@ func main() {
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "2351aaad.k8s.kevingomez.fr",
+		Logger:                 logger,
 	})
 	if err != nil {
 		setupLog.Error(err, "unable to start operator")
