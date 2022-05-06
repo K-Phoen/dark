@@ -40,7 +40,6 @@ func (converter *JSON) convertPrometheusTarget(target sdk.Target) *grabana.Targe
 		Prometheus: &grabana.PrometheusTarget{
 			Query:          target.Expr,
 			Legend:         target.LegendFormat,
-			Ref:            target.RefID,
 			Hidden:         target.Hide,
 			Format:         target.Format,
 			Instant:        target.Instant,
@@ -53,7 +52,6 @@ func (converter *JSON) convertGraphiteTarget(target sdk.Target) *grabana.Target 
 	return &grabana.Target{
 		Graphite: &grabana.GraphiteTarget{
 			Query:  target.Target,
-			Ref:    target.RefID,
 			Hidden: target.Hide,
 		},
 	}
@@ -63,7 +61,6 @@ func (converter *JSON) convertInfluxDBTarget(target sdk.Target) *grabana.Target 
 	return &grabana.Target{
 		InfluxDB: &grabana.InfluxDBTarget{
 			Query:  target.Measurement,
-			Ref:    target.RefID,
 			Hidden: target.Hide,
 		},
 	}
@@ -149,7 +146,6 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			Alignment:   alignment,
 			GroupBy:     target.GroupBys,
 			Legend:      target.AliasBy,
-			Ref:         target.RefID,
 			Hidden:      target.Hide,
 		},
 	}

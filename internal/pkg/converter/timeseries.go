@@ -10,7 +10,6 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		Title:         panel.Title,
 		Span:          panelSpan(panel),
 		Transparent:   panel.Transparent,
-		Alert:         converter.convertAlert(panel),
 		Legend:        converter.convertTimeSeriesLegend(panel.TimeseriesPanel.Options.Legend),
 		Visualization: converter.convertTimeSeriesVisualization(panel),
 		Axis:          converter.convertTimeSeriesAxis(panel),

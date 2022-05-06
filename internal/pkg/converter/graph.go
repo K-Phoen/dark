@@ -15,7 +15,6 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		},
 		Legend:        converter.convertGraphLegend(panel.GraphPanel.Legend),
 		Visualization: converter.convertGraphVisualization(panel),
-		Alert:         converter.convertAlert(panel),
 	}
 
 	if panel.Description != nil {

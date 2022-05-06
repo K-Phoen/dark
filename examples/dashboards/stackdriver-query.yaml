@@ -1,0 +1,47 @@
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+  name: dark-stackdriver-query
+
+folder: DARK
+spec:
+  title: Dark with stackdriver query
+  editable: true
+  shared_crosshair: true
+  tags: [dark, stackdriver, generated]
+  auto_refresh: 5s
+  time: [now-1h, now]
+
+  rows:
+    - name: Overview
+      panels:
+      - timeseries:
+          title: CPU utilization per database
+          datasource: Stackdriver
+          axis: { unit: percentunit }
+          targets:
+            - stackdriver:
+                type: gauge
+                metric: cloudsql.googleapis.com/database/cpu/utilization
+                group_by: [resource.label.database_id]
+                legend: '{{ resource.label.database_id }}'
+                aggregation: mean
+                alignment:
+                  method: mean
+                  period: stackdriver-auto
+          alert:
+            summary: 'High CPU usage'
+            targets:
+              - stackdriver:
+                  ref: A
+                  lookback: 5m
+                  type: gauge
+                  metric: cloudsql.googleapis.com/database/cpu/utilization
+                  group_by: [ resource.label.database_id ]
+                  legend: '{{ resource.label.database_id }}'
+                  aggregation: mean
+                  alignment:
+                    method: mean
+                    period: stackdriver-auto
+            if:
+              - { avg: A, above: 0.75 }
