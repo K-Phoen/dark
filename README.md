@@ -22,6 +22,10 @@ In addition to dashboards, DARK can also define:
 * seamless integration with Grafana
 * delegate YAML decoding and dashboard generation to [Grabana](https://github.com/K-Phoen/grabana)
 
+## Non-goals
+
+* creation and operation of Grafana instances themselves. For that, check out [`grafana-operator/grafana-operator`](https://github.com/grafana-operator/grafana-operator)
+
 ## Example dashboard
 
 ```yaml
