@@ -7,5 +7,11 @@
 
 ## Usage
 
+### Dashboards
+
 * [Creating dashboards](./usage/creating-dashboards.md)
 * [Converting a Grafana JSON dashboard to YAML](./usage/converting-grafana-json-to-yaml.md)
+
+### API keys
+
+* [Creating API keys](./usage/creating-api-keys.md)

@@ -9,10 +9,10 @@ DARK provides a way to define and deploy Grafana dashboards via Kubernetes, next
 If you are looking for a way to version your dashboards and deploy them across all environments, like you would do
 with your services, then this project is meant for you.
 
-In addition to dashboards, DARK can also define:
+In addition to dashboards, DARK can also manage:
 
 * data sources
-* API keys
+* [API keys](./docs/usage/creating-api-keys.md)
 * alert manager configuration (alert routing, notification policies, ...)
 
 ## Design goals
