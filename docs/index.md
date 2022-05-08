@@ -15,3 +15,7 @@
 ### API keys
 
 * [Creating API keys](./usage/creating-api-keys.md)
+
+### Data sources
+
+* [Declaring a Stackdriver (Google Cloud Monitoring) data source](./usage/declaring-stackdriver-datasource.md)
