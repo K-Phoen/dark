@@ -9,12 +9,22 @@ DARK provides a way to define and deploy Grafana dashboards via Kubernetes, next
 If you are looking for a way to version your dashboards and deploy them across all environments, like you would do
 with your services, then this project is meant for you.
 
+In addition to dashboards, DARK can also manage:
+
+* [data sources](./docs/index.md#data-sources)
+* [API keys](./docs/usage/creating-api-keys.md)
+* alert manager configuration (alert routing, notification policies, ...)
+
 ## Design goals
 
 * full description of dashboards via YAML
-* compatibility with `kubectl`
+* integration with `kubectl`
 * seamless integration with Grafana
 * delegate YAML decoding and dashboard generation to [Grabana](https://github.com/K-Phoen/grabana)
+
+## Non-goals
+
+* creation and operation of Grafana instances themselves. For that, check out [`grafana-operator/grafana-operator`](https://github.com/grafana-operator/grafana-operator)
 
 ## Example dashboard
 
@@ -42,9 +52,8 @@ spec:
   rows:
     - name: Prometheus
       panels:
-        - graph:
+        - timeseries:
             title: HTTP Rate
-            height: 400px
             datasource: prometheus-default
             targets:
               - prometheus:
@@ -53,13 +62,14 @@ spec:
         
         - graph:
             title: Heap allocations
-            height: 400px
             datasource: prometheus-default
             targets:
               - prometheus:
                   query: "go_memstats_heap_alloc_bytes"
                   legend: "{{ job }}"
 ```
+
+More examples can be found in the [`examples/`](./examples) folder
 
 ## Installation & usage
 
