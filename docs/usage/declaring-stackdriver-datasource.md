@@ -19,6 +19,12 @@ spec:
 Check the result with:
 
 ```sh
+kubectl get datasources
+```
+
+## Reference
+
+```yaml
 apiVersion: k8s.kevingomez.fr/v1alpha1
 kind: Datasource
 metadata:

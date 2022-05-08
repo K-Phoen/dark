@@ -11,7 +11,7 @@ with your services, then this project is meant for you.
 
 In addition to dashboards, DARK can also manage:
 
-* data sources
+* [data sources](./docs/index.md#data-sources)
 * [API keys](./docs/usage/creating-api-keys.md)
 * alert manager configuration (alert routing, notification policies, ...)
 

@@ -18,4 +18,5 @@
 
 ### Data sources
 
-* [Declaring a Stackdriver (Google Cloud Monitoring) data source](./usage/declaring-stackdriver-datasource.md)
+* [Prometheus](./usage/declaring-prometheus-datasource.md)
+* [Stackdriver (Google Cloud Monitoring)](./usage/declaring-stackdriver-datasource.md)
