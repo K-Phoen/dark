@@ -22,7 +22,7 @@
 * Defining contact points
   * [Email](./usage/email-contact-point.md)
   * [Opsgenie](./usage/opsgenie-contact-point.md)
-  * Slack
+  * [Slack](./usage/slack-contact-point.md)
 
 ### Data sources
 
