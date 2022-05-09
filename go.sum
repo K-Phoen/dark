@@ -76,8 +76,9 @@ github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym
 github.com/DataDog/datadog-go v3.2.0+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
 github.com/K-Phoen/grabana v0.20.11 h1:TLnSYziXgRHcbFuZygMPPkkyZkq4pNoc0FQVisKVxXs=
 github.com/K-Phoen/grabana v0.20.11/go.mod h1:Ap5cn3XZwuAfW57OnXKR4T3Y0Zhp2qEnT/hxtZGme4c=
-github.com/K-Phoen/sdk v0.8.4 h1:KAH0ipC/4iWxslFudjy84Gm8fkaVRfekZK+BPAvoF30=
 github.com/K-Phoen/sdk v0.8.4/go.mod h1:fnbOsbRksULSfcXjOI6W1/HISz5o/u1iEhF/fLedqTg=
+github.com/K-Phoen/sdk v0.9.2 h1:YBnNabimuNHZn/JGX3hFWhMkYrjSyXrnukyC6Te0pvY=
+github.com/K-Phoen/sdk v0.9.2/go.mod h1:fnbOsbRksULSfcXjOI6W1/HISz5o/u1iEhF/fLedqTg=
 github.com/NYTimes/gziphandler v0.0.0-20170623195520-56545f4a5d46/go.mod h1:3wb06e3pkSAbeQ52E9H9iFoQsEEwGN64994WTCIhntQ=
 github.com/NYTimes/gziphandler v1.1.1/go.mod h1:n/CVRwUEOgIxrgPvAQhUUr9oeUtvrhMomdKFjzJNB0c=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

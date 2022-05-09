@@ -98,40 +98,6 @@ type (
 		Description *string `json:"description,omitempty"` // general
 		Transparent bool    `json:"transparent"`
 		Type        string  `json:"type"`
-		Alert       *Alert  `json:"alert,omitempty"`
-	}
-	AlertEvaluator struct {
-		Params []float64 `json:"params,omitempty"`
-		Type   string    `json:"type,omitempty"`
-	}
-	AlertOperator struct {
-		Type string `json:"type,omitempty"`
-	}
-	AlertQuery struct {
-		Params []string `json:"params,omitempty"`
-	}
-	AlertReducer struct {
-		Params []string `json:"params,omitempty"`
-		Type   string   `json:"type,omitempty"`
-	}
-	AlertCondition struct {
-		Evaluator AlertEvaluator `json:"evaluator,omitempty"`
-		Operator  AlertOperator  `json:"operator,omitempty"`
-		Query     AlertQuery     `json:"query,omitempty"`
-		Reducer   AlertReducer   `json:"reducer,omitempty"`
-		Type      string         `json:"type,omitempty"`
-	}
-	Alert struct {
-		AlertRuleTags       map[string]string   `json:"alertRuleTags,omitempty"`
-		Conditions          []AlertCondition    `json:"conditions,omitempty"`
-		ExecutionErrorState string              `json:"executionErrorState,omitempty"`
-		Frequency           string              `json:"frequency,omitempty"`
-		Handler             int                 `json:"handler,omitempty"`
-		Name                string              `json:"name,omitempty"`
-		NoDataState         string              `json:"noDataState,omitempty"`
-		Notifications       []AlertNotification `json:"notifications,omitempty"`
-		Message             string              `json:"message,omitempty"`
-		For                 string              `json:"for,omitempty"`
 	}
 	GraphPanel struct {
 		AliasColors interface{} `json:"aliasColors"` // XXX
@@ -168,22 +134,29 @@ type (
 		FieldConfig     *FieldConfig     `json:"fieldConfig,omitempty"`
 	}
 	FieldConfig struct {
-		Defaults FieldConfigDefaults `json:"defaults"`
+		Defaults  FieldConfigDefaults   `json:"defaults"`
+		Overrides []FieldConfigOverride `json:"overrides"`
 	}
 	Options struct {
-		Orientation   string `json:"orientation"`
-		TextMode      string `json:"textMode"`
-		ColorMode     string `json:"colorMode"`
-		GraphMode     string `json:"graphMode"`
-		JustifyMode   string `json:"justifyMode"`
-		DisplayMode   string `json:"displayMode"`
-		Content       string `json:"content"`
-		Mode          string `json:"mode"`
-		ReduceOptions struct {
-			Values bool     `json:"values"`
-			Fields string   `json:"fields"`
-			Calcs  []string `json:"calcs"`
-		} `json:"reduceOptions"`
+		Orientation   string        `json:"orientation"`
+		TextMode      string        `json:"textMode"`
+		ColorMode     string        `json:"colorMode"`
+		GraphMode     string        `json:"graphMode"`
+		JustifyMode   string        `json:"justifyMode"`
+		DisplayMode   string        `json:"displayMode"`
+		Content       string        `json:"content"`
+		Mode          string        `json:"mode"`
+		ReduceOptions ReduceOptions `json:"reduceOptions"`
+		Text          *TextOptions  `json:"text,omitempty"`
+	}
+	TextOptions struct {
+		ValueSize int `json:"valueSize,omitempty"`
+		TitleSize int `json:"titleSize,omitempty"`
+	}
+	ReduceOptions struct {
+		Values bool     `json:"values"`
+		Fields string   `json:"fields"`
+		Calcs  []string `json:"calcs"`
 	}
 	Threshold struct {
 		// the alert threshold value, we do not omitempty, since 0 is a valid
@@ -277,6 +250,7 @@ type (
 		ValueMaps       []ValueMap  `json:"valueMaps"`
 		ValueName       string      `json:"valueName"`
 		Options         Options     `json:"options"`
+		FieldConfig     FieldConfig `json:"fieldConfig"`
 	}
 	DashlistPanel struct {
 		Mode     string   `json:"mode"`
@@ -374,6 +348,7 @@ type (
 	}
 	FieldConfigDefaults struct {
 		Unit       string            `json:"unit"`
+		NoValue    string            `json:"noValue,omitempty"`
 		Decimals   *int              `json:"decimals,omitempty"`
 		Min        *int              `json:"min,omitempty"`
 		Max        *int              `json:"max,omitempty"`
@@ -381,6 +356,17 @@ type (
 		Thresholds Thresholds        `json:"thresholds"`
 		Custom     FieldConfigCustom `json:"custom"`
 		Links      []Link            `json:"links,omitempty"`
+	}
+	FieldConfigOverrideProperty struct {
+		ID    string      `json:"id"`
+		Value interface{} `json:"value"`
+	}
+	FieldConfigOverride struct {
+		Matcher struct {
+			ID      string `json:"id"`
+			Options string `json:"options"`
+		} `json:"matcher"`
+		Properties []FieldConfigOverrideProperty `json:"properties"`
 	}
 	FieldConfigCustom struct {
 		AxisLabel         string `json:"axisLabel,omitempty"`
@@ -421,8 +407,8 @@ type (
 		Steps []ThresholdStep `json:"steps"`
 	}
 	ThresholdStep struct {
-		Color string `json:"color"`
-		Value *int   `json:"value"`
+		Color string   `json:"color"`
+		Value *float64 `json:"value"`
 	}
 	FieldConfigColor struct {
 		Mode       string `json:"mode"`
@@ -450,7 +436,7 @@ type (
 type (
 	// TODO look at schema versions carefully
 	// grid was obsoleted by xaxis and yaxes
-	grid struct { //nolint: unused,deadcode
+	grid struct { // nolint: unused,deadcode
 		LeftLogBase     *int     `json:"leftLogBase"`
 		LeftMax         *int     `json:"leftMax"`
 		LeftMin         *int     `json:"leftMin"`
@@ -831,7 +817,18 @@ func NewStat(title string) *Panel {
 			Type:     "stat",
 			Renderer: &render,
 			IsNew:    true},
-		StatPanel: &StatPanel{}}
+		StatPanel: &StatPanel{
+			FieldConfig: FieldConfig{
+				Defaults: FieldConfigDefaults{
+					Color: FieldConfigColor{
+						Mode:       "palette-classic",
+						FixedColor: "green",
+						SeriesBy:   "last",
+					},
+				},
+			},
+		},
+	}
 }
 
 // NewPluginlist initializes panel with a stat panel.
