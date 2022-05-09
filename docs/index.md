@@ -21,7 +21,7 @@
 * [Alerting configuration overview](./usage/alerting-configuration-overview.md)
 * Defining contact points
   * [Email](./usage/email-contact-point.md)
-  * Opsgenie
+  * [Opsgenie](./usage/opsgenie-contact-point.md)
   * Slack
 
 ### Data sources
