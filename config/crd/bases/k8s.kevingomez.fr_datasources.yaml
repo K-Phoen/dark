@@ -298,21 +298,21 @@ spec:
                               description: Only one of the following may be specified.
                               type: string
                           type: object
-                        matcherRegex:
+                        name:
+                          type: string
+                        regex:
                           description: Used to parse and capture some part of the
                             log message. You can use the captured groups in the template.
                           type: string
-                        name:
-                          type: string
                         url:
                           type: string
-                        urlDisplayLabel:
+                        url_label:
                           description: Used to override the button label when this
                             derived field is found in a log. Optional.
                           type: string
                       required:
-                      - matcherRegex
                       - name
+                      - regex
                       - url
                       type: object
                     type: array

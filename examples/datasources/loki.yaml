@@ -7,7 +7,7 @@ spec:
     url: "http://loki.loki.svc.cluster.local:3100"
     derived_fields:
       - name: TraceID
-        matcherRegex: '(?:traceID|trace_id)=(\w+)'
+        regex: '(?:traceID|trace_id)=(\w+)'
         url: '${__value.raw}'
         datasource:
           name: dark-tempo
