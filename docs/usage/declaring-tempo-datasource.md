@@ -1,19 +1,19 @@
-# Declaring a Loki data source
+# Declaring a Tempo data source
 
-A Loki data source allows the integration of [Loki](https://grafana.com/oss/loki/) into Grafana.
+A Tempo data source allows the integration of [Tempo](https://grafana.com/oss/tempo/) into Grafana.
 
 ## Example usage
 
-The following example will create a `my-loki` data source in Grafana:
+The following example will create a `my-tempo` data source in Grafana:
 
 ```yaml
 apiVersion: k8s.kevingomez.fr/v1alpha1
 kind: Datasource
 metadata:
-  name: my-loki
+  name: my-tempo
 spec:
-  loki:
-    url: "http://loki-server:9090"
+  tempo:
+    url: "http://tempo-server"
 
 ```
 
@@ -31,7 +31,7 @@ kind: Datasource
 metadata:
   name: datasource-name
 spec:
-  loki:
+  tempo:
     # Makes this data source the default one.
     default: false # Optional. Default value: false.
 
@@ -39,9 +39,9 @@ spec:
     # HTTP #
     # ---- #
 
-    # URL of the Loki server.
+    # URL of the Tempo server.
     # Required.
-    url: "http://loki-server:3100"
+    url: "http://tempo-server:3100"
 
     # HTTP request timeout.
     # Optional. Default: ""
@@ -55,7 +55,7 @@ spec:
     # Auth #
     # ---- #
     
-    # Forward the user's upstream OAuth identity to Loki (their access token gets passed along)
+    # Forward the user's upstream OAuth identity to Tempo (their access token gets passed along)
     # Optional. Default: false
     forward_oauth: false
 
@@ -81,7 +81,7 @@ spec:
           name: 'secret-name' # name of the secret
           key: 'certificate' # Key within the secret
 
-    # Enable basic authentication to the Loki server.
+    # Enable basic authentication to the Tempo server.
     # Optional. Default: none
     basic_auth:
       username:
@@ -108,31 +108,24 @@ spec:
             name: 'secret-name' # name of the secret
             key: 'password' # Key within the secret
 
-    # -------- #
-    # Alerting #
-    # -------- #
+    # ---------- #
+    # Node Graph #
+    # ---------- #
 
-    # Loki queries must contain a limit of the maximum number of lines returned.
-    # Optional. Default: 1000
-    maximum_lines: 1000
+    # Enables the Node Graph visualization in the trace viewer.
+    # Optional. Default: false
+    node_graph: false
 
-    # Derived fields can be used to extract new fields from a log message and create a link from its value.
+    # ------------- #
+    # Trace to logs #
+    # ------------- #
+
+    # Trace to logs lets you navigate from a trace span to the selected data source's log.
     # Optional. Default: none
-    derived_fields:
-      - name: "field" # Required. Name of the field.
+    trace_to_logs:
+      - tags: [] # Tags that will be used in the Loki query. Optional. Default: [cluster, hostname, pod, namespace].
 
-        # Used to parse and capture some part of the log message. You can use the captured groups in the template.
-        # Required.
-        regex: ""
-
-        # Required.
-        url: "https://example.com/${__value.raw}"
-
-        # Used to override the button label when this derived field is found in a log.
-        # Optional. Default: none
-        url_label:
-        
-        # For internal links only.
+        # The data source the trace is going to navigate to.
         # Optional. Default: none
         datasource:
           # Data source UID.
@@ -141,6 +134,22 @@ spec:
 
           # Data source name.
           name: "some-data-source"
+
+        # Shifts the start time of the span.
+        # Optional. Default: none
+        span_start_shift: "0h"
+
+        # Shifts the end time of the span.
+        # Optional. Default: none
+        span_end_shift: "0h"
+
+        # Filters logs by trace ID.
+        # Optional. Default: false
+        filter_by_trace: false
+
+        # Filters logs by span ID.
+        # Optional. Default: false
+        filter_by_span: false
 ```
 
 ## That was it!
