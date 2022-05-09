@@ -105,10 +105,10 @@ type LokiDerivedField struct {
 	URL string `json:"url"`
 	// Used to parse and capture some part of the log message. You can use the captured groups in the template.
 	// +kubebuilder:validation:Required
-	Regex string `json:"matcherRegex"`
+	Regex string `json:"regex"`
 	// Used to override the button label when this derived field is found in a log.
 	// Optional.
-	URLDisplayLabel string `json:"urlDisplayLabel,omitempty"`
+	URLDisplayLabel string `json:"url_label,omitempty"`
 	// For internal links
 	// Optional.
 	Datasource *ValueOrDatasourceRef `json:"datasource,omitempty"`
