@@ -3,6 +3,9 @@ package timeseries
 import (
 	"github.com/K-Phoen/grabana/alert"
 	"github.com/K-Phoen/grabana/timeseries/axis"
+	"github.com/K-Phoen/grabana/timeseries/fields"
+	"github.com/K-Phoen/grabana/timeseries/scheme"
+	"github.com/K-Phoen/grabana/timeseries/threshold"
 	"github.com/K-Phoen/sdk"
 )
 
@@ -212,6 +215,20 @@ func Axis(options ...axis.Option) Option {
 	}
 }
 
+// Thresholds configures the thresholds for this time series.
+func Thresholds(options ...threshold.Option) Option {
+	return func(timeseries *TimeSeries) {
+		threshold.New(&timeseries.Builder.TimeseriesPanel.FieldConfig, options...)
+	}
+}
+
+// ColorScheme configures the color scheme.
+func ColorScheme(options ...scheme.Option) Option {
+	return func(timeseries *TimeSeries) {
+		scheme.New(&timeseries.Builder.TimeseriesPanel.FieldConfig, options...)
+	}
+}
+
 // Legend defines what should be shown in the legend.
 func Legend(opts ...LegendOption) Option {
 	return func(timeseries *TimeSeries) {
@@ -303,5 +320,20 @@ func Alert(name string, opts ...alert.Option) Option {
 func Repeat(repeat string) Option {
 	return func(timeseries *TimeSeries) {
 		timeseries.Builder.Repeat = &repeat
+	}
+}
+
+// FieldOverride allows overriding visualization options.
+func FieldOverride(m fields.Matcher, opts ...fields.OverrideOption) Option {
+	return func(timeseries *TimeSeries) {
+		override := sdk.FieldConfigOverride{}
+
+		m(&override)
+
+		for _, opt := range opts {
+			opt(&override)
+		}
+
+		timeseries.Builder.TimeseriesPanel.FieldConfig.Overrides = append(timeseries.Builder.TimeseriesPanel.FieldConfig.Overrides, override)
 	}
 }
