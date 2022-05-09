@@ -20,7 +20,7 @@
 
 * [Alerting configuration overview](./usage/alerting-configuration-overview.md)
 * Defining contact points
-  * Email
+  * [Email](./usage/email-contact-point.md)
   * Opsgenie
   * Slack
 
