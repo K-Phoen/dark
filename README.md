@@ -13,7 +13,7 @@ In addition to dashboards, DARK can also manage:
 
 * [data sources](./docs/index.md#data-sources)
 * [API keys](./docs/usage/creating-api-keys.md)
-* alert manager configuration (alert routing, notification policies, ...)
+* [alert manager configuration](./docs/index.md#alerting-configuration) (alert routing, notification policies, ...)
 
 ## Design goals
 

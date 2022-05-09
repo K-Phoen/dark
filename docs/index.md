@@ -16,6 +16,14 @@
 
 * [Creating API keys](./usage/creating-api-keys.md)
 
+### Alerting configuration
+
+* [Alerting configuration overview](./usage/alerting-configuration-overview.md)
+* Defining contact points
+  * Email
+  * Opsgenie
+  * Slack
+
 ### Data sources
 
 * [Jaeger](./usage/declaring-jaeger-datasource.md)
