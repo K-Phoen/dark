@@ -68,6 +68,40 @@ Check the result with:
 kubectl get alertmanager
 ```
 
+## Reference
+
+```yaml
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: AlertManager
+metadata:
+  name: alertmanager-example
+spec:
+  # Alerts not matched by any of the routing rules will be sent to this contact point.
+  # Must match the name of one of the contact points defined below.
+  # Required.
+  default_contact_point: 'Contact point name'
+
+  # List of known contact points
+  # Required.
+  contact_points:
+    - name: "Contact point name" # Required. Name of the contact point.
+      # Contact point types: define actual methods of contact.
+      # Optional. Default: []
+      contacts:
+        - email: { to: ['team-a@unicorn.io'] }
+
+  # Send specific alerts to chosen contact points, based on these routing rules:
+  # Required.
+  routing:
+    - to: 'Contact point name' # Required. Contact point name.
+      # Matching rules. Only alerts matching these rules will be routed to the contact point.
+      if_labels:
+        - eq: { label_name: label_value, other_label: other_value } # Equality test ("=" operator). Optional.
+        - neq: { label_name: label_value, other_label: other_value } # Difference test ("!=" operator). Optional.
+        - matches: { label_name: "value_.*" } # Regex test ("=~" operator). Optional.
+        - not_matches: { label_name: "value_.*" } # Does not match regex test ("!=~" operator). Optional.
+```
+
 ## That was it!
 
 [Return to the index to explore what you can do with DARK](../index.md)
