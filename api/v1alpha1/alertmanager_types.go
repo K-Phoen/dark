@@ -10,12 +10,15 @@ import (
 
 // AlertManagerSpec defines the desired state of AlertManager
 type AlertManagerSpec struct {
-	ContactPoints       []ContactPoint  `json:"contact_points,omitempty"`
-	DefaultContactPoint string          `json:"default_contact_point,omitempty"`
-	Routing             []RoutingPolicy `json:"routing,omitempty"`
+	// +kubebuilder:validation:Required
+	DefaultContactPoint string `json:"default_contact_point,omitempty"`
+
+	ContactPoints []ContactPoint  `json:"contact_points,omitempty"`
+	Routing       []RoutingPolicy `json:"routing,omitempty"`
 }
 
 type ContactPoint struct {
+	// +kubebuilder:validation:Required
 	Name     string             `json:"name"`
 	Contacts []ContactPointType `json:"contacts"`
 }
@@ -46,6 +49,7 @@ type OpsgenieContactType struct {
 }
 
 type RoutingPolicy struct {
+	// +kubebuilder:validation:Required
 	ContactPoint string               `json:"to"`
 	Rules        []LabelsMatchingRule `json:"if_labels,omitempty"`
 }
