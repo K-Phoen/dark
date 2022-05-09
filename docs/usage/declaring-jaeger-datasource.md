@@ -14,7 +14,6 @@ metadata:
 spec:
   jaeger:
     url: "http://jaeger-server"
-
 ```
 
 Check the result with:

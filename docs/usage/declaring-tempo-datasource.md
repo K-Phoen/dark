@@ -14,7 +14,6 @@ metadata:
 spec:
   tempo:
     url: "http://tempo-server"
-
 ```
 
 Check the result with:

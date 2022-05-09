@@ -15,6 +15,12 @@ spec:
   loki:
     url: "http://loki-server:9090"
 
+    derived_fields:
+      - name: TraceID
+        regex: '(?:traceID|trace_id)=(\w+)'
+        url: '${__value.raw}'
+        datasource:
+          name: my-tempo
 ```
 
 Check the result with:
