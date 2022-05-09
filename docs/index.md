@@ -18,6 +18,7 @@
 
 ### Data sources
 
+* [Jaeger](./usage/declaring-jaeger-datasource.md)
 * [Loki](./usage/declaring-loki-datasource.md)
 * [Prometheus](./usage/declaring-prometheus-datasource.md)
 * [Stackdriver (Google Cloud Monitoring)](./usage/declaring-stackdriver-datasource.md)
