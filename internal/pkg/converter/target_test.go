@@ -33,6 +33,7 @@ func TestConvertTargetWithPrometheusTarget(t *testing.T) {
 	req.Nil(convertedTarget.Stackdriver)
 	req.Equal("prometheus_query", convertedTarget.Prometheus.Query)
 	req.Equal("{{ field }}", convertedTarget.Prometheus.Legend)
+	req.Equal("A", convertedTarget.Prometheus.Ref)
 }
 
 func TestConvertTargetWithGraphiteTarget(t *testing.T) {
@@ -51,6 +52,7 @@ func TestConvertTargetWithGraphiteTarget(t *testing.T) {
 	req.NotNil(convertedTarget)
 	req.NotNil(convertedTarget.Graphite)
 	req.Equal("graphite_query", convertedTarget.Graphite.Query)
+	req.Equal("A", convertedTarget.Graphite.Ref)
 	req.True(convertedTarget.Graphite.Hidden)
 }
 
@@ -70,6 +72,7 @@ func TestConvertTargetWithInfluxDBTarget(t *testing.T) {
 	req.NotNil(convertedTarget)
 	req.NotNil(convertedTarget.InfluxDB)
 	req.Equal("influxdb_query", convertedTarget.InfluxDB.Query)
+	req.Equal("A", convertedTarget.InfluxDB.Ref)
 	req.True(convertedTarget.InfluxDB.Hidden)
 }
 
@@ -164,6 +167,7 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 	req.Equal("stackdriver-auto", convertedTarget.Stackdriver.Alignment.Period)
 	req.Equal("delta", convertedTarget.Stackdriver.Alignment.Method)
 	req.Equal("legend", convertedTarget.Stackdriver.Legend)
+	req.Equal("A", convertedTarget.Stackdriver.Ref)
 	req.ElementsMatch([]string{"field"}, convertedTarget.Stackdriver.GroupBy)
 	req.EqualValues(map[string]string{"resource.label.subscription_id": "subscription_name"}, convertedTarget.Stackdriver.Filters.Eq)
 	req.EqualValues(map[string]string{"other-property": "other-value"}, convertedTarget.Stackdriver.Filters.Neq)
