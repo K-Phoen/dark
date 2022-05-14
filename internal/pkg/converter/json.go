@@ -181,6 +181,8 @@ func (converter *JSON) convertDataPanel(panel sdk.Panel) (grabana.DashboardPanel
 		return converter.convertHeatmap(panel), true
 	case "singlestat":
 		return converter.convertSingleStat(panel), true
+	case "stat":
+		return converter.convertStat(panel), true
 	case "table":
 		return converter.convertTable(panel), true
 	case "text":
