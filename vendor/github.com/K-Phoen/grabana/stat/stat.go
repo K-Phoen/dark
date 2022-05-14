@@ -31,6 +31,15 @@ const (
 	TextNone         TextMode = "none"
 )
 
+// OrientationMode controls the layout.
+type OrientationMode string
+
+const (
+	OrientationAuto       OrientationMode = ""
+	OrientationHorizontal OrientationMode = "horizontal"
+	OrientationVertical   OrientationMode = "vertical"
+)
+
 // ReductionType lets you set the function that your entire query is reduced into a
 // single value with.
 type ReductionType int
@@ -73,13 +82,7 @@ type RangeMap struct {
 	Text string
 }
 
-// nolint: gochecknoglobals
-var valueToTextMapping = 1
-
-// nolint: gochecknoglobals
-var rangeToTextMapping = 2
-
-// SingleStat represents a stat panel.
+// Stat represents a stat panel.
 type Stat struct {
 	Builder *sdk.Panel
 }
@@ -88,30 +91,7 @@ type Stat struct {
 func New(title string, options ...Option) (*Stat, error) {
 	panel := &Stat{Builder: sdk.NewStat(title)}
 
-	valueToText := "value to text"
-	rangeToText := "range to text"
-
 	panel.Builder.IsNew = false
-	mappingType := uint(valueToTextMapping)
-	panel.Builder.StatPanel.MappingType = &mappingType
-	panel.Builder.StatPanel.Options.GraphMode = "none"
-	panel.Builder.StatPanel.Options.Text = &sdk.TextOptions{}
-	panel.Builder.StatPanel.MappingTypes = []*sdk.MapType{
-		{
-			Name:  &valueToText,
-			Value: &valueToTextMapping,
-		},
-		{
-			Name:  &rangeToText,
-			Value: &rangeToTextMapping,
-		},
-	}
-	panel.Builder.StatPanel.SparkLine = sdk.SparkLine{}
-	panel.Builder.StatPanel.Options.ReduceOptions = sdk.ReduceOptions{
-		Values: false,
-		Fields: "",
-		Calcs:  []string{"lastNotNull"},
-	}
 
 	for _, opt := range append(defaults(), options...) {
 		if err := opt(panel); err != nil {
@@ -125,15 +105,11 @@ func New(title string, options ...Option) (*Stat, error) {
 func defaults() []Option {
 	return []Option{
 		Text(TextValue),
+		ColorValue(),
+		Orientation(OrientationVertical),
 		Span(6),
 		ValueType(Last),
 		NoValue("N/A"),
-		ValuesToText([]ValueMap{
-			{
-				Value: "null",
-				Text:  "N/A",
-			},
-		}),
 		ColorScheme(scheme.ThresholdsValue(scheme.Last)),
 	}
 }
@@ -153,6 +129,7 @@ func WithPrometheusTarget(query string, options ...prometheus.Option) Option {
 
 	return func(stat *Stat) error {
 		stat.Builder.AddTarget(&sdk.Target{
+			RefID:          target.Ref,
 			Expr:           target.Expr,
 			IntervalFactor: target.IntervalFactor,
 			Interval:       target.Interval,
@@ -406,50 +383,6 @@ func RelativeThresholds(steps []ThresholdStep) Option {
 	}
 }
 
-// ValuesToText allows to translate the value of the summary stat into explicit
-// text.
-func ValuesToText(mapping []ValueMap) Option {
-	return func(stat *Stat) error {
-		valueMap := make([]sdk.ValueMap, 0, len(mapping))
-
-		for _, entry := range mapping {
-			valueMap = append(valueMap, sdk.ValueMap{
-				Op:       "=",
-				TextType: entry.Text,
-				Value:    entry.Value,
-			})
-		}
-
-		mappingType := uint(valueToTextMapping)
-		stat.Builder.StatPanel.MappingType = &mappingType
-		stat.Builder.StatPanel.ValueMaps = valueMap
-
-		return nil
-	}
-}
-
-// RangesToText allows to translate the value of the summary stat into explicit
-// text.
-func RangesToText(mapping []RangeMap) Option {
-	return func(stat *Stat) error {
-		rangeMap := make([]*sdk.RangeMap, 0, len(mapping))
-
-		for i := range mapping {
-			rangeMap = append(rangeMap, &sdk.RangeMap{
-				From: &mapping[i].From,
-				To:   &mapping[i].To,
-				Text: &mapping[i].Text,
-			})
-		}
-
-		mappingType := uint(rangeToTextMapping)
-		stat.Builder.StatPanel.MappingType = &mappingType
-		stat.Builder.StatPanel.RangeMaps = rangeMap
-
-		return nil
-	}
-}
-
 // Repeat configures repeating a panel for a variable
 func Repeat(repeat string) Option {
 	return func(stat *Stat) error {
@@ -463,6 +396,15 @@ func Repeat(repeat string) Option {
 func Text(mode TextMode) Option {
 	return func(stat *Stat) error {
 		stat.Builder.StatPanel.Options.TextMode = string(mode)
+
+		return nil
+	}
+}
+
+// Orientation changes the orientation of the layout.
+func Orientation(mode OrientationMode) Option {
+	return func(stat *Stat) error {
+		stat.Builder.StatPanel.Options.Orientation = string(mode)
 
 		return nil
 	}

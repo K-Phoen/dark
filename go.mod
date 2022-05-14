@@ -3,8 +3,8 @@ module github.com/K-Phoen/dark
 go 1.17
 
 require (
-	github.com/K-Phoen/grabana v0.20.11
-	github.com/K-Phoen/sdk v0.9.2
+	github.com/K-Phoen/grabana v0.21.2
+	github.com/K-Phoen/sdk v0.10.0
 	github.com/go-logr/logr v1.2.2
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
@@ -19,8 +19,6 @@ require (
 	k8s.io/client-go v0.24.0
 	sigs.k8s.io/controller-runtime v0.11.2
 )
-
-replace github.com/K-Phoen/grabana => ../grabana
 
 require (
 	cloud.google.com/go/compute v1.5.0 // indirect
