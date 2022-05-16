@@ -20,9 +20,9 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -281,7 +281,7 @@ func renderCRDs(options *CRDInstallOptions) ([]*apiextensionsv1.CustomResourceDe
 	var (
 		err   error
 		info  os.FileInfo
-		files []os.FileInfo
+		files []string
 	)
 
 	type GVKN struct {
@@ -303,9 +303,15 @@ func renderCRDs(options *CRDInstallOptions) ([]*apiextensionsv1.CustomResourceDe
 		}
 
 		if !info.IsDir() {
-			filePath, files = filepath.Dir(path), []os.FileInfo{info}
-		} else if files, err = ioutil.ReadDir(path); err != nil {
-			return nil, err
+			filePath, files = filepath.Dir(path), []string{info.Name()}
+		} else {
+			entries, err := os.ReadDir(path)
+			if err != nil {
+				return nil, err
+			}
+			for _, e := range entries {
+				files = append(files, e.Name())
+			}
 		}
 
 		log.V(1).Info("reading CRDs from path", "path", path)
@@ -389,7 +395,7 @@ func modifyConversionWebhooks(crds []*apiextensionsv1.CustomResourceDefinition, 
 }
 
 // readCRDs reads the CRDs from files and Unmarshals them into structs.
-func readCRDs(basePath string, files []os.FileInfo) ([]*apiextensionsv1.CustomResourceDefinition, error) {
+func readCRDs(basePath string, files []string) ([]*apiextensionsv1.CustomResourceDefinition, error) {
 	var crds []*apiextensionsv1.CustomResourceDefinition
 
 	// White list the file extensions that may contain CRDs
@@ -397,12 +403,12 @@ func readCRDs(basePath string, files []os.FileInfo) ([]*apiextensionsv1.CustomRe
 
 	for _, file := range files {
 		// Only parse allowlisted file types
-		if !crdExts.Has(filepath.Ext(file.Name())) {
+		if !crdExts.Has(filepath.Ext(file)) {
 			continue
 		}
 
 		// Unmarshal CRDs from file into structs
-		docs, err := readDocuments(filepath.Join(basePath, file.Name()))
+		docs, err := readDocuments(filepath.Join(basePath, file))
 		if err != nil {
 			return nil, err
 		}
@@ -419,14 +425,14 @@ func readCRDs(basePath string, files []os.FileInfo) ([]*apiextensionsv1.CustomRe
 			crds = append(crds, crd)
 		}
 
-		log.V(1).Info("read CRDs from file", "file", file.Name())
+		log.V(1).Info("read CRDs from file", "file", file)
 	}
 	return crds, nil
 }
 
 // readDocuments reads documents from file.
 func readDocuments(fp string) ([][]byte, error) {
-	b, err := ioutil.ReadFile(fp) //nolint:gosec
+	b, err := os.ReadFile(fp)
 	if err != nil {
 		return nil, err
 	}
@@ -437,7 +443,7 @@ func readDocuments(fp string) ([][]byte, error) {
 		// Read document
 		doc, err := reader.Read()
 		if err != nil {
-			if err == io.EOF {
+			if errors.Is(err, io.EOF) {
 				break
 			}
 
