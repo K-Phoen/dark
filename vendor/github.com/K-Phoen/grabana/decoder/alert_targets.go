@@ -2,179 +2,188 @@ package decoder
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/K-Phoen/grabana/target/graphite"
-	"github.com/K-Phoen/grabana/target/influxdb"
-	"github.com/K-Phoen/grabana/target/loki"
-	"github.com/K-Phoen/grabana/target/prometheus"
-	"github.com/K-Phoen/grabana/target/stackdriver"
+	"github.com/K-Phoen/grabana/alert"
+	"github.com/K-Phoen/grabana/alert/queries/graphite"
+	"github.com/K-Phoen/grabana/alert/queries/loki"
+	"github.com/K-Phoen/grabana/alert/queries/prometheus"
+	"github.com/K-Phoen/grabana/alert/queries/stackdriver"
 )
 
-var ErrTargetNotConfigured = fmt.Errorf("target not configured")
-var ErrInvalidStackdriverType = fmt.Errorf("invalid stackdriver target type")
-var ErrInvalidStackdriverAggregation = fmt.Errorf("invalid stackdriver aggregation type")
-var ErrInvalidStackdriverPreprocessor = fmt.Errorf("invalid stackdriver preprocessor")
-var ErrInvalidStackdriverAlignment = fmt.Errorf("invalid stackdriver alignment method")
+var ErrMissingRef = fmt.Errorf("target ref missing")
+var ErrInvalidLookback = fmt.Errorf("invalid lookback")
 
-type Target struct {
-	Prometheus  *PrometheusTarget  `yaml:",omitempty"`
-	Graphite    *GraphiteTarget    `yaml:",omitempty"`
-	InfluxDB    *InfluxDBTarget    `yaml:"influxdb,omitempty"`
-	Stackdriver *StackdriverTarget `yaml:",omitempty"`
-	Loki        *LokiTarget        `yaml:",omitempty"`
+type AlertTarget struct {
+	Prometheus  *AlertPrometheus  `yaml:",omitempty"`
+	Loki        *AlertLoki        `yaml:",omitempty"`
+	Graphite    *AlertGraphite    `yaml:",omitempty"`
+	Stackdriver *AlertStackdriver `yaml:",omitempty"`
 }
 
-type PrometheusTarget struct {
-	Query          string
-	Legend         string `yaml:",omitempty"`
-	Ref            string `yaml:",omitempty"`
-	Hidden         bool   `yaml:",omitempty"`
-	Format         string `yaml:",omitempty"`
-	Instant        bool   `yaml:",omitempty"`
-	IntervalFactor *int   `yaml:"interval_factor,omitempty"`
+func (t AlertTarget) toOption() (alert.Option, error) {
+	if t.Prometheus != nil {
+		return t.Prometheus.toOptions()
+	}
+	if t.Loki != nil {
+		return t.Loki.toOptions()
+	}
+	if t.Graphite != nil {
+		return t.Graphite.toOptions()
+	}
+	if t.Stackdriver != nil {
+		return t.Stackdriver.toOptions()
+	}
+
+	return nil, ErrTargetNotConfigured
 }
 
-func (t PrometheusTarget) toOptions() []prometheus.Option {
+type AlertPrometheus struct {
+	Ref      string `yaml:",omitempty"`
+	Query    string
+	Legend   string `yaml:",omitempty"`
+	Lookback string `yaml:",omitempty"`
+}
+
+func (t AlertPrometheus) toOptions() (alert.Option, error) {
 	opts := []prometheus.Option{
 		prometheus.Legend(t.Legend),
-		prometheus.Ref(t.Ref),
 	}
 
-	if t.Hidden {
-		opts = append(opts, prometheus.Hide())
+	if t.Ref == "" {
+		return nil, ErrMissingRef
 	}
-	if t.Instant {
-		opts = append(opts, prometheus.Instant())
-	}
-	if t.IntervalFactor != nil {
-		opts = append(opts, prometheus.IntervalFactor(*t.IntervalFactor))
-	}
-	if t.Format != "" {
-		switch t.Format {
-		case "heatmap":
-			opts = append(opts, prometheus.Format(prometheus.FormatHeatmap))
-		case "table":
-			opts = append(opts, prometheus.Format(prometheus.FormatTable))
-		case "time_series":
-			opts = append(opts, prometheus.Format(prometheus.FormatTimeSeries))
+
+	if t.Lookback != "" {
+		from, err := time.ParseDuration(t.Lookback)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", err, ErrInvalidLookback)
 		}
+
+		opts = append(opts, prometheus.TimeRange(from, 0))
 	}
 
-	return opts
+	return alert.WithPrometheusQuery(t.Ref, t.Query, opts...), nil
 }
 
-type LokiTarget struct {
-	Query  string
-	Legend string `yaml:",omitempty"`
-	Ref    string `yaml:",omitempty"`
-	Hidden bool   `yaml:",omitempty"`
+type AlertLoki struct {
+	Ref      string `yaml:",omitempty"`
+	Query    string
+	Legend   string `yaml:",omitempty"`
+	Lookback string `yaml:",omitempty"`
 }
 
-func (t LokiTarget) toOptions() []loki.Option {
+func (t AlertLoki) toOptions() (alert.Option, error) {
 	opts := []loki.Option{
 		loki.Legend(t.Legend),
-		loki.Ref(t.Ref),
 	}
 
-	if t.Hidden {
-		opts = append(opts, loki.Hide())
+	if t.Ref == "" {
+		return nil, ErrMissingRef
 	}
 
-	return opts
+	if t.Lookback != "" {
+		from, err := time.ParseDuration(t.Lookback)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", err, ErrInvalidLookback)
+		}
+
+		opts = append(opts, loki.TimeRange(from, 0))
+	}
+
+	return alert.WithLokiQuery(t.Ref, t.Query, opts...), nil
 }
 
-type GraphiteTarget struct {
-	Query  string
-	Ref    string `yaml:",omitempty"`
-	Hidden bool   `yaml:",omitempty"`
+type AlertGraphite struct {
+	Ref      string `yaml:",omitempty"`
+	Query    string
+	Lookback string `yaml:",omitempty"`
 }
 
-func (t GraphiteTarget) toOptions() []graphite.Option {
-	opts := []graphite.Option{
-		graphite.Ref(t.Ref),
+func (t AlertGraphite) toOptions() (alert.Option, error) {
+	var opts []graphite.Option
+
+	if t.Ref == "" {
+		return nil, ErrMissingRef
 	}
 
-	if t.Hidden {
-		opts = append(opts, graphite.Hide())
+	if t.Lookback != "" {
+		from, err := time.ParseDuration(t.Lookback)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", err, ErrInvalidLookback)
+		}
+
+		opts = append(opts, graphite.TimeRange(from, 0))
 	}
 
-	return opts
+	return alert.WithGraphiteQuery(t.Ref, t.Query, opts...), nil
 }
 
-type InfluxDBTarget struct {
-	Query  string
-	Ref    string `yaml:",omitempty"`
-	Hidden bool   `yaml:",omitempty"`
-}
+type AlertStackdriver struct {
+	Ref      string `yaml:",omitempty"`
+	Lookback string `yaml:",omitempty"`
 
-func (t InfluxDBTarget) toOptions() []influxdb.Option {
-	opts := []influxdb.Option{
-		influxdb.Ref(t.Ref),
-	}
-
-	if t.Hidden {
-		opts = append(opts, influxdb.Hide())
-	}
-
-	return opts
-}
-
-type StackdriverTarget struct {
-	Project      string
 	Type         string
 	Metric       string
-	Filters      StackdriverFilters    `yaml:",omitempty"`
-	Aggregation  string                `yaml:",omitempty"`
-	Alignment    *StackdriverAlignment `yaml:",omitempty"`
-	Legend       string                `yaml:",omitempty"`
-	Preprocessor string                `yaml:",omitempty"`
-	Ref          string                `yaml:",omitempty"`
-	Hidden       bool                  `yaml:",omitempty"`
-	GroupBy      []string              `yaml:"group_by,omitempty"`
+	Filters      StackdriverAlertFilters    `yaml:",omitempty"`
+	Aggregation  string                     `yaml:",omitempty"`
+	Alignment    *StackdriverAlertAlignment `yaml:",omitempty"`
+	Legend       string                     `yaml:",omitempty"`
+	Preprocessor string                     `yaml:",omitempty"`
+	Hidden       bool                       `yaml:",omitempty"`
+	GroupBy      []string                   `yaml:"group_by,omitempty"`
 }
 
-type StackdriverFilters struct {
+type StackdriverAlertFilters struct {
 	Eq         map[string]string `yaml:",omitempty"`
 	Neq        map[string]string `yaml:",omitempty"`
 	Matches    map[string]string `yaml:",omitempty"`
 	NotMatches map[string]string `yaml:"not_matches,omitempty"`
 }
 
-type StackdriverAlignment struct {
+type StackdriverAlertAlignment struct {
 	Method string
 	Period string
 }
 
-func (t StackdriverTarget) toTarget() (*stackdriver.Stackdriver, error) {
-	opts, err := t.toOptions()
+func (t AlertStackdriver) toOptions() (alert.Option, error) {
+	if t.Ref == "" {
+		return nil, ErrMissingRef
+	}
+
+	opts, err := t.targetOptions()
 	if err != nil {
 		return nil, err
 	}
 
+	var query *stackdriver.Stackdriver
+
 	switch t.Type {
 	case "delta":
-		return stackdriver.Delta(t.Metric, opts...), nil
+		query = stackdriver.Delta(t.Ref, t.Metric, opts...)
 	case "gauge":
-		return stackdriver.Gauge(t.Metric, opts...), nil
+		query = stackdriver.Gauge(t.Ref, t.Metric, opts...)
 	case "cumulative":
-		return stackdriver.Cumulative(t.Metric, opts...), nil
+		query = stackdriver.Cumulative(t.Ref, t.Metric, opts...)
+	default:
+		return nil, ErrInvalidStackdriverType
 	}
 
-	return nil, ErrInvalidStackdriverType
+	return alert.WithStackdriverQuery(query), nil
 }
 
-func (t StackdriverTarget) toOptions() ([]stackdriver.Option, error) {
+func (t AlertStackdriver) targetOptions() ([]stackdriver.Option, error) {
 	opts := []stackdriver.Option{
 		stackdriver.Legend(t.Legend),
-		stackdriver.Ref(t.Ref),
 	}
 
-	if t.Hidden {
-		opts = append(opts, stackdriver.Hide())
-	}
+	if t.Lookback != "" {
+		from, err := time.ParseDuration(t.Lookback)
+		if err != nil {
+			return nil, fmt.Errorf("%s: %w", err, ErrInvalidLookback)
+		}
 
-	if t.Project != "" {
-		opts = append(opts, stackdriver.Project(t.Project))
+		opts = append(opts, stackdriver.TimeRange(from, 0))
 	}
 
 	filters := t.Filters.toOptions()
@@ -216,7 +225,7 @@ func (t StackdriverTarget) toOptions() ([]stackdriver.Option, error) {
 	return opts, nil
 }
 
-func (t StackdriverTarget) aggregation() (stackdriver.Option, error) {
+func (t AlertStackdriver) aggregation() (stackdriver.Option, error) {
 	switch t.Aggregation {
 	case "none":
 		return stackdriver.Aggregation(stackdriver.ReduceNone), nil
@@ -251,7 +260,7 @@ func (t StackdriverTarget) aggregation() (stackdriver.Option, error) {
 	}
 }
 
-func (t StackdriverTarget) preprocessor() (stackdriver.Option, error) {
+func (t AlertStackdriver) preprocessor() (stackdriver.Option, error) {
 	switch t.Preprocessor {
 	case "delta":
 		return stackdriver.Preprocessor(stackdriver.PreprocessDelta), nil
@@ -262,7 +271,7 @@ func (t StackdriverTarget) preprocessor() (stackdriver.Option, error) {
 	}
 }
 
-func (filters StackdriverFilters) toOptions() []stackdriver.FilterOption {
+func (filters StackdriverAlertFilters) toOptions() []stackdriver.FilterOption {
 	opts := []stackdriver.FilterOption{}
 
 	for key, value := range filters.Eq {
@@ -281,7 +290,7 @@ func (filters StackdriverFilters) toOptions() []stackdriver.FilterOption {
 	return opts
 }
 
-func (t StackdriverAlignment) toOption() (stackdriver.Option, error) {
+func (t StackdriverAlertAlignment) toOption() (stackdriver.Option, error) {
 	switch t.Method {
 	case "none":
 		return stackdriver.Alignment(stackdriver.AlignNone, t.Period), nil
