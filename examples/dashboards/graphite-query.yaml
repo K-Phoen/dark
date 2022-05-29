@@ -2,8 +2,9 @@ apiVersion: k8s.kevingomez.fr/v1
 kind: GrafanaDashboard
 metadata:
   name: dark-graphite-query
+  annotations:
+    dark/folder: DARK
 
-folder: DARK
 spec:
   title: Dark with graphite query
   editable: true

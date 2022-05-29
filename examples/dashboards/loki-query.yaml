@@ -2,8 +2,9 @@ apiVersion: k8s.kevingomez.fr/v1
 kind: GrafanaDashboard
 metadata:
   name: dark-loki-query
+  annotations:
+    dark/folder: DARK
 
-folder: DARK
 spec:
   title: Dark with loki query
   editable: true

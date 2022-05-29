@@ -21,6 +21,10 @@ func NewCreator(grabanaClient *grabana.Client) *Creator {
 }
 
 func (creator *Creator) FromRawSpec(ctx context.Context, folderName string, uid string, rawJSON []byte) error {
+	if folderName == "" {
+		return fmt.Errorf("folder can not be empty")
+	}
+
 	spec := make(map[string]interface{})
 	if err := json.Unmarshal(rawJSON, &spec); err != nil {
 		return fmt.Errorf("could not unmarshall dashboard json spec: %w", err)

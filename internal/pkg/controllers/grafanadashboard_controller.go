@@ -17,6 +17,7 @@ import (
 )
 
 const grafanaDashboardFinalizerName = "grafanadashboards.k8s.kevingomez.fr/finalizer"
+const folderAnnotation = "dark/folder"
 
 type dashboardManager interface {
 	FromRawSpec(ctx context.Context, folderName string, uid string, rawJSON []byte) error
@@ -102,8 +103,13 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
+	folder := dashboard.Annotations[folderAnnotation]
+	if dashboard.Folder != "" {
+		folder = dashboard.Folder
+	}
+
 	// proceed with create/update reconciliation
-	if err := r.Dashboards.FromRawSpec(ctx, dashboard.Folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
+	if err := r.Dashboards.FromRawSpec(ctx, folder, dashboard.ObjectMeta.Name, dashboard.Spec.Raw); err != nil {
 		logger.Error(err, "could not apply GrafanaDashboard in Grafana")
 
 		r.updateStatus(ctx, dashboard, err)

@@ -61,7 +61,6 @@ spec:
             - status
             type: object
         required:
-        - folder
         - spec
         type: object
     served: true
