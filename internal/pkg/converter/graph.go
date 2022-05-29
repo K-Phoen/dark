@@ -27,7 +27,7 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		graph.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
-		graph.Datasource = *panel.Datasource
+		graph.Datasource = panel.Datasource.LegacyName
 	}
 
 	if len(panel.Yaxes) == 2 {

@@ -23,7 +23,7 @@ func TestConvertSingleStatPanel(t *testing.T) {
 			Type:        "singlestat",
 			Transparent: true,
 			Height:      &height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		SinglestatPanel: &sdk.SinglestatPanel{
 			Format:          "none",

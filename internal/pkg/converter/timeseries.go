@@ -25,7 +25,7 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		tsPanel.Height = panel.Height.(string)
 	}
 	if panel.Datasource != nil {
-		tsPanel.Datasource = *panel.Datasource
+		tsPanel.Datasource = panel.Datasource.LegacyName
 	}
 
 	for _, target := range panel.TimeseriesPanel.Targets {

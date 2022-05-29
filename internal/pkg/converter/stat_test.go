@@ -22,7 +22,7 @@ func TestConvertStatPanel(t *testing.T) {
 			Type:        "stat",
 			Transparent: true,
 			Height:      &height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		StatPanel: &sdk.StatPanel{
 			Targets: []sdk.Target{

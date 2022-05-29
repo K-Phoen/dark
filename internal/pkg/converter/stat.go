@@ -33,7 +33,7 @@ func (converter *JSON) convertStat(panel sdk.Panel) grabana.DashboardPanel {
 		stat.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
-		stat.Datasource = *panel.Datasource
+		stat.Datasource = panel.Datasource.LegacyName
 	}
 	if panel.StatPanel.Options.GraphMode == "area" {
 		stat.SparkLine = true

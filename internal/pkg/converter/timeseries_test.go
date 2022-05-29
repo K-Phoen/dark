@@ -24,7 +24,7 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 			Description: strPtr("timeseries description"),
 			Transparent: true,
 			Height:      height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		TimeseriesPanel: &sdk.TimeseriesPanel{
 			Targets: []sdk.Target{
@@ -302,8 +302,8 @@ func TestConvertTimeSeriesAxisOptions(t *testing.T) {
 				Defaults: sdk.FieldConfigDefaults{
 					Unit:     "short",
 					Decimals: intPtr(2),
-					Min:      intPtr(1),
-					Max:      intPtr(11),
+					Min:      float64Ptr(1),
+					Max:      float64Ptr(11),
 					Custom: sdk.FieldConfigCustom{
 						AxisLabel:   "label",
 						AxisSoftMin: intPtr(0),
@@ -320,8 +320,8 @@ func TestConvertTimeSeriesAxisOptions(t *testing.T) {
 	req.Equal("label", tsAxis.Label)
 	req.Equal("short", tsAxis.Unit)
 	req.Equal(2, *tsAxis.Decimals)
-	req.Equal(1, *tsAxis.Min)
-	req.Equal(11, *tsAxis.Max)
+	req.Equal(float64(1), *tsAxis.Min)
+	req.Equal(float64(11), *tsAxis.Max)
 	req.Equal(0, *tsAxis.SoftMin)
 	req.Equal(10, *tsAxis.SoftMax)
 }

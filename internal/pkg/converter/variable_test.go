@@ -163,7 +163,7 @@ func TestConvertQueryVar(t *testing.T) {
 	variable.IncludeAll = true
 	variable.Hide = 1
 	variable.Current = sdk.Current{Value: "$__all"}
-	variable.Datasource = &datasource
+	variable.Datasource = &sdk.DatasourceRef{LegacyName: datasource}
 	variable.Query = "prom_query"
 
 	converter := NewJSON(zap.NewNop())

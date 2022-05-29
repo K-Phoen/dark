@@ -21,7 +21,7 @@ func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
 		table.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
-		table.Datasource = *panel.Datasource
+		table.Datasource = panel.Datasource.LegacyName
 	}
 
 	for _, target := range panel.TablePanel.Targets {

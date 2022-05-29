@@ -68,7 +68,7 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {
 	datasource := ""
 	if variable.Datasource != nil {
-		datasource = *variable.Datasource
+		datasource = variable.Datasource.LegacyName
 	}
 
 	query := &grabana.VariableQuery{

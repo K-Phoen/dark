@@ -39,7 +39,7 @@ func TestConvertTagAnnotation(t *testing.T) {
 	datasource := "-- Grafana --"
 	annotation := sdk.Annotation{
 		Type:       "tags",
-		Datasource: &datasource,
+		Datasource: &sdk.DatasourceRef{LegacyName: datasource},
 		IconColor:  "#5794F2",
 		Name:       "Deployments",
 		Tags:       []string{"deploy"},

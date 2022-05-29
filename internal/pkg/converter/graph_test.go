@@ -22,7 +22,7 @@ func TestConvertGraphPanel(t *testing.T) {
 			Description: strPtr("graph description"),
 			Transparent: true,
 			Height:      &height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		GraphPanel: &sdk.GraphPanel{},
 	}

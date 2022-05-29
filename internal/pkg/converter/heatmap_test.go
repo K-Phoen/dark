@@ -22,7 +22,7 @@ func TestConvertHeatmapPanel(t *testing.T) {
 			Description: strPtr("heatmap description"),
 			Transparent: true,
 			Height:      &height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		HeatmapPanel: &sdk.HeatmapPanel{
 			HideZeroBuckets: true,
