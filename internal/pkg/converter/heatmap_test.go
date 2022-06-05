@@ -45,3 +45,28 @@ func TestConvertHeatmapPanel(t *testing.T) {
 	req.True(converted.Heatmap.HighlightCards)
 	req.Equal("time_series_buckets", converted.Heatmap.DataFormat)
 }
+
+func TestConvertHeatmapLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "heatmap",
+			Links: []sdk.Link{
+				{Title: "heatmap title", URL: strPtr("heatmap url")},
+			},
+		},
+		HeatmapPanel: &sdk.HeatmapPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.Heatmap)
+
+	panel := converted.Heatmap
+	req.Len(panel.Links, 1)
+	req.Equal("heatmap title", panel.Links[0].Title)
+	req.Equal("heatmap url", panel.Links[0].URL)
+}

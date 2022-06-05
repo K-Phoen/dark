@@ -20,7 +20,7 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/K-Phoen/grabana v0.21.5
+# github.com/K-Phoen/grabana v0.21.6
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
@@ -47,6 +47,7 @@ github.com/K-Phoen/grabana/graph
 github.com/K-Phoen/grabana/graph/series
 github.com/K-Phoen/grabana/heatmap
 github.com/K-Phoen/grabana/heatmap/axis
+github.com/K-Phoen/grabana/links
 github.com/K-Phoen/grabana/logs
 github.com/K-Phoen/grabana/row
 github.com/K-Phoen/grabana/scheme

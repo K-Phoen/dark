@@ -72,3 +72,23 @@ func TestConvertStatPanel(t *testing.T) {
 	req.Equal(datasource, converted.Stat.Datasource)
 	req.True(converted.Stat.SparkLine)
 }
+
+func TestConvertStatLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.NewStat("")
+	sdkPanel.Links = []sdk.Link{
+		{Title: "stat title", URL: strPtr("stat url")},
+	}
+
+	converted, ok := converter.convertDataPanel(*sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.Stat)
+
+	panel := converted.Stat
+	req.Len(panel.Links, 1)
+	req.Equal("stat title", panel.Links[0].Title)
+	req.Equal("stat url", panel.Links[0].URL)
+}

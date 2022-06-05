@@ -23,6 +23,9 @@ func (converter *JSON) convertTable(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Datasource != nil {
 		table.Datasource = panel.Datasource.LegacyName
 	}
+	if len(panel.Links) != 0 {
+		table.Links = converter.convertPanelLinks(panel.Links)
+	}
 
 	for _, target := range panel.TablePanel.Targets {
 		graphTarget := converter.convertTarget(target)

@@ -35,6 +35,9 @@ func (converter *JSON) convertStat(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Datasource != nil {
 		stat.Datasource = panel.Datasource.LegacyName
 	}
+	if len(panel.Links) != 0 {
+		stat.Links = converter.convertPanelLinks(panel.Links)
+	}
 	if panel.StatPanel.Options.GraphMode == "area" {
 		stat.SparkLine = true
 	}

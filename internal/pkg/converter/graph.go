@@ -29,6 +29,9 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Datasource != nil {
 		graph.Datasource = panel.Datasource.LegacyName
 	}
+	if len(panel.Links) != 0 {
+		graph.Links = converter.convertPanelLinks(panel.Links)
+	}
 
 	if len(panel.Yaxes) == 2 {
 		graph.Axes.Left = converter.convertGraphAxis(panel.Yaxes[0])

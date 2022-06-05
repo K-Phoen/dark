@@ -51,6 +51,31 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 	req.Len(convertedTS.Targets, 1)
 }
 
+func TestConvertTimeseriesLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "timeseries",
+			Links: []sdk.Link{
+				{Title: "timeseries title", URL: strPtr("timeseries url")},
+			},
+		},
+		TimeseriesPanel: &sdk.TimeseriesPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.TimeSeries)
+
+	panel := converted.TimeSeries
+	req.Len(panel.Links, 1)
+	req.Equal("timeseries title", panel.Links[0].Title)
+	req.Equal("timeseries url", panel.Links[0].URL)
+}
+
 func TestConvertTimeSeriesLegendDisplay(t *testing.T) {
 	testCases := []struct {
 		display  string

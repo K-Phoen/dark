@@ -40,6 +40,30 @@ func TestConvertGraphPanel(t *testing.T) {
 	req.Equal(datasource, graph.Datasource)
 }
 
+func TestConvertGraphLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	graphPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "graph",
+			Links: []sdk.Link{
+				{Title: "title", URL: strPtr("url")},
+			},
+		},
+		GraphPanel: &sdk.GraphPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(graphPanel)
+
+	req.True(ok)
+	req.NotNil(converted.Graph)
+
+	graph := converted.Graph
+	req.Len(graph.Links, 1)
+	req.Equal("title", graph.Links[0].Title)
+}
+
 func TestConvertGraphLegend(t *testing.T) {
 	req := require.New(t)
 

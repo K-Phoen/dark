@@ -57,3 +57,28 @@ func TestConvertSingleStatPanel(t *testing.T) {
 		"background", "value",
 	}))
 }
+
+func TestConvertSingleStatLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "singlestat",
+			Links: []sdk.Link{
+				{Title: "singlestat title", URL: strPtr("singlestat url")},
+			},
+		},
+		SinglestatPanel: &sdk.SinglestatPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.SingleStat)
+
+	panel := converted.SingleStat
+	req.Len(panel.Links, 1)
+	req.Equal("singlestat title", panel.Links[0].Title)
+	req.Equal("singlestat url", panel.Links[0].URL)
+}

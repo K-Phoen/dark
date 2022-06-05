@@ -36,6 +36,9 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Datasource != nil {
 		heatmap.Datasource = panel.Datasource.LegacyName
 	}
+	if len(panel.Links) != 0 {
+		heatmap.Links = converter.convertPanelLinks(panel.Links)
+	}
 	if panel.HeatmapPanel.DataFormat != "" {
 		switch panel.HeatmapPanel.DataFormat {
 		case "tsbuckets":
