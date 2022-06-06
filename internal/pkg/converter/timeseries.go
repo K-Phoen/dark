@@ -3,6 +3,7 @@ package converter
 import (
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
+	"go.uber.org/zap"
 )
 
 func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel {
@@ -103,6 +104,10 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 		PointSize:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.PointSize,
 	}
 
+	if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.DrawStyle == "line" {
+		tsViz.LineInterpolation = converter.convertTimeSeriesLineInterpolation(panel)
+	}
+
 	// Tooltip mode
 	switch panel.TimeseriesPanel.Options.Tooltip.Mode {
 	case "none":
@@ -126,6 +131,24 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 	}
 
 	return tsViz
+}
+
+func (converter *JSON) convertTimeSeriesLineInterpolation(panel sdk.Panel) string {
+	mode := panel.TimeseriesPanel.FieldConfig.Defaults.Custom.LineInterpolation
+
+	switch mode {
+	case "smooth":
+		return "smooth"
+	case "linear":
+		return "linear"
+	case "stepBefore":
+		return "step_before"
+	case "stepAfter":
+		return "step_after"
+	default:
+		converter.logger.Warn("invalid line interpolation mode, defaulting to smooth", zap.String("interpolation_mode", mode))
+		return "smooth"
+	}
 }
 
 func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOptions) []string {
