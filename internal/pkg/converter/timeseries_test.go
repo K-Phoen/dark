@@ -24,7 +24,7 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 			Description: strPtr("timeseries description"),
 			Transparent: true,
 			Height:      height,
-			Datasource:  &datasource,
+			Datasource:  &sdk.DatasourceRef{LegacyName: datasource},
 		},
 		TimeseriesPanel: &sdk.TimeseriesPanel{
 			Targets: []sdk.Target{
@@ -49,6 +49,31 @@ func TestConvertTimeSeriesPanel(t *testing.T) {
 	req.Equal(height, convertedTS.Height)
 	req.Equal(datasource, convertedTS.Datasource)
 	req.Len(convertedTS.Targets, 1)
+}
+
+func TestConvertTimeseriesLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "timeseries",
+			Links: []sdk.Link{
+				{Title: "timeseries title", URL: strPtr("timeseries url")},
+			},
+		},
+		TimeseriesPanel: &sdk.TimeseriesPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.TimeSeries)
+
+	panel := converted.TimeSeries
+	req.Len(panel.Links, 1)
+	req.Equal("timeseries title", panel.Links[0].Title)
+	req.Equal("timeseries url", panel.Links[0].URL)
 }
 
 func TestConvertTimeSeriesLegendDisplay(t *testing.T) {
@@ -210,6 +235,46 @@ func TestConvertTimeSeriesVisualizationGradient(t *testing.T) {
 	}
 }
 
+func TestConvertTimeSeriesVisualizationLineInterpolation(t *testing.T) {
+	testCases := []struct {
+		mode     string
+		expected string
+	}{
+		{mode: "smooth", expected: "smooth"},
+		{mode: "linear", expected: "linear"},
+		{mode: "stepBefore", expected: "step_before"},
+		{mode: "stepAfter", expected: "step_after"},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+
+		t.Run(tc.mode, func(t *testing.T) {
+			req := require.New(t)
+
+			panel := sdk.Panel{
+				CommonPanel: sdk.CommonPanel{},
+				TimeseriesPanel: &sdk.TimeseriesPanel{
+					Options: sdk.TimeseriesOptions{},
+					FieldConfig: sdk.FieldConfig{
+						Defaults: sdk.FieldConfigDefaults{
+							Custom: sdk.FieldConfigCustom{
+								DrawStyle:         "line",
+								LineInterpolation: tc.mode,
+							},
+						},
+					},
+				},
+			}
+
+			converter := NewJSON(zap.NewNop())
+			tsViz := converter.convertTimeSeriesLineInterpolation(panel)
+
+			req.Equal(tc.expected, tsViz)
+		})
+	}
+}
+
 func TestConvertTimeSeriesVisualizationTooltipMode(t *testing.T) {
 	testCases := []struct {
 		mode     string
@@ -302,8 +367,8 @@ func TestConvertTimeSeriesAxisOptions(t *testing.T) {
 				Defaults: sdk.FieldConfigDefaults{
 					Unit:     "short",
 					Decimals: intPtr(2),
-					Min:      intPtr(1),
-					Max:      intPtr(11),
+					Min:      float64Ptr(1),
+					Max:      float64Ptr(11),
 					Custom: sdk.FieldConfigCustom{
 						AxisLabel:   "label",
 						AxisSoftMin: intPtr(0),
@@ -320,8 +385,8 @@ func TestConvertTimeSeriesAxisOptions(t *testing.T) {
 	req.Equal("label", tsAxis.Label)
 	req.Equal("short", tsAxis.Unit)
 	req.Equal(2, *tsAxis.Decimals)
-	req.Equal(1, *tsAxis.Min)
-	req.Equal(11, *tsAxis.Max)
+	req.Equal(float64(1), *tsAxis.Min)
+	req.Equal(float64(11), *tsAxis.Max)
 	req.Equal(0, *tsAxis.SoftMin)
 	req.Equal(10, *tsAxis.SoftMax)
 }

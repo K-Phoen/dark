@@ -15,7 +15,6 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		},
 		Legend:        converter.convertGraphLegend(panel.GraphPanel.Legend),
 		Visualization: converter.convertGraphVisualization(panel),
-		Alert:         converter.convertAlert(panel),
 	}
 
 	if panel.Description != nil {
@@ -28,7 +27,10 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 		graph.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
-		graph.Datasource = *panel.Datasource
+		graph.Datasource = panel.Datasource.LegacyName
+	}
+	if len(panel.Links) != 0 {
+		graph.Links = converter.convertPanelLinks(panel.Links)
 	}
 
 	if len(panel.Yaxes) == 2 {

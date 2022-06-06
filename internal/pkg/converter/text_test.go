@@ -38,6 +38,31 @@ func TestConvertTextPanelWithMarkdown(t *testing.T) {
 	req.Equal(height, converted.Text.Height)
 }
 
+func TestConvertTextLinks(t *testing.T) {
+	req := require.New(t)
+
+	converter := NewJSON(zap.NewNop())
+	sdkPanel := sdk.Panel{
+		CommonPanel: sdk.CommonPanel{
+			Type: "text",
+			Links: []sdk.Link{
+				{Title: "text title", URL: strPtr("text url")},
+			},
+		},
+		TextPanel: &sdk.TextPanel{},
+	}
+
+	converted, ok := converter.convertDataPanel(sdkPanel)
+
+	req.True(ok)
+	req.NotNil(converted.Text)
+
+	panel := converted.Text
+	req.Len(panel.Links, 1)
+	req.Equal("text title", panel.Links[0].Title)
+	req.Equal("text url", panel.Links[0].URL)
+}
+
 func TestConvertTextPanelWithHTML(t *testing.T) {
 	req := require.New(t)
 

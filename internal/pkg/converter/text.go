@@ -18,6 +18,9 @@ func (converter *JSON) convertText(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Height != nil {
 		text.Height = *(panel.Height).(*string)
 	}
+	if len(panel.Links) != 0 {
+		text.Links = converter.convertPanelLinks(panel.Links)
+	}
 
 	if panel.TextPanel.Options.Mode == "markdown" {
 		text.Markdown = panel.TextPanel.Options.Content

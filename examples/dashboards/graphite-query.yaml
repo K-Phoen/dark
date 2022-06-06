@@ -1,0 +1,34 @@
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+  name: dark-graphite-query
+  annotations:
+    dark/folder: DARK
+
+spec:
+  title: Dark with graphite query
+  editable: true
+  shared_crosshair: true
+  tags: [dark, graphite, generated]
+  auto_refresh: 5s
+  time: [now-1h, now]
+
+  rows:
+    - name: Overview
+      panels:
+      - timeseries:
+          title: Stats count
+          datasource: Graphite
+          targets:
+            - graphite:
+                query: 'aliasByMetric(stats_counts.*.*)'
+          alert:
+            summary: 'Some graphite-based alert'
+            description: "Very description, much wow"
+            targets:
+              - graphite:
+                  ref: A
+                  query: 'aliasByMetric(stats_counts.*.*)'
+                  lookback: 5m
+            if:
+              - { avg: A, above: 0 }

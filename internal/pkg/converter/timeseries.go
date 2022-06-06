@@ -3,6 +3,7 @@ package converter
 import (
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
+	"go.uber.org/zap"
 )
 
 func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel {
@@ -10,7 +11,6 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		Title:         panel.Title,
 		Span:          panelSpan(panel),
 		Transparent:   panel.Transparent,
-		Alert:         converter.convertAlert(panel),
 		Legend:        converter.convertTimeSeriesLegend(panel.TimeseriesPanel.Options.Legend),
 		Visualization: converter.convertTimeSeriesVisualization(panel),
 		Axis:          converter.convertTimeSeriesAxis(panel),
@@ -26,7 +26,10 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		tsPanel.Height = panel.Height.(string)
 	}
 	if panel.Datasource != nil {
-		tsPanel.Datasource = *panel.Datasource
+		tsPanel.Datasource = panel.Datasource.LegacyName
+	}
+	if len(panel.Links) != 0 {
+		tsPanel.Links = converter.convertPanelLinks(panel.Links)
 	}
 
 	for _, target := range panel.TimeseriesPanel.Targets {
@@ -99,6 +102,11 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 	tsViz := &grabana.TimeSeriesVisualization{
 		FillOpacity: &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.FillOpacity,
 		PointSize:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.PointSize,
+		LineWidth:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.LineWidth,
+	}
+
+	if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.DrawStyle == "line" {
+		tsViz.LineInterpolation = converter.convertTimeSeriesLineInterpolation(panel)
 	}
 
 	// Tooltip mode
@@ -124,6 +132,24 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 	}
 
 	return tsViz
+}
+
+func (converter *JSON) convertTimeSeriesLineInterpolation(panel sdk.Panel) string {
+	mode := panel.TimeseriesPanel.FieldConfig.Defaults.Custom.LineInterpolation
+
+	switch mode {
+	case "smooth":
+		return "smooth"
+	case "linear":
+		return "linear"
+	case "stepBefore":
+		return "step_before"
+	case "stepAfter":
+		return "step_after"
+	default:
+		converter.logger.Warn("invalid line interpolation mode, defaulting to smooth", zap.String("interpolation_mode", mode))
+		return "smooth"
+	}
 }
 
 func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOptions) []string {

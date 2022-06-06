@@ -13,7 +13,7 @@ func ToManifestCommand(logger *zap.Logger) *cobra.Command {
 	var options converter.K8SManifestOptions
 
 	var cmd = &cobra.Command{
-		Use:   "convert-k8s-manifest",
+		Use:   "convert-k8s-manifest name",
 		Args:  cobra.ExactArgs(1),
 		Short: "Converts a JSON dashboard into a k8s manifest",
 		Run: func(cmd *cobra.Command, args []string) {

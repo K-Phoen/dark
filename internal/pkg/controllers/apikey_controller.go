@@ -16,8 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
-//nolint:gosec (these are not hardcoded credentials -_-)
-const apiKeysFinalizerName = "apikeys.k8s.kevingomez.fr/finalizer"
+//nolint:gosec
+const apiKeysFinalizerName = "apikeys.k8s.kevingomez.fr/finalizer" //  (these are not hardcoded credentials -_-)
 
 type apiKeyClient interface {
 	Reconcile(ctx context.Context, key grafana.APIKey) error

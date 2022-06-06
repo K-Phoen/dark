@@ -24,5 +24,5 @@ func (datasources *Datasources) stackdriverSpecToModel(ctx context.Context, obje
 		opts = append(opts, stackdriver.JWTAuthentication(jwtKey))
 	}
 
-	return stackdriver.New(objectRef.Name, opts...), nil
+	return stackdriver.New(objectRef.Name, opts...)
 }

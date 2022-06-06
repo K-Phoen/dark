@@ -2,11 +2,12 @@ apiVersion: k8s.kevingomez.fr/v1
 kind: GrafanaDashboard
 metadata:
   name: dark-reconciliations
+  annotations:
+    dark/folder: DARK
 
-folder: DARK
 spec:
   title: Dark operator reconciliations
-  editable: false
+  editable: true
   shared_crosshair: true
   tags: [dark, generated]
   auto_refresh: 5s
@@ -25,16 +26,36 @@ spec:
       - timeseries:
           title: GrafanaDashboards reconciliations status
           description: Reconciliation status of GrafanaDashboards manifests
+          datasource: Prometheus
           targets:
             - prometheus:
                 query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[$interval])) by (result)
                 legend: '{{ result }}'
+          alert:
+            summary: 'Alert summary'
+            description: "Alert msg"
+            evaluate_every: 3m
+            for: 6m
+            on_no_data: ok
+            on_execution_error: alerting
+            if:
+              - { avg: A, above: 0 }
+            targets:
+              - prometheus:
+                  ref: A
+                  query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[5m])) by (result)
+                  legend: "{{ result }}"
+                  lookback: 5m
+            tags:
+              owner: platform
+              service: service_name
+              og_priority: P4
 
       - timeseries:
           title: Datasources reconciliations status
           description: Reconciliation status of Datasources manifests
+          datasource: Prometheus
           targets:
             - prometheus:
                 query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[$interval])) by (result)
                 legend: '{{ result }}'
-

@@ -29,7 +29,10 @@ func (converter *JSON) convertSingleStat(panel sdk.Panel) grabana.DashboardPanel
 		singleStat.Height = *(panel.Height).(*string)
 	}
 	if panel.Datasource != nil {
-		singleStat.Datasource = *panel.Datasource
+		singleStat.Datasource = panel.Datasource.LegacyName
+	}
+	if len(panel.Links) != 0 {
+		singleStat.Links = converter.convertPanelLinks(panel.Links)
 	}
 
 	thresholds := strings.Split(panel.SinglestatPanel.Thresholds, ",")

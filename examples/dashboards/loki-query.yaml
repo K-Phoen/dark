@@ -1,0 +1,41 @@
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+  name: dark-loki-query
+  annotations:
+    dark/folder: DARK
+
+spec:
+  title: Dark with loki query
+  editable: true
+  shared_crosshair: true
+  tags: [dark, loki, generated]
+  auto_refresh: 5s
+  time: [now-1h, now]
+
+  rows:
+    - name: Overview
+      panels:
+      - timeseries:
+          title: Logs ingestion rate
+          datasource: Loki
+          span: 12
+          targets:
+            - loki:
+                query: 'sum(rate({app="loki"}[$__interval])) by (app)'
+                legend: '{{ app }}'
+          alert:
+            summary: 'No logs ingested on loki'
+            targets:
+              - loki:
+                  ref: A
+                  query: 'count_over_time({app="loki"}[5m])'
+                  lookback: 5m
+            if:
+              - { avg: A, below: 0 }
+      - logs:
+          title: Loki logs explorer
+          datasource: Loki
+          span: 12
+          targets:
+            - loki: { query: "{app=\"loki\"}" }

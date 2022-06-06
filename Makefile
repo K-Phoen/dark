@@ -94,11 +94,22 @@ dev-env-remove: ## Remove the development k3d cluster.
 
 .PHONY: dev-env-provision
 dev-env-provision: ## Provision the development k3d cluster with useful tools (Grafana, Prometheus, Loki, ...).
+	# Helm repositories
 	helm repo add grafana https://grafana.github.io/helm-charts
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm repo add bitnami https://charts.bitnami.com/bitnami
+	helm repo add kiwigrid https://kiwigrid.github.io
 	helm repo update
+	# Grafana, loki, prometheus, ...
 	helm upgrade \
 		--install loki grafana/loki-stack \
-		--set grafana.enabled=true,grafana.image.tag=8.3.4,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+		--set grafana.enabled=true,grafana.image.tag=8.5.1,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+	# InfluxDB
+	helm upgrade --install influxdb bitnami/influxdb \
+		--set auth.enabled=false
+	# Graphite
+	helm upgrade --install graphite kiwigrid/graphite
+	# Rest
 	kubectl apply -f config/crd/bases
 	kubectl apply -f config/dev-env
 
@@ -107,6 +118,14 @@ dev-env-info: ## Print useful information for the dev environment (URL, credenti
 	@echo "==============="
 	@echo "Grafana available at http://$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT)"
 	@kubectl get secret loki-grafana -o go-template='{{range $$k,$$v := .data}}{{printf "%s: " $$k}}{{if not $$v}}{{$$v}}{{else}}{{$$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+	@echo "==============="
+	@echo "InfluxDB available at: http://influxdb:8086"
+	@echo -n "admin password: "
+	@kubectl get secret --namespace default influxdb -o jsonpath="{.data.admin-user-password}" | base64 --decode
+	@echo ""
+	@echo "==============="
+	@echo "Graphite available at http://graphite:8080"
+
 
 .PHONY: dev-env-check-binaires
 dev-env-check-binaries: ## Check that the required binary are present.

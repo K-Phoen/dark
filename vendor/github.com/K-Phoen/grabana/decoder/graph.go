@@ -20,6 +20,7 @@ type DashboardGraph struct {
 	Datasource    string  `yaml:",omitempty"`
 	Repeat        string  `yaml:",omitempty"`
 	Targets       []Target
+	Links         DashboardPanelLinks `yaml:",omitempty"`
 	Axes          *GraphAxes          `yaml:",omitempty"`
 	Legend        []string            `yaml:",omitempty,flow"`
 	Alert         *Alert              `yaml:",omitempty"`
@@ -47,6 +48,9 @@ func (graphPanel DashboardGraph) toOption() (row.Option, error) {
 	if graphPanel.Repeat != "" {
 		opts = append(opts, graph.Repeat(graphPanel.Repeat))
 	}
+	if len(graphPanel.Links) != 0 {
+		opts = append(opts, graph.Links(graphPanel.Links.toModel()...))
+	}
 	if graphPanel.Axes != nil && graphPanel.Axes.Right != nil {
 		opts = append(opts, graph.RightYAxis(graphPanel.Axes.Right.toOptions()...))
 	}
@@ -70,7 +74,7 @@ func (graphPanel DashboardGraph) toOption() (row.Option, error) {
 			return nil, err
 		}
 
-		opts = append(opts, graph.Alert(graphPanel.Alert.Title, alertOpts...))
+		opts = append(opts, graph.Alert(graphPanel.Alert.Summary, alertOpts...))
 	}
 	if graphPanel.Visualization != nil {
 		opts = append(opts, graphPanel.Visualization.toOptions()...)

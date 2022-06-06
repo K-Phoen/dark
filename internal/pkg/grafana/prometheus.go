@@ -19,7 +19,7 @@ func (datasources *Datasources) prometheusSpecToModel(ctx context.Context, objec
 		return nil, err
 	}
 
-	return prometheus.New(objectRef.Name, ds.URL, opts...), nil
+	return prometheus.New(objectRef.Name, ds.URL, opts...)
 }
 
 func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, objectRef types.NamespacedName, spec *v1alpha1.PrometheusDatasource) ([]prometheus.Option, error) {

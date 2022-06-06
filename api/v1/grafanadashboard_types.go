@@ -27,8 +27,9 @@ type GrafanaDashboard struct {
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	//+kubebuilder:pruning:PreserveUnknownFields
-	Spec   runtime.RawExtension `json:"spec"`
-	Folder string               `json:"folder"`
+	Spec runtime.RawExtension `json:"spec"`
+	//+kubebuilder:validation:Optional
+	Folder string `json:"folder"`
 
 	Status GrafanaDashboardStatus `json:"status,omitempty"`
 }

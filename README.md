@@ -34,8 +34,8 @@ kind: GrafanaDashboard
 metadata:
   name: example-dashboard
   namespace: monitoring
-
-folder: "Awesome folder"
+  annotations:
+    dark/folder: "Awesome folder"
 spec:
   title: Awesome dashboard
   shared_crosshair: true

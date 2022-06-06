@@ -27,7 +27,7 @@ func (converter *JSON) convertAnnotations(annotations []sdk.Annotation, dashboar
 func (converter *JSON) convertTagAnnotation(annotation sdk.Annotation, dashboard *grabana.DashboardModel) {
 	datasource := ""
 	if annotation.Datasource != nil {
-		datasource = *annotation.Datasource
+		datasource = annotation.Datasource.LegacyName
 	}
 
 	dashboard.TagsAnnotation = append(dashboard.TagsAnnotation, grabanaDashboard.TagAnnotation{
