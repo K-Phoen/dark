@@ -102,6 +102,7 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 	tsViz := &grabana.TimeSeriesVisualization{
 		FillOpacity: &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.FillOpacity,
 		PointSize:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.PointSize,
+		LineWidth:   &panel.TimeseriesPanel.FieldConfig.Defaults.Custom.LineWidth,
 	}
 
 	if panel.TimeseriesPanel.FieldConfig.Defaults.Custom.DrawStyle == "line" {
