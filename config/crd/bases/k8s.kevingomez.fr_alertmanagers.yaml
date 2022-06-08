@@ -152,6 +152,10 @@ spec:
                 type: array
               default_contact_point:
                 type: string
+              message_templates:
+                additionalProperties:
+                  type: string
+                type: object
               routing:
                 items:
                   properties:
