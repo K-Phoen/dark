@@ -13,8 +13,9 @@ type AlertManagerSpec struct {
 	// +kubebuilder:validation:Required
 	DefaultContactPoint string `json:"default_contact_point,omitempty"`
 
-	ContactPoints []ContactPoint  `json:"contact_points,omitempty"`
-	Routing       []RoutingPolicy `json:"routing,omitempty"`
+	ContactPoints    []ContactPoint    `json:"contact_points,omitempty"`
+	Routing          []RoutingPolicy   `json:"routing,omitempty"`
+	MessageTemplates map[string]string `json:"message_templates,omitempty"`
 }
 
 type ContactPoint struct {

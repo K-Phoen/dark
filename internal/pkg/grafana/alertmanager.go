@@ -44,6 +44,11 @@ func (manager *AlertManager) Reset(ctx context.Context) error {
 func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.AlertManager) error {
 	var managerOpts []alertmanager.Option
 
+	// message templates
+	if len(manifest.Spec.MessageTemplates) != 0 {
+		managerOpts = append(managerOpts, alertmanager.Templates(manifest.Spec.MessageTemplates))
+	}
+
 	// contact points
 	contactPointsOpts, err := manager.contactPointsOpts(ctx, manifest)
 	if err != nil {
