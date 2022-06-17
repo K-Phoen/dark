@@ -3,7 +3,7 @@ module github.com/K-Phoen/dark
 go 1.17
 
 require (
-	github.com/K-Phoen/grabana v0.21.7
+	github.com/K-Phoen/grabana v0.21.8
 	github.com/K-Phoen/sdk v0.11.0
 	github.com/go-logr/logr v1.2.2
 	github.com/onsi/ginkgo v1.16.5
@@ -13,9 +13,9 @@ require (
 	github.com/spf13/viper v1.11.0
 	github.com/stretchr/testify v1.7.1
 	go.uber.org/zap v1.21.0
-	gopkg.in/yaml.v3 v3.0.0
+	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.24.0
-	k8s.io/apimachinery v0.24.0
+	k8s.io/apimachinery v0.24.2
 	k8s.io/client-go v0.24.0
 	sigs.k8s.io/controller-runtime v0.11.2
 )
