@@ -593,6 +593,11 @@ type Target struct {
 
 	// For the Stackdriver data source. Find out more information at
 	// https:/grafana.com/docs/grafana/v6.0/features/datasources/stackdriver/
+	MetricQuery *StackdriverMetricQuery `json:"metricQuery,omitempty"`
+	QueryType   string                  `json:"queryType,omitempty"`
+}
+
+type StackdriverMetricQuery struct {
 	ProjectName        string                    `json:"projectName,omitempty"`
 	AlignOptions       []StackdriverAlignOptions `json:"alignOptions,omitempty"`
 	AliasBy            string                    `json:"aliasBy,omitempty"`

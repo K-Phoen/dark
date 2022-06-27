@@ -81,7 +81,9 @@ func TestConvertTargetWithStackdriverTargetFailsIfNoMetricKind(t *testing.T) {
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		},
 	}
 
 	convertedTarget := converter.convertTarget(target)
@@ -94,9 +96,11 @@ func TestConvertTargetWithStackdriverTargetIgnoresUnknownCrossSeriesReducer(t *t
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricKind:         "DELTA",
-		MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
-		CrossSeriesReducer: "unknown",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricKind:         "DELTA",
+			MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
+			CrossSeriesReducer: "unknown",
+		},
 	}
 
 	convertedTarget := converter.convertTarget(target)
@@ -111,9 +115,11 @@ func TestConvertTargetWithStackdriverTargetIgnoresUnknownAligner(t *testing.T) {
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricKind:       "DELTA",
-		MetricType:       "pubsub.googleapis.com/subscription/ack_message_count",
-		PerSeriesAligner: "unknown",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricKind:       "DELTA",
+			MetricType:       "pubsub.googleapis.com/subscription/ack_message_count",
+			PerSeriesAligner: "unknown",
+		},
 	}
 
 	convertedTarget := converter.convertTarget(target)
@@ -129,31 +135,33 @@ func TestConvertTargetWithStackdriverTarget(t *testing.T) {
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricKind:         "DELTA",
-		MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
-		CrossSeriesReducer: "REDUCE_MEAN",
-		PerSeriesAligner:   "ALIGN_DELTA",
-		AlignmentPeriod:    "stackdriver-auto",
-		GroupBys:           []string{"field"},
-		AliasBy:            "legend",
-		RefID:              "A",
-		Filters: []string{
-			"resource.label.subscription_id",
-			"=",
-			"subscription_name",
-			"AND",
-			"other-property",
-			"!=",
-			"other-value",
-			"AND",
-			"regex-property",
-			"=~",
-			"regex-value",
-			"AND",
-			"regex-not-property",
-			"!=~",
-			"regex-not-value",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricKind:         "DELTA",
+			MetricType:         "pubsub.googleapis.com/subscription/ack_message_count",
+			CrossSeriesReducer: "REDUCE_MEAN",
+			PerSeriesAligner:   "ALIGN_DELTA",
+			AlignmentPeriod:    "stackdriver-auto",
+			GroupBys:           []string{"field"},
+			AliasBy:            "legend",
+			Filters: []string{
+				"resource.label.subscription_id",
+				"=",
+				"subscription_name",
+				"AND",
+				"other-property",
+				"!=",
+				"other-value",
+				"AND",
+				"regex-property",
+				"=~",
+				"regex-value",
+				"AND",
+				"regex-not-property",
+				"!=~",
+				"regex-not-value",
+			},
 		},
+		RefID: "A",
 	}
 
 	convertedTarget := converter.convertTarget(target)
@@ -181,8 +189,10 @@ func TestConvertTargetWithStackdriverGauge(t *testing.T) {
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricKind: "GAUGE",
-		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricKind: "GAUGE",
+			MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		},
 	}
 
 	convertedTarget := converter.convertTarget(target)
@@ -200,8 +210,10 @@ func TestConvertTargetWithStackdriverCumulative(t *testing.T) {
 	converter := NewJSON(zap.NewNop())
 
 	target := sdk.Target{
-		MetricKind: "CUMULATIVE",
-		MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		MetricQuery: &sdk.StackdriverMetricQuery{
+			MetricKind: "CUMULATIVE",
+			MetricType: "pubsub.googleapis.com/subscription/ack_message_count",
+		},
 	}
 
 	convertedTarget := converter.convertTarget(target)

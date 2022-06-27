@@ -87,10 +87,13 @@ func Cumulative(metricType string, options ...Option) *Stackdriver {
 func newMetric(metricKind string, metricType string, options ...Option) *Stackdriver {
 	stackdriver := &Stackdriver{
 		Builder: &sdk.Target{
-			MetricType:   metricType,
-			MetricKind:   metricKind,
-			AlignOptions: []sdk.StackdriverAlignOptions{defaultAlignmentOpts()},
-			ValueType:    "INT64",
+			QueryType: "metrics",
+			MetricQuery: &sdk.StackdriverMetricQuery{
+				MetricType:   metricType,
+				MetricKind:   metricKind,
+				AlignOptions: []sdk.StackdriverAlignOptions{defaultAlignmentOpts()},
+				ValueType:    "INT64",
+			},
 		},
 	}
 
@@ -128,36 +131,36 @@ func Hide() Option {
 // information on allowed patterns.
 func Legend(legend string) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.AliasBy = legend
+		stackdriver.Builder.MetricQuery.AliasBy = legend
 	}
 }
 
 // Project defines the GCP project to use for this target.
 func Project(project string) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.ProjectName = project
+		stackdriver.Builder.MetricQuery.ProjectName = project
 	}
 }
 
 // Aggregation defines how the time series will be aggregated.
 func Aggregation(reducer Reducer) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.CrossSeriesReducer = string(reducer)
+		stackdriver.Builder.MetricQuery.CrossSeriesReducer = string(reducer)
 	}
 }
 
 // Alignment defines how the time series will be aligned.
 func Alignment(aligner Aligner, alignmentPeriod string) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.AlignmentPeriod = alignmentPeriod
-		stackdriver.Builder.PerSeriesAligner = string(aligner)
+		stackdriver.Builder.MetricQuery.AlignmentPeriod = alignmentPeriod
+		stackdriver.Builder.MetricQuery.PerSeriesAligner = string(aligner)
 	}
 }
 
 // Preprocessor defines how the time series should be pre-processed.
 func Preprocessor(preprocessor PreprocessorMethod) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.Preprocessor = string(preprocessor)
+		stackdriver.Builder.MetricQuery.Preprocessor = string(preprocessor)
 	}
 }
 
@@ -168,11 +171,11 @@ func Filter(filters ...FilterOption) Option {
 			f := &filter{}
 			filterOpt(f)
 
-			if i != 0 || len(stackdriver.Builder.Filters) != 0 {
-				stackdriver.Builder.Filters = append(stackdriver.Builder.Filters, "AND")
+			if i != 0 || len(stackdriver.Builder.MetricQuery.Filters) != 0 {
+				stackdriver.Builder.MetricQuery.Filters = append(stackdriver.Builder.MetricQuery.Filters, "AND")
 			}
 
-			stackdriver.Builder.Filters = append(stackdriver.Builder.Filters, f.leftOperand, f.operator, f.rightOperand)
+			stackdriver.Builder.MetricQuery.Filters = append(stackdriver.Builder.MetricQuery.Filters, f.leftOperand, f.operator, f.rightOperand)
 		}
 	}
 }
@@ -180,6 +183,6 @@ func Filter(filters ...FilterOption) Option {
 // GroupBys defines a list of fields to group the query by.
 func GroupBys(groupBys ...string) Option {
 	return func(stackdriver *Stackdriver) {
-		stackdriver.Builder.GroupBys = groupBys
+		stackdriver.Builder.MetricQuery.GroupBys = groupBys
 	}
 }

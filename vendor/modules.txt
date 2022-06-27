@@ -20,7 +20,7 @@ github.com/Azure/go-autorest/logger
 # github.com/Azure/go-autorest/tracing v0.6.0
 ## explicit; go 1.12
 github.com/Azure/go-autorest/tracing
-# github.com/K-Phoen/grabana v0.21.9
+# github.com/K-Phoen/grabana v0.21.9 => ../grabana
 ## explicit; go 1.16
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
@@ -69,7 +69,7 @@ github.com/K-Phoen/grabana/variable/custom
 github.com/K-Phoen/grabana/variable/datasource
 github.com/K-Phoen/grabana/variable/interval
 github.com/K-Phoen/grabana/variable/query
-# github.com/K-Phoen/sdk v0.11.0
+# github.com/K-Phoen/sdk v0.11.0 => ../sdk
 ## explicit; go 1.16
 github.com/K-Phoen/sdk
 # github.com/PuerkitoBio/purell v1.1.1
@@ -780,3 +780,5 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+# github.com/K-Phoen/sdk => ../sdk
+# github.com/K-Phoen/grabana => ../grabana

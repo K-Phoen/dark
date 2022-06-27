@@ -26,7 +26,7 @@ func (converter *JSON) convertTarget(target sdk.Target) *grabana.Target {
 	}
 
 	// looks like stackdriver
-	if target.MetricType != "" {
+	if target.MetricQuery != nil {
 		return converter.convertStackdriverTarget(target)
 	}
 
@@ -70,17 +70,22 @@ func (converter *JSON) convertInfluxDBTarget(target sdk.Target) *grabana.Target 
 }
 
 func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Target {
-	switch strings.ToLower(target.MetricKind) {
+	metricQuery := target.MetricQuery
+	if metricQuery == nil {
+		return nil
+	}
+
+	switch strings.ToLower(metricQuery.MetricKind) {
 	case "cumulative":
 	case "gauge":
 	case "delta":
 	default:
-		converter.logger.Warn("unhandled stackdriver metric kind: target skipped", zap.Any("metricKind", target.MetricKind))
+		converter.logger.Warn("unhandled stackdriver metric kind: target skipped", zap.Any("metricKind", metricQuery.MetricKind))
 		return nil
 	}
 
 	var aggregation string
-	if target.CrossSeriesReducer != "" {
+	if metricQuery.CrossSeriesReducer != "" {
 		aggregationMap := map[string]string{
 			string(stackdriver.ReduceNone):              "none",
 			string(stackdriver.ReduceMean):              "mean",
@@ -98,15 +103,15 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			string(stackdriver.ReducePercentile05):      "percentile_05",
 		}
 
-		if agg, ok := aggregationMap[target.CrossSeriesReducer]; ok {
+		if agg, ok := aggregationMap[metricQuery.CrossSeriesReducer]; ok {
 			aggregation = agg
 		} else {
-			converter.logger.Warn("unhandled stackdriver crossSeriesReducer: target skipped", zap.Any("crossSeriesReducer", target.CrossSeriesReducer))
+			converter.logger.Warn("unhandled stackdriver crossSeriesReducer: target skipped", zap.Any("crossSeriesReducer", metricQuery.CrossSeriesReducer))
 		}
 	}
 
 	var alignment *grabana.StackdriverAlignment
-	if target.PerSeriesAligner != "" {
+	if metricQuery.PerSeriesAligner != "" {
 		alignmentMethodMap := map[string]string{
 			string(stackdriver.AlignNone):          "none",
 			string(stackdriver.AlignDelta):         "delta",
@@ -129,26 +134,26 @@ func (converter *JSON) convertStackdriverTarget(target sdk.Target) *grabana.Targ
 			string(stackdriver.AlignPercentChange): "percent_change",
 		}
 
-		if method, ok := alignmentMethodMap[target.PerSeriesAligner]; ok {
+		if method, ok := alignmentMethodMap[metricQuery.PerSeriesAligner]; ok {
 			alignment = &grabana.StackdriverAlignment{
-				Period: target.AlignmentPeriod,
+				Period: metricQuery.AlignmentPeriod,
 				Method: method,
 			}
 		} else {
-			converter.logger.Warn("unhandled stackdriver perSeriesAligner: target skipped", zap.Any("perSeriesAligner", target.PerSeriesAligner))
+			converter.logger.Warn("unhandled stackdriver perSeriesAligner: target skipped", zap.Any("perSeriesAligner", metricQuery.PerSeriesAligner))
 		}
 	}
 
 	return &grabana.Target{
 		Stackdriver: &grabana.StackdriverTarget{
-			Project:     target.ProjectName,
-			Type:        strings.ToLower(target.MetricKind),
-			Metric:      target.MetricType,
+			Project:     metricQuery.ProjectName,
+			Type:        strings.ToLower(metricQuery.MetricKind),
+			Metric:      metricQuery.MetricType,
 			Filters:     converter.convertStackdriverFilters(target),
 			Aggregation: aggregation,
 			Alignment:   alignment,
-			GroupBy:     target.GroupBys,
-			Legend:      target.AliasBy,
+			GroupBy:     metricQuery.GroupBys,
+			Legend:      metricQuery.AliasBy,
 			Ref:         target.RefID,
 			Hidden:      target.Hide,
 		},
@@ -164,21 +169,21 @@ func (converter *JSON) convertStackdriverFilters(target sdk.Target) grabana.Stac
 	}
 
 	var leftOperand, rightOperand, operator *string
-	for i := range target.Filters {
-		if target.Filters[i] == "AND" {
+	for i := range target.MetricQuery.Filters {
+		if target.MetricQuery.Filters[i] == "AND" {
 			continue
 		}
 
 		if leftOperand == nil {
-			leftOperand = &target.Filters[i]
+			leftOperand = &target.MetricQuery.Filters[i]
 			continue
 		}
 		if operator == nil {
-			operator = &target.Filters[i]
+			operator = &target.MetricQuery.Filters[i]
 			continue
 		}
 		if rightOperand == nil {
-			rightOperand = &target.Filters[i]
+			rightOperand = &target.MetricQuery.Filters[i]
 		}
 
 		if leftOperand != nil && operator != nil && rightOperand != nil {

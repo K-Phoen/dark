@@ -20,6 +20,10 @@ require (
 	sigs.k8s.io/controller-runtime v0.11.2
 )
 
+replace github.com/K-Phoen/sdk => ../sdk
+
+replace github.com/K-Phoen/grabana => ../grabana
+
 require (
 	cloud.google.com/go/compute v1.6.1 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
