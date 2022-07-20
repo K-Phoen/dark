@@ -152,6 +152,12 @@ spec:
                 type: array
               default_contact_point:
                 type: string
+              default_group_by:
+                description: DefaultGroupBy is the default list of labels to group
+                  alerts by.
+                items:
+                  type: string
+                type: array
               message_templates:
                 additionalProperties:
                   type: string

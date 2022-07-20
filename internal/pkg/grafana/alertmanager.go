@@ -72,6 +72,11 @@ func (manager *AlertManager) Configure(ctx context.Context, manifest v1alpha1.Al
 		managerOpts = append(managerOpts, alertmanager.DefaultContactPoint(manifest.Spec.DefaultContactPoint))
 	}
 
+	// default grouping labels
+	if len(manifest.Spec.DefaultGroupBy) != 0 {
+		managerOpts = append(managerOpts, alertmanager.DefaultGroupBys(manifest.Spec.DefaultGroupBy...))
+	}
+
 	return manager.grabanaClient.ConfigureAlertManager(ctx, alertmanager.New(managerOpts...))
 }
 

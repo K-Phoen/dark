@@ -81,6 +81,10 @@ spec:
   # Required.
   default_contact_point: 'Contact point name'
 
+  # Default list of labels to group alerts by.
+  # Optional.
+  default_group_by: [priority, service_name]
+
   # List of known contact points
   # Required.
   contact_points:
