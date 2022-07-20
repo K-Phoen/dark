@@ -13,6 +13,9 @@ type AlertManagerSpec struct {
 	// +kubebuilder:validation:Required
 	DefaultContactPoint string `json:"default_contact_point,omitempty"`
 
+	// DefaultGroupBy is the default list of labels to group alerts by.
+	DefaultGroupBy []string `json:"default_group_by,omitempty"`
+
 	ContactPoints    []ContactPoint    `json:"contact_points,omitempty"`
 	Routing          []RoutingPolicy   `json:"routing,omitempty"`
 	MessageTemplates map[string]string `json:"message_templates,omitempty"`
