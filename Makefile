@@ -150,24 +150,23 @@ build-manager: generate fmt vet ## Build manager binary.
 build-converter: fmt vet ## Build converter binary.
 	go build -o bin/converter cmd/converter/main.go
 
-.PHONY: docker-build-manager
-docker-build-manager: ## Build docker image with the manager.
-	DOCKER_BUILDKIT=1 docker build -f build/Dockerfile-controller -t ${CONTROLLER_IMAGE}:${VERSION} .
-
-.PHONY: docker-build-converter
-docker-build-converter: ## Build docker image with the converter.
-	DOCKER_BUILDKIT=1 docker build -f build/Dockerfile-converter -t ${CONVERTER_IMAGE}:${VERSION} .
-
-.PHONY: docker-build
-docker-build: docker-build-manager docker-build-converter ## Build all docker images.
-
 .PHONY: docker-push-manager
-docker-push-manager: docker-build-manager ## Push docker image with the manager.
-	docker push ${CONTROLLER_IMAGE}:${VERSION}
+docker-push-manager: ## Push docker image with the manager.
+	docker buildx create --use
+	DOCKER_BUILDKIT=1 docker buildx build \
+		--platform linux/arm64,linux/arm/v7,linux/arm/v8,linux/amd64 \
+		--push \
+		-f build/Dockerfile-controller \
+		-t ${CONTROLLER_IMAGE}:${VERSION} .
 
 .PHONY: docker-push-converter
-docker-push-converter: docker-build-converter ## Push docker image with the converter.
-	docker push ${CONVERTER_IMAGE}:${VERSION}
+docker-push-converter: ## Push docker image with the converter.
+	docker buildx create --use
+	DOCKER_BUILDKIT=1 docker buildx build \
+		--platform linux/arm64,linux/arm/v7,linux/arm/v8,linux/amd64 \
+		--push \
+		-f build/Dockerfile-converter \
+		-t ${CONVERTER_IMAGE}:${VERSION} .
 
 .PHONY: docker-push
 docker-push: docker-push-manager docker-push-converter ## Push all docker images.
