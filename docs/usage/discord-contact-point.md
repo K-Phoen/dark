@@ -54,10 +54,6 @@ spec:
             # Otherwise, the username will be 'Grafana'.
             # Optional. Default: false
             use_discord_username: false
-            
-            # Allow the alert priority to be set using the og_priority annotation.
-            # Optional. Default: false
-            override_priority: false
 ```
 
 ## That was it!
