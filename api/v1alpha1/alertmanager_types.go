@@ -31,6 +31,7 @@ type ContactPointType struct {
 	Email    *EmailContactType    `json:"email,omitempty"`
 	Slack    *SlackContactType    `json:"slack,omitempty"`
 	Opsgenie *OpsgenieContactType `json:"opsgenie,omitempty"`
+	Discord  *DiscordContactType  `json:"discord,omitempty"`
 }
 
 type EmailContactType struct {
@@ -50,6 +51,11 @@ type OpsgenieContactType struct {
 	APIKey           ValueOrRef `json:"api_key,omitempty"`
 	AutoClose        bool       `json:"auto_close,omitempty"`
 	OverridePriority bool       `json:"override_priority,omitempty"`
+}
+
+type DiscordContactType struct {
+	Webhook            ValueOrRef `json:"webhook,omitempty"`
+	UseDiscordUsername bool       `json:"use_discord_username,omitempty"`
 }
 
 type RoutingPolicy struct {
