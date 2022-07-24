@@ -11,7 +11,7 @@ spec:
   contact_points:
     - name: Team A
       
-      # Contact Team A via email
+      # Contact Team A via Opsgenie
       contacts:
         - opsgenie:
             api_url: https://api.eu.opsgenie.com/v2/alerts

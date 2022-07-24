@@ -7,6 +7,7 @@ import (
 	"github.com/K-Phoen/dark/api/v1alpha1"
 	"github.com/K-Phoen/grabana"
 	"github.com/K-Phoen/grabana/alertmanager"
+	"github.com/K-Phoen/grabana/alertmanager/discord"
 	"github.com/K-Phoen/grabana/alertmanager/email"
 	"github.com/K-Phoen/grabana/alertmanager/opsgenie"
 	"github.com/K-Phoen/grabana/alertmanager/slack"
@@ -120,6 +121,9 @@ func (manager *AlertManager) contactPointTypeOpt(ctx context.Context, namespace 
 	if contactPointType.Opsgenie != nil {
 		return manager.contactPointTypeOpsgenie(ctx, namespace, *contactPointType.Opsgenie)
 	}
+	if contactPointType.Discord != nil {
+		return manager.contactPointTypeDiscord(ctx, namespace, *contactPointType.Discord)
+	}
 
 	return nil, ErrInvalidContactPointType
 }
@@ -171,6 +175,21 @@ func (manager *AlertManager) contactPointTypeOpsgenie(ctx context.Context, names
 	}
 
 	return opsgenie.With(contactPointType.APIURL, apiKey, opts...), nil
+}
+
+func (manager *AlertManager) contactPointTypeDiscord(ctx context.Context, namespace string, contactPointType v1alpha1.DiscordContactType) (alertmanager.ContactPointOption, error) {
+	opts := []discord.Option{}
+
+	webhook, err := manager.refReader.RefToValue(ctx, namespace, contactPointType.Webhook)
+	if err != nil {
+		return nil, err
+	}
+
+	if contactPointType.UseDiscordUsername {
+		opts = append(opts, discord.UseDiscordUsername())
+	}
+
+	return discord.With(webhook, opts...), nil
 }
 
 func (manager *AlertManager) routingOpts(manifest v1alpha1.AlertManager) ([]alertmanager.RoutingPolicy, error) {

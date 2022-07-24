@@ -20,6 +20,7 @@
 
 * [Alerting configuration overview](./usage/alerting-configuration-overview.md)
 * Defining contact points
+  * [Discord](./usage/discord-contact-point.md)
   * [Email](./usage/email-contact-point.md)
   * [Opsgenie](./usage/opsgenie-contact-point.md)
   * [Slack](./usage/slack-contact-point.md)

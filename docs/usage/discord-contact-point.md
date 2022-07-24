@@ -1,4 +1,4 @@
-# Defining `slack` contact point types
+# Defining `discord` contact point types
 
 ## Example usage
 
@@ -11,11 +11,10 @@ spec:
   contact_points:
     - name: Team A
       
-      # Contact Team A via Slack
+      # Contact Team A via Discord
       contacts:
-        - slack:
-            webhook:
-              value: 'https://api.slack.com/messaging/webhooks'
+        - discord:
+            webhook: { value: "https://discord.com/api/webhooks/some_id/some_token" }
 
   routing:
     # ... omitted
@@ -36,11 +35,11 @@ spec:
   contact_points:
     - name: Team A
       contacts:
-        - slack:
-            # Slack webhook Url.
+        - discord:
+            # Webhook to use.
             # Required.
             webhook:
-              # Webhook, as plain text. This is not recommended.
+              # Webhook URL, as plain text. This is not recommended.
               # Optional. Default: ''
               value: ''
         
@@ -49,15 +48,16 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: 'secret-name' # name of the secret
-                  key: 'url' # Key within the secret
+                  key: 'key' # Key within the secret
 
-            # Templated title of the slack message.
-            # Optional. Default: ''
-            title: ''
+            # Use the username configured in Discord's webhook settings.
+            # Otherwise, the username will be 'Grafana'.
+            # Optional. Default: false
+            use_discord_username: false
             
-            # Body of the slack message.
-            # Optional. Default: ''
-            body: ''
+            # Allow the alert priority to be set using the og_priority annotation.
+            # Optional. Default: false
+            override_priority: false
 ```
 
 ## That was it!

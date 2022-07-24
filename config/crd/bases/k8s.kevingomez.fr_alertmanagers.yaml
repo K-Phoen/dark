@@ -48,6 +48,43 @@ spec:
                     contacts:
                       items:
                         properties:
+                          discord:
+                            properties:
+                              use_discord_username:
+                                type: boolean
+                              webhook:
+                                properties:
+                                  value:
+                                    description: Only one of the following may be
+                                      specified.
+                                    type: string
+                                  valueFrom:
+                                    properties:
+                                      secretKeyRef:
+                                        description: SecretKeySelector selects a key
+                                          of a Secret.
+                                        properties:
+                                          key:
+                                            description: The key of the secret to
+                                              select from.  Must be a valid secret
+                                              key.
+                                            type: string
+                                          name:
+                                            description: 'Name of the referent. More
+                                              info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                              TODO: Add other useful fields. apiVersion,
+                                              kind, uid?'
+                                            type: string
+                                          optional:
+                                            description: Specify whether the Secret
+                                              or its key must be defined
+                                            type: boolean
+                                        required:
+                                        - key
+                                        type: object
+                                    type: object
+                                type: object
+                            type: object
                           email:
                             properties:
                               message:
