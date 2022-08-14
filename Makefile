@@ -157,6 +157,7 @@ docker-push-manager: ## Push docker image with the manager.
 		--platform linux/arm64,linux/arm/v7,linux/arm/v8,linux/amd64 \
 		--push \
 		-f build/Dockerfile-controller \
+		-t ${CONTROLLER_IMAGE}:latest \
 		-t ${CONTROLLER_IMAGE}:${VERSION} .
 
 .PHONY: docker-push-converter
@@ -166,6 +167,7 @@ docker-push-converter: ## Push docker image with the converter.
 		--platform linux/arm64,linux/arm/v7,linux/arm/v8,linux/amd64 \
 		--push \
 		-f build/Dockerfile-converter \
+		-t ${CONVERTER_IMAGE}:latest \
 		-t ${CONVERTER_IMAGE}:${VERSION} .
 
 .PHONY: docker-push

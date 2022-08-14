@@ -83,7 +83,12 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 	}
 
 	if variable.Query != nil {
-		query.Request = variable.Query.(string)
+		if request, ok := variable.Query.(string); ok {
+			query.Request = request
+		}
+		if request, ok := variable.Query.(map[string]interface{}); ok {
+			query.Request = request["query"].(string)
+		}
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Query: query})

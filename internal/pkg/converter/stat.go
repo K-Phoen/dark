@@ -13,14 +13,17 @@ func (converter *JSON) convertStat(panel sdk.Panel) grabana.DashboardPanel {
 		Unit:          panel.StatPanel.FieldConfig.Defaults.Unit,
 		Decimals:      panel.StatPanel.FieldConfig.Defaults.Decimals,
 		Transparent:   panel.Transparent,
-		ValueFontSize: panel.StatPanel.Options.Text.ValueSize,
-		TitleFontSize: panel.StatPanel.Options.Text.TitleSize,
 		Orientation:   converter.convertStatOrientation(panel),
 		Text:          converter.convertStatTextMode(panel),
 		ValueType:     converter.convertStatValueType(panel),
 		ColorMode:     converter.convertStatColorMode(panel),
 		ThresholdMode: converter.convertStatThresholdMode(panel),
 		Thresholds:    converter.convertStatThresholds(panel),
+	}
+
+	if panel.StatPanel.Options.Text != nil {
+		stat.ValueFontSize = panel.StatPanel.Options.Text.ValueSize
+		stat.TitleFontSize = panel.StatPanel.Options.Text.TitleSize
 	}
 
 	if panel.Description != nil {
@@ -129,6 +132,8 @@ func (converter *JSON) convertStatColorMode(panel sdk.Panel) string {
 		return "background"
 	case "value":
 		return "value"
+	case "none":
+		return "none"
 	default:
 		converter.logger.Warn("unknown color mode", zap.String("color_mode", panel.StatPanel.Options.ColorMode))
 		return "value"

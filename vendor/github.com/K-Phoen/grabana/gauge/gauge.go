@@ -1,4 +1,4 @@
-package stat
+package gauge
 
 import (
 	"fmt"
@@ -14,23 +14,12 @@ import (
 )
 
 // Option represents an option that can be used to configure a stat panel.
-type Option func(stat *Stat) error
+type Option func(gauge *Gauge) error
 
 type ThresholdStep struct {
 	Color string
 	Value *float64
 }
-
-// TextMode controls if name and value is displayed or just name.
-type TextMode string
-
-const (
-	TextAuto         TextMode = "auto"
-	TextValue        TextMode = "value"
-	TextName         TextMode = "name"
-	TextValueAndName TextMode = "value_and_name"
-	TextNone         TextMode = "none"
-)
 
 // OrientationMode controls the layout.
 type OrientationMode string
@@ -83,14 +72,14 @@ type RangeMap struct {
 	Text string
 }
 
-// Stat represents a stat panel.
-type Stat struct {
+// Gauge represents a stat panel.
+type Gauge struct {
 	Builder *sdk.Panel
 }
 
-// New creates a new stat panel.
-func New(title string, options ...Option) (*Stat, error) {
-	panel := &Stat{Builder: sdk.NewStat(title)}
+// New creates a new gauge panel.
+func New(title string, options ...Option) (*Gauge, error) {
+	panel := &Gauge{Builder: sdk.NewGauge(title)}
 
 	panel.Builder.IsNew = false
 
@@ -105,11 +94,9 @@ func New(title string, options ...Option) (*Stat, error) {
 
 func defaults() []Option {
 	return []Option{
-		Text(TextValue),
-		ColorValue(),
-		Orientation(OrientationVertical),
 		Span(6),
-		ValueType(Last),
+		ValueType(LastNonNull),
+		Orientation(OrientationVertical),
 		NoValue("N/A"),
 		ColorScheme(scheme.ThresholdsValue(scheme.Last)),
 	}
@@ -117,11 +104,11 @@ func defaults() []Option {
 
 // Links adds links to be displayed on this panel.
 func Links(panelLinks ...links.Link) Option {
-	return func(stat *Stat) error {
-		stat.Builder.Links = make([]sdk.Link, 0, len(panelLinks))
+	return func(gauge *Gauge) error {
+		gauge.Builder.Links = make([]sdk.Link, 0, len(panelLinks))
 
 		for _, link := range panelLinks {
-			stat.Builder.Links = append(stat.Builder.Links, link.Builder)
+			gauge.Builder.Links = append(gauge.Builder.Links, link.Builder)
 		}
 
 		return nil
@@ -130,8 +117,8 @@ func Links(panelLinks ...links.Link) Option {
 
 // DataSource sets the data source to be used by the panel.
 func DataSource(source string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.Datasource = &sdk.DatasourceRef{LegacyName: source}
+	return func(gauge *Gauge) error {
+		gauge.Builder.Datasource = &sdk.DatasourceRef{LegacyName: source}
 
 		return nil
 	}
@@ -141,8 +128,8 @@ func DataSource(source string) Option {
 func WithPrometheusTarget(query string, options ...prometheus.Option) Option {
 	target := prometheus.New(query, options...)
 
-	return func(stat *Stat) error {
-		stat.Builder.AddTarget(&sdk.Target{
+	return func(gauge *Gauge) error {
+		gauge.Builder.AddTarget(&sdk.Target{
 			RefID:          target.Ref,
 			Expr:           target.Expr,
 			IntervalFactor: target.IntervalFactor,
@@ -161,8 +148,8 @@ func WithPrometheusTarget(query string, options ...prometheus.Option) Option {
 func WithGraphiteTarget(query string, options ...graphite.Option) Option {
 	target := graphite.New(query, options...)
 
-	return func(stat *Stat) error {
-		stat.Builder.AddTarget(target.Builder)
+	return func(gauge *Gauge) error {
+		gauge.Builder.AddTarget(target.Builder)
 
 		return nil
 	}
@@ -172,8 +159,8 @@ func WithGraphiteTarget(query string, options ...graphite.Option) Option {
 func WithInfluxDBTarget(query string, options ...influxdb.Option) Option {
 	target := influxdb.New(query, options...)
 
-	return func(stat *Stat) error {
-		stat.Builder.AddTarget(target.Builder)
+	return func(gauge *Gauge) error {
+		gauge.Builder.AddTarget(target.Builder)
 
 		return nil
 	}
@@ -181,8 +168,8 @@ func WithInfluxDBTarget(query string, options ...influxdb.Option) Option {
 
 // WithStackdriverTarget adds a stackdriver query to the graph.
 func WithStackdriverTarget(target *stackdriver.Stackdriver) Option {
-	return func(stat *Stat) error {
-		stat.Builder.AddTarget(target.Builder)
+	return func(gauge *Gauge) error {
+		gauge.Builder.AddTarget(target.Builder)
 
 		return nil
 	}
@@ -191,12 +178,12 @@ func WithStackdriverTarget(target *stackdriver.Stackdriver) Option {
 // Span sets the width of the panel, in grid units. Should be a positive
 // number between 1 and 12. Example: 6.
 func Span(span float32) Option {
-	return func(stat *Stat) error {
+	return func(gauge *Gauge) error {
 		if span < 1 || span > 12 {
 			return fmt.Errorf("span must be between 1 and 12: %w", errors.ErrInvalidArgument)
 		}
 
-		stat.Builder.Span = span
+		gauge.Builder.Span = span
 
 		return nil
 	}
@@ -204,8 +191,8 @@ func Span(span float32) Option {
 
 // Height sets the height of the panel, in pixels. Example: "400px".
 func Height(height string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.Height = &height
+	return func(gauge *Gauge) error {
+		gauge.Builder.Height = &height
 
 		return nil
 	}
@@ -213,8 +200,8 @@ func Height(height string) Option {
 
 // Description annotates the current visualization with a human-readable description.
 func Description(content string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.Description = &content
+	return func(gauge *Gauge) error {
+		gauge.Builder.Description = &content
 
 		return nil
 	}
@@ -222,8 +209,8 @@ func Description(content string) Option {
 
 // Transparent makes the background transparent.
 func Transparent() Option {
-	return func(stat *Stat) error {
-		stat.Builder.Transparent = true
+	return func(gauge *Gauge) error {
+		gauge.Builder.Transparent = true
 
 		return nil
 	}
@@ -231,8 +218,8 @@ func Transparent() Option {
 
 // Unit sets the unit of the data displayed on this axis.
 func Unit(unit string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.FieldConfig.Defaults.Unit = unit
+	return func(gauge *Gauge) error {
+		gauge.Builder.GaugePanel.FieldConfig.Defaults.Unit = unit
 
 		return nil
 	}
@@ -240,40 +227,12 @@ func Unit(unit string) Option {
 
 // Decimals sets the number of decimals that should be displayed.
 func Decimals(count int) Option {
-	return func(stat *Stat) error {
+	return func(gauge *Gauge) error {
 		if count < 0 {
 			return fmt.Errorf("decimals must be greater than 0: %w", errors.ErrInvalidArgument)
 		}
 
-		stat.Builder.StatPanel.FieldConfig.Defaults.Decimals = &count
-
-		return nil
-	}
-}
-
-// SparkLine displays the spark line summary of the series in addition to the
-// stat.
-func SparkLine() Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.GraphMode = "area"
-
-		return nil
-	}
-}
-
-// SparkLineYMin defines the smallest value expected on the Y axis of the spark line.
-func SparkLineYMin(value float64) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.FieldConfig.Defaults.Min = &value
-
-		return nil
-	}
-}
-
-// SparkLineYMax defines the largest value expected on the Y axis of the spark line.
-func SparkLineYMax(value float64) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.FieldConfig.Defaults.Max = &value
+		gauge.Builder.GaugePanel.FieldConfig.Defaults.Decimals = &count
 
 		return nil
 	}
@@ -281,7 +240,7 @@ func SparkLineYMax(value float64) Option {
 
 // ValueType configures how the series will be reduced to a single value.
 func ValueType(valueType ReductionType) Option {
-	return func(stat *Stat) error {
+	return func(gauge *Gauge) error {
 		var valType string
 
 		switch valueType {
@@ -311,7 +270,7 @@ func ValueType(valueType ReductionType) Option {
 		default:
 			return fmt.Errorf("unknown value type: %w", errors.ErrInvalidArgument)
 		}
-		stat.Builder.StatPanel.Options.ReduceOptions.Calcs = []string{valType}
+		gauge.Builder.GaugePanel.Options.ReduceOptions.Calcs = []string{valType}
 
 		return nil
 	}
@@ -319,8 +278,8 @@ func ValueType(valueType ReductionType) Option {
 
 // ValueFontSize sets the font size used to display the value.
 func ValueFontSize(size int) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.Text.ValueSize = size
+	return func(gauge *Gauge) error {
+		gauge.Builder.GaugePanel.Options.Text.ValueSize = size
 
 		return nil
 	}
@@ -328,35 +287,8 @@ func ValueFontSize(size int) Option {
 
 // TitleFontSize sets the font size used to display the title.
 func TitleFontSize(size int) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.Text.TitleSize = size
-
-		return nil
-	}
-}
-
-// ColorNone will not color the value or the background.
-func ColorNone() Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.ColorMode = "none"
-
-		return nil
-	}
-}
-
-// ColorValue will show the threshold's colors on the value itself.
-func ColorValue() Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.ColorMode = "value"
-
-		return nil
-	}
-}
-
-// ColorBackground will show the threshold's colors in the background.
-func ColorBackground() Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.ColorMode = "background"
+	return func(gauge *Gauge) error {
+		gauge.Builder.GaugePanel.Options.Text.TitleSize = size
 
 		return nil
 	}
@@ -366,7 +298,7 @@ func ColorBackground() Option {
 // panel, depending on the value. The threshold is defined by a series of steps
 // values which, each having a value and an associated color.
 func AbsoluteThresholds(steps []ThresholdStep) Option {
-	return func(stat *Stat) error {
+	return func(gauge *Gauge) error {
 		sdkSteps := make([]sdk.ThresholdStep, 0, len(steps))
 		for _, step := range steps {
 			sdkSteps = append(sdkSteps, sdk.ThresholdStep{
@@ -375,7 +307,7 @@ func AbsoluteThresholds(steps []ThresholdStep) Option {
 			})
 		}
 
-		stat.Builder.StatPanel.FieldConfig.Defaults.Thresholds = sdk.Thresholds{
+		gauge.Builder.GaugePanel.FieldConfig.Defaults.Thresholds = sdk.Thresholds{
 			Mode:  "absolute",
 			Steps: sdkSteps,
 		}
@@ -388,7 +320,7 @@ func AbsoluteThresholds(steps []ThresholdStep) Option {
 // panel, depending on the value. The threshold is defined by a series of steps
 // values which, each having a value defined as a percentage and an associated color.
 func RelativeThresholds(steps []ThresholdStep) Option {
-	return func(stat *Stat) error {
+	return func(gauge *Gauge) error {
 		sdkSteps := make([]sdk.ThresholdStep, 0, len(steps))
 		for _, step := range steps {
 			sdkSteps = append(sdkSteps, sdk.ThresholdStep{
@@ -397,7 +329,7 @@ func RelativeThresholds(steps []ThresholdStep) Option {
 			})
 		}
 
-		stat.Builder.StatPanel.FieldConfig.Defaults.Thresholds = sdk.Thresholds{
+		gauge.Builder.GaugePanel.FieldConfig.Defaults.Thresholds = sdk.Thresholds{
 			Mode:  "percentage",
 			Steps: sdkSteps,
 		}
@@ -408,26 +340,8 @@ func RelativeThresholds(steps []ThresholdStep) Option {
 
 // Repeat configures repeating a panel for a variable
 func Repeat(repeat string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.Repeat = &repeat
-
-		return nil
-	}
-}
-
-// Text indicates if name and value is displayed or just name.
-func Text(mode TextMode) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.TextMode = string(mode)
-
-		return nil
-	}
-}
-
-// Orientation changes the orientation of the layout.
-func Orientation(mode OrientationMode) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.Options.Orientation = string(mode)
+	return func(gauge *Gauge) error {
+		gauge.Builder.Repeat = &repeat
 
 		return nil
 	}
@@ -435,8 +349,8 @@ func Orientation(mode OrientationMode) Option {
 
 // ColorScheme configures the color scheme.
 func ColorScheme(options ...scheme.Option) Option {
-	return func(stat *Stat) error {
-		scheme.New(&stat.Builder.StatPanel.FieldConfig, options...)
+	return func(gauge *Gauge) error {
+		scheme.New(&gauge.Builder.GaugePanel.FieldConfig, options...)
 
 		return nil
 	}
@@ -444,8 +358,17 @@ func ColorScheme(options ...scheme.Option) Option {
 
 // NoValue defines what to show when there is no value.
 func NoValue(text string) Option {
-	return func(stat *Stat) error {
-		stat.Builder.StatPanel.FieldConfig.Defaults.NoValue = text
+	return func(gauge *Gauge) error {
+		gauge.Builder.GaugePanel.FieldConfig.Defaults.NoValue = text
+
+		return nil
+	}
+}
+
+// Orientation changes the orientation of the layout.
+func Orientation(mode OrientationMode) Option {
+	return func(gauge *Gauge) error {
+		gauge.Builder.GaugePanel.Options.Orientation = string(mode)
 
 		return nil
 	}
