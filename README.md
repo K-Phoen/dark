@@ -79,6 +79,11 @@ Check out [the documentation](docs/index.md) to dig deeper into how to set up an
 
 [Companies using DARK](ADOPTERS.md).
 
+## They talk about DARK
+
+* [Creating a Grafana Dashboard with Kubernetes Resource Objects — SoByte](https://www.sobyte.net/post/2021-11/use-crd-create-grafana-dashboard/)
+* [How VOI went DARK — VOI Technology](https://medium.com/voi-engineering/how-voi-went-dark-afb43c45f094)
+
 ## License
 
 This library is under the [MIT](LICENSE) license.
