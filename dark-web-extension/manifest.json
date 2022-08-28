@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "dark",
+  "description": "Converts Grafana dashboards into an equivalent DARK YAML file",
+  "version": "0.0.1",
+  "icons": {
+    "64": "icons/icon.png"
+  },
+
+  "permissions": [
+    "downloads"
+  ],
+
+  "background": {
+    "scripts": [
+      "wasm_exec.js",
+      "background_script.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "js": [
+        "content_script.js"
+      ]
+    }
+  ]
+}

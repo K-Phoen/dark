@@ -1,0 +1,27 @@
+# DARK web extension
+
+Browser extension to convert Grafana dashboards into an equivalent DARK YAML file.
+
+Whenever a Grafana dashboard is viewed, the extension will add an export button to the dashboard's toolbar.
+
+**Note:** only tested with Firefox.
+
+## Building
+
+### Compile the `./cmd/wasm` binary to WebAssembly
+
+The extension re-uses the conversion logic written in Go, thanks to WebAssembly.
+
+A binary specific to this use-case is bundled within the repository, and needs to be compiled for the extension to run:
+
+```sh
+GOOS=js GOARCH=wasm go build -o dark-web-extension/dark.wasm ./cmd/wasm
+```
+
+### `./dark-web-extension/wasm_exec.js` file
+
+Distributed with Go:
+
+```sh
+cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./dark-web-extension
+```
