@@ -25,3 +25,11 @@ Distributed with Go:
 ```sh
 cp "$(go env GOROOT)/misc/wasm/wasm_exec.js" ./dark-web-extension
 ```
+
+### Building the extension
+
+```sh
+npm install --global web-ext
+cd ./dark-web-extension/
+web-ext build
+```

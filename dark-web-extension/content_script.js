@@ -58,6 +58,7 @@ function triggerExport() {
     fetch(`${window.location.origin}/api/dashboards/uid/${dashboardUID}`)
         .then(response => response.json())
         .then(apiResponse => convertGrafanaDashboard(apiResponse.dashboard))
+        .then(response => console.debug('response', response))
         .catch(error => {
             console.error(`Error: ${error}`);
         })
@@ -88,7 +89,7 @@ function waitForElm(selector) {
             return resolve(document.querySelector(selector));
         }
 
-        const observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver(() => {
             if (document.querySelector(selector)) {
                 resolve(document.querySelector(selector));
                 observer.disconnect();

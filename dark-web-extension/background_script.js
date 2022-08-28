@@ -4,7 +4,7 @@ console.debug("starting background worker");
 
 browser.runtime.onMessage.addListener(handleMessage);
 
-function handleMessage(request, _sender, _sendResponse) {
+function handleMessage(request, _sender, sendResponse) {
     console.info(`content script sent a message`, request);
 
     if (request.action === 'convert-to-k8s') {
@@ -16,8 +16,15 @@ function handleMessage(request, _sender, _sendResponse) {
                 filename: 'dark-dashboard.yaml',
                 conflictAction: 'uniquify',
             });
+
+            sendResponse({
+                success: true,
+                result: result,
+            });
         });
     }
+
+    return true;
 }
 
 async function convertToK8s(dashboardModel) {
