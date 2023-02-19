@@ -72,6 +72,8 @@ func TestConvertGeneralSettings(t *testing.T) {
 	board.SharedCrosshair = true
 	board.Editable = true
 	board.Tags = []string{"tag", "other"}
+	board.UID = "uid"
+	board.Slug = "slug"
 	board.Refresh = &sdk.BoolString{
 		Flag:  true,
 		Value: "5s",
@@ -84,6 +86,8 @@ func TestConvertGeneralSettings(t *testing.T) {
 
 	req.Equal("title", dashboard.Title)
 	req.Equal("5s", dashboard.AutoRefresh)
+	req.Equal("uid", dashboard.UID)
+	req.Equal("slug", dashboard.Slug)
 	req.Equal([]string{"tag", "other"}, dashboard.Tags)
 	req.True(dashboard.Editable)
 	req.True(dashboard.SharedCrosshair)
