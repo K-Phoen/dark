@@ -60,7 +60,7 @@ spec:
     # ---- #
     # Auth #
     # ---- #
-    
+
     # Forward the user's upstream OAuth identity to Loki (their access token gets passed along)
     # Optional. Default: false
     forward_oauth: false
@@ -94,14 +94,14 @@ spec:
         # Username, as plain text.
         # Optional. Default: ''
         value: ''
-    
+
         # Reference to a secret containing the username.
         # Optional. Default: none
         valueFrom:
           secretKeyRef:
             name: 'secret-name' # name of the secret
             key: 'username' # Key within the secret
-          
+
       password:
         # Password, as plain text. This is not recommended.
         # Optional. Default: ''
@@ -137,7 +137,7 @@ spec:
         # Used to override the button label when this derived field is found in a log.
         # Optional. Default: none
         url_label:
-        
+
         # For internal links only.
         # Optional. Default: none
         datasource:

@@ -2,18 +2,35 @@ name: CI
 on: [pull_request]
 
 jobs:
-  lint:
-    name: Linters
+  tests:
+    name: Tests
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go: ['1.19', '1.20']
+
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/setup-go@v3
+        with:
+          go-version: ${{ matrix.go }}
+          cache: true
 
       - name: golangci-lint
         uses: reviewdog/action-golangci-lint@v2
         with:
-          go_version: '1.17'
-          golangci_lint_flags: "--config=build/golangci.yaml"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          golangci_lint_flags: "--config=.golangci.yaml"
           reporter: github-pr-review
+          go_version: ${{ matrix.go }}
+          cache: false # managed by actions/setup-go
+
+      - name: Tests
+        run: make test
+        env:
+          WITH_COVERAGE: true
 
       - name: hadolint
         uses: reviewdog/action-hadolint@v1
@@ -22,32 +39,38 @@ jobs:
           exclude: |
             /vendor/*
 
-  tests:
-    name: Tests
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-go@v3
-        with:
-          go-version: '1.17'
-
-      - uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
-
-      - run: make test
-        env:
-          WITH_COVERAGE: true
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
+        if: matrix.go == '1.20'
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.txt
           fail_ci_if_error: false
+
+  doc:
+    name: Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: nosborn/github-action-markdown-cli@v3.2.0
+        with:
+          files: ./docs/
+          config_file: build/markdownlint.json
+
+      - uses: reviewdog/action-misspell@v1
+        with:
+          github_token: ${{ github.token }}
+          reporter: github-pr-review
+          locale: "US"
+          exclude: |
+            ./vendor/*
+
+      - name: alexjs
+        uses: reviewdog/action-alex@v1
+        with:
+          workdir: ./docs/
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          level: warning

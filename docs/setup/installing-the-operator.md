@@ -3,6 +3,7 @@
 **Important:** be sure to review any manifest before applying them.
 
 DARK needs a few things to be up and running:
+
 * a [`CRD`](../../config/crd)
 * a [`ServiceAccount`](../../config/rbac/service_account.yaml) with [some permissions](../../config/rbac/role.yaml)
 * a [`Deployment`](../../config/operator)
@@ -26,13 +27,13 @@ namespace: monitoring
 
 Generate the manifests:
 
-```
+```shell
 kubectl kustomize . -o dark-all.yaml
 ```
 
 Review their content, and deploy:
 
-```
+```shell
 kubectl apply -f dark-all.yaml
 ```
 

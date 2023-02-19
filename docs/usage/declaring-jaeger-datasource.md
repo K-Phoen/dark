@@ -53,7 +53,7 @@ spec:
     # ---- #
     # Auth #
     # ---- #
-    
+
     # Forward the user's upstream OAuth identity to Jaeger (their access token gets passed along)
     # Optional. Default: false
     forward_oauth: false
@@ -87,14 +87,14 @@ spec:
         # Username, as plain text.
         # Optional. Default: ''
         value: ''
-    
+
         # Reference to a secret containing the username.
         # Optional. Default: none
         valueFrom:
           secretKeyRef:
             name: 'secret-name' # name of the secret
             key: 'username' # Key within the secret
-          
+
       password:
         # Password, as plain text. This is not recommended.
         # Optional. Default: ''

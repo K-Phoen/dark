@@ -10,10 +10,10 @@ metadata:
 spec:
   contact_points:
     - name: Team A
-      
+
       # Contact Team A by email
       contacts:
-        - email: { to: ['team-a@unicorn.io', 'team-a-engineering@unicorn.io'] }  
+        - email: { to: ['team-a@unicorn.io', 'team-a-engineering@unicorn.io'] }
 
   routing:
     # ... omitted
@@ -38,7 +38,7 @@ spec:
             # List of recipients to reach out to.
             # Optional (but strongly suggested). Default: []
             to: ['team-a@unicorn.io', 'team-a-engineering@unicorn.io']
-            
+
             # Send a single email to all recipients
             # Optional. Default: false
             single: false

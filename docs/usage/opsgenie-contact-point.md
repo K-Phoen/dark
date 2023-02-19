@@ -10,7 +10,7 @@ metadata:
 spec:
   contact_points:
     - name: Team A
-      
+
       # Contact Team A via Opsgenie
       contacts:
         - opsgenie:
@@ -42,14 +42,14 @@ spec:
             # Alert API Url.
             # Required.
             api_url: https://api.eu.opsgenie.com/v2/alerts
-            
+
             # API key to use.
             # Required.
             api_key:
               # API key, as plain text. This is not recommended.
               # Optional. Default: ''
               value: ''
-        
+
               # Reference to a secret containing the API key.
               # Optional. Default: none
               valueFrom:
@@ -60,7 +60,7 @@ spec:
             # Automatically close alerts in Opsgenie when they are closed in Grafana.
             # Optional. Default: false
             auto_close: false
-            
+
             # Allow the alert priority to be set using the og_priority annotation.
             # Optional. Default: false
             override_priority: false

@@ -40,8 +40,8 @@ spec:
     jwt_authentication:
       # Service account key to use, as plain text. This is not recommended.
       # Optional. Default: ''
-      value: '' 
-      
+      value: ''
+
       # Reference to a secret containing the service account key to use.
       # Optional. Default: none
       valueFrom:
