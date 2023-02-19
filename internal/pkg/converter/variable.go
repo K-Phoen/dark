@@ -55,6 +55,7 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 		ValuesMap:  make(map[string]string, len(variable.Options)),
 		AllValue:   variable.AllValue,
 		IncludeAll: variable.IncludeAll,
+		Multiple:   variable.Multi,
 		Hide:       converter.convertVarHide(variable),
 	}
 
@@ -79,6 +80,7 @@ func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grab
 		IncludeAll: variable.IncludeAll,
 		DefaultAll: variable.Current.Value == "$__all",
 		AllValue:   variable.AllValue,
+		Multiple:   variable.Multi,
 		Hide:       converter.convertVarHide(variable),
 	}
 
@@ -100,6 +102,7 @@ func (converter *JSON) convertDatasourceVar(variable sdk.TemplateVar, dashboard 
 		Label:      variable.Label,
 		Regex:      variable.Regex,
 		IncludeAll: variable.IncludeAll,
+		Multiple:   variable.Multi,
 		Hide:       converter.convertVarHide(variable),
 	}
 
