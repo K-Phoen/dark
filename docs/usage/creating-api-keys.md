@@ -28,7 +28,7 @@ The actual API key will be stored in it, under the `token` key:
 kubectl get secrets my-service-editor-key -n apps --template="{{ .data.token | base64decode }}"
 ```
 
-### Roles
+## Roles
 
 Valid roles are:
 

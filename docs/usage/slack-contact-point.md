@@ -10,7 +10,7 @@ metadata:
 spec:
   contact_points:
     - name: Team A
-      
+
       # Contact Team A via Slack
       contacts:
         - slack:
@@ -43,7 +43,7 @@ spec:
               # Webhook, as plain text. This is not recommended.
               # Optional. Default: ''
               value: ''
-        
+
               # Reference to a secret containing the webhook URL.
               # Optional. Default: none
               valueFrom:
@@ -54,7 +54,7 @@ spec:
             # Templated title of the slack message.
             # Optional. Default: ''
             title: ''
-            
+
             # Body of the slack message.
             # Optional. Default: ''
             body: ''

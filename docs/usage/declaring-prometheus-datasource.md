@@ -56,7 +56,7 @@ spec:
     # ---- #
     # Auth #
     # ---- #
-    
+
     # Forward the user's upstream OAuth identity to Prometheus (their access token gets passed along)
     # Optional. Default: false
     forward_oauth: false
@@ -90,14 +90,14 @@ spec:
         # Username, as plain text.
         # Optional. Default: ''
         value: ''
-    
+
         # Reference to a secret containing the username.
         # Optional. Default: none
         valueFrom:
           secretKeyRef:
             name: 'secret-name' # name of the secret
             key: 'username' # Key within the secret
-          
+
       password:
         # Password, as plain text. This is not recommended.
         # Optional. Default: ''
@@ -134,12 +134,12 @@ spec:
     # Optional. Default: []
     exemplars:
       - label_name: "traceID" # Name of the field in the labels object that should be used to get the trace ID.
-        
+
         # The URL of the trace backend the user would go to see its traces.
         # For external links only.
         # Optional. Default: ""
         url: "https://example.com/${__value.raw}"
-        
+
         # The data source the exemplar is going to navigate to.
         # For internal links only.
         # Only one of the `uid` or `name` field may be specified.

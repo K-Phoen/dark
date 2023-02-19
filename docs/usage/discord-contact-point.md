@@ -10,7 +10,7 @@ metadata:
 spec:
   contact_points:
     - name: Team A
-      
+
       # Contact Team A via Discord
       contacts:
         - discord:
@@ -42,7 +42,7 @@ spec:
               # Webhook URL, as plain text. This is not recommended.
               # Optional. Default: ''
               value: ''
-        
+
               # Reference to a secret containing the webhook URL.
               # Optional. Default: none
               valueFrom:
