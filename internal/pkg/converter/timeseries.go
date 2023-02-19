@@ -131,6 +131,18 @@ func (converter *JSON) convertTimeSeriesVisualization(panel sdk.Panel) *grabana.
 		tsViz.GradientMode = "opacity"
 	}
 
+	// Stacking mode
+	switch panel.TimeseriesPanel.FieldConfig.Defaults.Custom.Stacking.Mode {
+	case "none":
+		tsViz.Stack = "none"
+	case "normal":
+		tsViz.Stack = "normal"
+	case "percent":
+		tsViz.Stack = "percent"
+	default:
+		tsViz.Stack = "none"
+	}
+
 	return tsViz
 }
 

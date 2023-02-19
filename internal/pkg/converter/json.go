@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 
-	v1 "github.com/K-Phoen/dark/api/v1"
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
 	"go.uber.org/zap"
 	"gopkg.in/yaml.v3"
+
+	v1 "github.com/K-Phoen/dark/api/v1"
 )
 
 type k8sDashboard struct {
@@ -102,7 +102,7 @@ func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, options 
 }
 
 func (converter *JSON) parseInput(input io.Reader) (*grabana.DashboardModel, error) {
-	content, err := ioutil.ReadAll(input)
+	content, err := io.ReadAll(input)
 	if err != nil {
 		converter.logger.Error("could not read input", zap.Error(err))
 		return nil, err
@@ -132,6 +132,8 @@ func (converter *JSON) convertGeneralSettings(board *sdk.Board, dashboard *graba
 	dashboard.Editable = board.Editable
 	dashboard.Time = [2]string{board.Time.From, board.Time.To}
 	dashboard.Timezone = board.Timezone
+	dashboard.UID = board.UID
+	dashboard.Slug = board.Slug
 
 	if board.Refresh != nil {
 		dashboard.AutoRefresh = board.Refresh.Value

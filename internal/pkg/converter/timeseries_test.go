@@ -235,6 +235,60 @@ func TestConvertTimeSeriesVisualizationGradient(t *testing.T) {
 	}
 }
 
+func TestConvertTimeSeriesVisualizationStack(t *testing.T) {
+	testCases := []struct {
+		mode     string
+		expected string
+	}{
+		{
+			mode:     "none",
+			expected: "none",
+		},
+		{
+			mode:     "normal",
+			expected: "normal",
+		},
+		{
+			mode:     "percent",
+			expected: "percent",
+		},
+		{
+			mode:     "invalid",
+			expected: "none",
+		},
+	}
+
+	for _, testCase := range testCases {
+		tc := testCase
+
+		t.Run(tc.mode, func(t *testing.T) {
+			req := require.New(t)
+
+			panel := sdk.Panel{
+				CommonPanel: sdk.CommonPanel{},
+				TimeseriesPanel: &sdk.TimeseriesPanel{
+					Options: sdk.TimeseriesOptions{},
+					FieldConfig: sdk.FieldConfig{
+						Defaults: sdk.FieldConfigDefaults{
+							Custom: sdk.FieldConfigCustom{
+								Stacking: struct {
+									Group string `json:"group"`
+									Mode  string `json:"mode"`
+								}{Mode: tc.mode},
+							},
+						},
+					},
+				},
+			}
+
+			converter := NewJSON(zap.NewNop())
+			tsViz := converter.convertTimeSeriesVisualization(panel)
+
+			req.Equal(tc.expected, tsViz.Stack)
+		})
+	}
+}
+
 func TestConvertTimeSeriesVisualizationLineInterpolation(t *testing.T) {
 	testCases := []struct {
 		mode     string
