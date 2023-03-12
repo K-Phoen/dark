@@ -1,4 +1,4 @@
-# github.com/K-Phoen/grabana v0.21.13
+# github.com/K-Phoen/grabana v0.21.14
 ## explicit; go 1.19
 github.com/K-Phoen/grabana
 github.com/K-Phoen/grabana/alert
