@@ -93,6 +93,34 @@ func TestConvertGeneralSettings(t *testing.T) {
 	req.True(dashboard.SharedCrosshair)
 }
 
+func TestConvertLinks(t *testing.T) {
+	req := require.New(t)
+
+	links := []sdk.Link{
+		{
+			Title: "ext link",
+			Type:  "link",
+			URL:   strPtr("https://foo"),
+		},
+		{
+			Title: "dash link",
+			Type:  "dashboards",
+			Tags:  []string{"foo"},
+		},
+		{
+			Title: "some link",
+			Type:  "unknown",
+		},
+	}
+
+	converter := NewJSON(zap.NewNop())
+	dashboard := &grabana.DashboardModel{}
+	converter.convertLinks(links, dashboard)
+
+	req.Equal(1, len(dashboard.DashboardLinks))
+	req.Equal(1, len(dashboard.ExternalLinks))
+}
+
 func strPtr(input string) *string {
 	return &input
 }

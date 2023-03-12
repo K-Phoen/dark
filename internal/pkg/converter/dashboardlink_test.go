@@ -8,27 +8,25 @@ import (
 	"go.uber.org/zap"
 )
 
-func TestConvertExternalLink(t *testing.T) {
+func TestConvertDashboardLink(t *testing.T) {
 	req := require.New(t)
 
 	externalLink := sdk.Link{
 		Title:       "joe",
-		Type:        "link",
-		Icon:        strPtr("cloud"),
+		Tags:        []string{"my-service"},
+		Type:        "dashboards",
 		IncludeVars: true,
+		AsDropdown:  boolPtr(true),
 		KeepTime:    boolPtr(true),
 		TargetBlank: boolPtr(true),
-		Tooltip:     strPtr("description"),
-		URL:         strPtr("http://lala"),
 	}
 	converter := NewJSON(zap.NewNop())
-	link := converter.convertExternalLink(externalLink)
+	link := converter.convertDashboardLink(externalLink)
 
 	req.Equal("joe", link.Title)
-	req.Equal("description", link.Description)
-	req.Equal("cloud", link.Icon)
-	req.Equal("http://lala", link.URL)
+	req.ElementsMatch([]string{"my-service"}, link.Tags)
 	req.True(link.OpenInNewTab)
 	req.True(link.IncludeTimeRange)
+	req.True(link.AsDropdown)
 	req.True(link.IncludeVariableValues)
 }
