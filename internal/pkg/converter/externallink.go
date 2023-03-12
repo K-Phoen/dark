@@ -6,23 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-func (converter *JSON) convertExternalLinks(links []sdk.Link, dashboard *grabana.DashboardModel) {
-	for _, link := range links {
-		extLink := converter.convertExternalLink(link)
-		if extLink == nil {
-			continue
-		}
-
-		dashboard.ExternalLinks = append(dashboard.ExternalLinks, *extLink)
-	}
-}
-
 func (converter *JSON) convertExternalLink(link sdk.Link) *grabana.DashboardExternalLink {
-	if link.Type != "link" {
-		converter.logger.Warn("unhandled link type: skipped", zap.String("type", link.Type), zap.String("title", link.Title))
-		return nil
-	}
-
 	if link.URL == nil || *link.URL == "" {
 		converter.logger.Warn("link URL empty: skipped", zap.String("title", link.Title))
 		return nil

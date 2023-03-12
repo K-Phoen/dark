@@ -119,10 +119,33 @@ func (converter *JSON) parseInput(input io.Reader) (*grabana.DashboardModel, err
 	converter.convertGeneralSettings(board, dashboard)
 	converter.convertVariables(board.Templating.List, dashboard)
 	converter.convertAnnotations(board.Annotations.List, dashboard)
-	converter.convertExternalLinks(board.Links, dashboard)
+	converter.convertLinks(board.Links, dashboard)
 	converter.convertPanels(board.Panels, dashboard)
 
 	return dashboard, nil
+}
+
+func (converter *JSON) convertLinks(links []sdk.Link, dashboard *grabana.DashboardModel) {
+	for _, link := range links {
+		switch link.Type {
+		case "link":
+			extLink := converter.convertExternalLink(link)
+			if extLink == nil {
+				continue
+			}
+
+			dashboard.ExternalLinks = append(dashboard.ExternalLinks, *extLink)
+		case "dashboards":
+			dashLink := converter.convertDashboardLink(link)
+			if dashLink == nil {
+				continue
+			}
+
+			dashboard.DashboardLinks = append(dashboard.DashboardLinks, *dashLink)
+		default:
+			converter.logger.Warn("unhandled link type: skipped", zap.String("type", link.Type), zap.String("title", link.Title))
+		}
+	}
 }
 
 func (converter *JSON) convertGeneralSettings(board *sdk.Board, dashboard *grabana.DashboardModel) {
