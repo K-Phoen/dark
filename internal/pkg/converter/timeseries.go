@@ -1,6 +1,8 @@
 package converter
 
 import (
+	"fmt"
+
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
 	"go.uber.org/zap"
@@ -14,6 +16,7 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 		Legend:        converter.convertTimeSeriesLegend(panel.TimeseriesPanel.Options.Legend),
 		Visualization: converter.convertTimeSeriesVisualization(panel),
 		Axis:          converter.convertTimeSeriesAxis(panel),
+		Overrides:     converter.convertTimeSeriesOverrides(panel),
 	}
 
 	if panel.Description != nil {
@@ -209,4 +212,105 @@ func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOption
 	}
 
 	return options
+}
+
+func (converter *JSON) convertTimeSeriesOverrides(panel sdk.Panel) []grabana.TimeSeriesOverride {
+	overrides := make([]grabana.TimeSeriesOverride, 0, len(panel.TimeseriesPanel.FieldConfig.Overrides))
+
+	for _, sdkOverride := range panel.TimeseriesPanel.FieldConfig.Overrides {
+		override, err := converter.convertTimeSeriesOverride(sdkOverride)
+		if err != nil {
+			converter.logger.Warn("could not convert field override: skipping", zap.Error(err))
+			continue
+		}
+
+		overrides = append(overrides, override)
+	}
+
+	return overrides
+}
+
+func (converter *JSON) convertTimeSeriesOverride(sdkOverride sdk.FieldConfigOverride) (grabana.TimeSeriesOverride, error) {
+	override := grabana.TimeSeriesOverride{}
+
+	matcher, err := converter.convertTimeSeriesOverrideMatcher(sdkOverride.Matcher)
+	if err != nil {
+		return override, err
+	}
+	override.Matcher = matcher
+
+	properties, err := converter.convertTimeSeriesOverrideProperties(sdkOverride.Properties)
+	if err != nil {
+		return override, err
+	}
+	override.Properties = properties
+
+	return override, nil
+}
+
+func (converter *JSON) convertTimeSeriesOverrideMatcher(matcher struct {
+	ID      string `json:"id"`
+	Options string `json:"options"`
+}) (grabana.TimeSeriesOverrideMatcher, error) {
+	switch matcher.ID {
+	case "byName":
+		return grabana.TimeSeriesOverrideMatcher{FieldName: &matcher.Options}, nil
+	case "byFrameRefID":
+		return grabana.TimeSeriesOverrideMatcher{QueryRef: &matcher.Options}, nil
+	case "byRegexp":
+		return grabana.TimeSeriesOverrideMatcher{Regex: &matcher.Options}, nil
+	case "byType":
+		return grabana.TimeSeriesOverrideMatcher{Type: &matcher.Options}, nil
+	default:
+		return grabana.TimeSeriesOverrideMatcher{}, fmt.Errorf("unknown field override matcher '%s'", matcher.ID)
+	}
+}
+
+func (converter *JSON) convertTimeSeriesOverrideProperties(sdkProperties []sdk.FieldConfigOverrideProperty) (grabana.TimeSeriesOverrideProperties, error) {
+	properties := grabana.TimeSeriesOverrideProperties{}
+
+	for _, sdkProperty := range sdkProperties {
+		converter.convertTimeSeriesOverrideProperty(sdkProperty, &properties)
+	}
+
+	return properties, nil
+}
+
+func (converter *JSON) convertTimeSeriesOverrideProperty(sdkProperty sdk.FieldConfigOverrideProperty, properties *grabana.TimeSeriesOverrideProperties) {
+	switch sdkProperty.ID {
+	case "unit":
+		properties.Unit = strPtr(sdkProperty.Value.(string))
+	case "custom.axisPlacement":
+		properties.AxisDisplay = strPtr(sdkProperty.Value.(string))
+	case "custom.fillOpacity":
+		properties.FillOpacity = intPtr(int(sdkProperty.Value.(float64)))
+	case "custom.stacking":
+		options, ok := sdkProperty.Value.(map[string]interface{})
+		if !ok {
+			converter.logger.Warn("could not convert custom.stacking field override: invalid options")
+			break
+		}
+		properties.Stack = strPtr(options["mode"].(string))
+	case "custom.transform":
+		transformType := sdkProperty.Value.(string)
+		if transformType != "negative-Y" {
+			converter.logger.Warn("could not convert transform field override: invalid option")
+			break
+		}
+		properties.NegativeY = boolPtr(true)
+	case "color":
+		options, ok := sdkProperty.Value.(map[string]interface{})
+		if !ok {
+			converter.logger.Warn("could not convert color field override: invalid options")
+			break
+		}
+		if options["mode"] != "fixed" {
+			converter.logger.Warn("could not convert color field override: unsupported mode")
+			break
+		}
+
+		properties.Color = strPtr(options["fixedColor"].(string))
+	default:
+		converter.logger.Warn(fmt.Sprintf("unhandled override type '%s'", sdkProperty.ID))
+	}
 }
