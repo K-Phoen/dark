@@ -118,8 +118,7 @@ spec:
               targets:
                 - prometheus:
                     ref: A
-                    query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[5m])) by (result)
-                    legend: "{{ result }}"
+                    query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard", result="error"}[5m]))
                     lookback: 5m
               tags:
                 service: dark
@@ -143,8 +142,7 @@ spec:
               targets:
                 - prometheus:
                     ref: A
-                    query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[5m])) by (result)
-                    legend: "{{ result }}"
+                    query: sum(increase(controller_runtime_reconcile_total{controller="datasource", result="error"}[5m]))
                     lookback: 5m
               tags:
                 service: dark
@@ -168,8 +166,7 @@ spec:
               targets:
                 - prometheus:
                     ref: A
-                    query: sum(increase(controller_runtime_reconcile_total{controller="alertmanager"}[5m])) by (result)
-                    legend: "{{ result }}"
+                    query: sum(increase(controller_runtime_reconcile_total{controller="alertmanager", result="error"}[5m]))
                     lookback: 5m
               tags:
                 service: dark
@@ -193,8 +190,7 @@ spec:
               targets:
                 - prometheus:
                     ref: A
-                    query: sum(increase(controller_runtime_reconcile_total{controller="apikey"}[5m])) by (result)
-                    legend: "{{ result }}"
+                    query: sum(increase(controller_runtime_reconcile_total{controller="apikey", result="error"}[5m]))
                     lookback: 5m
               tags:
                 service: dark
