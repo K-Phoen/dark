@@ -1,0 +1,4133 @@
+# Converted from https://github.com/rfmoz/grafana-dashboards/blob/master/prometheus/node-exporter-full.json
+apiVersion: k8s.kevingomez.fr/v1
+kind: GrafanaDashboard
+metadata:
+    name: dark-node-exporter-full
+    annotations:
+        dark/folder: Node Exporter
+spec:
+    title: Node Exporter Full
+    editable: false
+    shared_crosshair: true
+    tags: [generated, node-exporter]
+    auto_refresh: "5m"
+    time: [now-1h, now]
+
+    variables:
+        - query:
+            name: job
+            label: Job
+            request: label_values(node_uname_info, job)
+        - query:
+            name: node
+            label: 'Host'
+            request: label_values(node_uname_info{job="$job"}, instance)
+        - custom:
+            name: diskdevices
+            default: '[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+'
+            values_map:
+                '[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+': '[a-z]+|nvme[0-9]+n[0-9]+|mmcblk[0-9]+'
+            hide: variable
+
+    rows:
+        - name: Quick CPU / Mem / Disk
+          panels:
+            - stat:
+                title: Uptime
+                description: System uptime
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: node_time_seconds{instance="$node",job="$job"} - node_boot_time_seconds{instance="$node",job="$job"}
+                unit: s
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - stat:
+                title: Temperature
+                description: CPU temperature
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: avg(node_hwmon_temp_celsius{instance="$node",job="$job"})
+                unit: celsius
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - stat:
+                title: CPU Cores
+                description: Total number of CPU cores
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: count(count(node_cpu_seconds_total{instance="$node",job="$job"}) by (cpu))
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - stat:
+                title: RootFS Total
+                description: Total RootFS
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: node_filesystem_size_bytes{instance="$node",job="$job",mountpoint="/",fstype!="rootfs"}
+                unit: bytes
+                decimals: 0
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - stat:
+                title: RAM Total
+                description: Total RAM
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: node_memory_MemTotal_bytes{instance="$node",job="$job"}
+                unit: bytes
+                decimals: 0
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - stat:
+                title: SWAP Total
+                description: Total SWAP
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: node_memory_SwapTotal_bytes{instance="$node",job="$job"}
+                unit: bytes
+                decimals: 0
+                text: auto
+                value_type: last_non_null
+                color_mode: none
+            - gauge:
+                title: Sys Load (5m avg)
+                description: Busy state of all CPU cores together (5 min average)
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: avg(node_load5{instance="$node",job="$job"}) /  count(count(node_cpu_seconds_total{instance="$node",job="$job"}) by (cpu)) * 100
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 85
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 95
+            - gauge:
+                title: Sys Load (15m avg)
+                description: Busy state of all CPU cores together (15 min average)
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: avg(node_load15{instance="$node",job="$job"}) /  count(count(node_cpu_seconds_total{instance="$node",job="$job"}) by (cpu)) * 100
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 85
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 95
+            - gauge:
+                title: CPU Busy
+                description: Busy state of all CPU cores together
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: (sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode!="idle"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))) * 100
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 85
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 95
+            - gauge:
+                title: Root FS Used
+                description: Used Root FS
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: 100 - ((node_filesystem_avail_bytes{instance="$node",job="$job",mountpoint="/",fstype!="rootfs"} * 100) / node_filesystem_size_bytes{instance="$node",job="$job",mountpoint="/",fstype!="rootfs"})
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 80
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 90
+            - gauge:
+                title: RAM Used
+                description: Non available RAM memory
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: 100 - ((node_memory_MemAvailable_bytes{instance="$node",job="$job"} * 100) / node_memory_MemTotal_bytes{instance="$node",job="$job"})
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 80
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 90
+            - gauge:
+                title: SWAP Used
+                description: Used Swap
+                span: 2
+                height: 140px
+                targets:
+                    - prometheus:
+                        query: ((node_memory_SwapTotal_bytes{instance="$node",job="$job"} - node_memory_SwapFree_bytes{instance="$node",job="$job"}) / (node_memory_SwapTotal_bytes{instance="$node",job="$job"} )) * 100
+                unit: percent
+                decimals: 0
+                value_type: last_non_null
+                threshold_mode: absolute
+                thresholds:
+                    - color: rgba(50, 172, 45, 0.97)
+                    - color: rgba(237, 129, 40, 0.89)
+                      value: 10
+                    - color: rgba(245, 54, 54, 0.9)
+                      value: 25
+
+        - name: Basic CPU / Mem / Net / Disk
+          collapse: true
+          panels:
+            - timeseries:
+                title: CPU Basic
+                description: Basic CPU info
+                span: 6
+                targets:
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="system"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Busy System
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="user"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Busy User
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="iowait"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Busy Iowait
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode=~".*irq"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Busy IRQs
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode!='idle',mode!='user',mode!='system',mode!='iowait',mode!='irq',mode!='softirq'}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Busy Other
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="idle"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Idle
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: percent
+                    fill_opacity: 40
+                    line_interpolation: smooth
+                axis:
+                    min: 0
+                    unit: percentunit
+                overrides:
+                    - match: {field_name: Busy Iowait}
+                      properties:
+                        color: '#890F02'
+                    - match: {field_name: Idle}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Busy Iowait}
+                      properties:
+                        color: '#890F02'
+                    - match: {field_name: Idle}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: Busy System}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Busy User}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Busy Other}
+                      properties:
+                        color: '#6D1F62'
+            - timeseries:
+                title: Memory Basic
+                description: Basic memory usage
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_MemTotal_bytes{instance="$node",job="$job"}
+                        legend: RAM Total
+                    - prometheus:
+                        query: node_memory_MemTotal_bytes{instance="$node",job="$job"} - node_memory_MemFree_bytes{instance="$node",job="$job"} - (node_memory_Cached_bytes{instance="$node",job="$job"} + node_memory_Buffers_bytes{instance="$node",job="$job"} + node_memory_SReclaimable_bytes{instance="$node",job="$job"})
+                        legend: RAM Used
+                    - prometheus:
+                        query: node_memory_Cached_bytes{instance="$node",job="$job"} + node_memory_Buffers_bytes{instance="$node",job="$job"} + node_memory_SReclaimable_bytes{instance="$node",job="$job"}
+                        legend: RAM Cache + Buffer
+                    - prometheus:
+                        query: node_memory_MemFree_bytes{instance="$node",job="$job"}
+                        legend: RAM Free
+                    - prometheus:
+                        query: (node_memory_SwapTotal_bytes{instance="$node",job="$job"} - node_memory_SwapFree_bytes{instance="$node",job="$job"})
+                        legend: SWAP Used
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                    fill_opacity: 40
+                axis:
+                    min: 0
+                    unit: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: SWAP Used}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap Used}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: RAM Total}
+                      properties:
+                        color: '#E0F9D7'
+                        fill_opacity: 0
+                        stack: normal
+                    - match: {field_name: RAM Cache + Buffer}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: RAM Free}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: Available}
+                      properties:
+                        color: '#DEDAF7'
+                        fill_opacity: 0
+                        stack: normal
+            - timeseries:
+                title: Network Traffic Basic
+                description: Basic network info per interface
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_bytes_total{instance="$node",job="$job"}[$__rate_interval])*8
+                        legend: recv {{device}}
+                    - prometheus:
+                        query: irate(node_network_transmit_bytes_total{instance="$node",job="$job"}[$__rate_interval])*8
+                        legend: 'trans {{device}}'
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    unit: bps
+                overrides:
+                    - match: {field_name: Recv_bytes_eth2}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: Recv_bytes_lo}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Recv_drop_eth2}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Recv_drop_lo}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Recv_errs_eth2}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Recv_errs_lo}
+                      properties:
+                        color: '#CCA300'
+                    - match: {field_name: Trans_bytes_eth2}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: Trans_bytes_lo}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Trans_drop_eth2}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Trans_drop_lo}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Trans_errs_eth2}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Trans_errs_lo}
+                      properties:
+                        color: '#CCA300'
+                    - match: {field_name: recv_bytes_lo}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: recv_drop_eth0}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: recv_drop_lo}
+                      properties:
+                        color: '#967302'
+                    - match: {field_name: recv_errs_eth0}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: recv_errs_lo}
+                      properties:
+                        color: '#890F02'
+                    - match: {field_name: trans_bytes_eth0}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: trans_bytes_lo}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: trans_drop_eth0}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: trans_drop_lo}
+                      properties:
+                        color: '#967302'
+                    - match: {field_name: trans_errs_eth0}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: trans_errs_lo}
+                      properties:
+                        color: '#890F02'
+                    - match: {regex: /.*trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Disk Space Used Basic
+                description: Disk space used of all filesystems mounted
+                span: 6
+                targets:
+                    - prometheus:
+                        query: 100 - ((node_filesystem_avail_bytes{instance="$node",job="$job",device!~'rootfs'} * 100) / node_filesystem_size_bytes{instance="$node",job="$job",device!~'rootfs'})
+                        legend: '{{mountpoint}}'
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    min: 0
+                    max: 100
+                    unit: percent
+
+        - name: CPU / Memory / Net / Disk
+          collapse: true
+          panels:
+            - timeseries:
+                title: CPU
+                span: 6
+                targets:
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="system"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: System - Processes executing in kernel mode
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="user"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: User - Normal processes executing in user mode
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="nice"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Nice - Niced processes executing in user mode
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="iowait"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Iowait - Waiting for I/O to complete
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="irq"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Irq - Servicing interrupts
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="softirq"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Softirq - Servicing softirqs
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="steal"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Steal - Time spent in other operating systems when running in a virtualized environment
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_seconds_total{instance="$node",job="$job", mode="idle"}[$__rate_interval])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])))
+                        legend: Idle - Waiting for something to happen
+                legend: [as_table, to_bottom, max, min, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: percent
+                    fill_opacity: 70
+                    line_interpolation: smooth
+                    line_width: 2
+                axis:
+                    min: 0
+                    unit: percentunit
+                    label: percentage
+                overrides:
+                    - match: {field_name: Idle - Waiting for something to happen}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Iowait - Waiting for I/O to complete}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Irq - Servicing interrupts}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Nice - Niced processes executing in user mode}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Softirq - Servicing softirqs}
+                      properties:
+                        color: '#E24D42'
+                    - match: {field_name: Steal - Time spent in other operating systems when running in a virtualized environment}
+                      properties:
+                        color: '#FCE2DE'
+                    - match: {field_name: System - Processes executing in kernel mode}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: User - Normal processes executing in user mode}
+                      properties:
+                        color: '#5195CE'
+            - timeseries:
+                title: Memory Stack
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_MemTotal_bytes{instance="$node",job="$job"} - node_memory_MemFree_bytes{instance="$node",job="$job"} - node_memory_Buffers_bytes{instance="$node",job="$job"} - node_memory_Cached_bytes{instance="$node",job="$job"} - node_memory_Slab_bytes{instance="$node",job="$job"} - node_memory_PageTables_bytes{instance="$node",job="$job"} - node_memory_SwapCached_bytes{instance="$node",job="$job"}
+                        legend: Apps - Memory used by user-space applications
+                    - prometheus:
+                        query: node_memory_PageTables_bytes{instance="$node",job="$job"}
+                        legend: PageTables - Memory used to map between virtual and physical memory addresses
+                    - prometheus:
+                        query: node_memory_SwapCached_bytes{instance="$node",job="$job"}
+                        legend: SwapCache - Memory that keeps track of pages that have been fetched from swap but not yet been modified
+                    - prometheus:
+                        query: node_memory_Slab_bytes{instance="$node",job="$job"}
+                        legend: Slab - Memory used by the kernel to cache data structures for its own use (caches like inode, dentry, etc)
+                    - prometheus:
+                        query: node_memory_Cached_bytes{instance="$node",job="$job"}
+                        legend: Cache - Parked file data (file content) cache
+                    - prometheus:
+                        query: node_memory_Buffers_bytes{instance="$node",job="$job"}
+                        legend: Buffers - Block device (e.g. harddisk) cache
+                    - prometheus:
+                        query: node_memory_MemFree_bytes{instance="$node",job="$job"}
+                        legend: Unused - Free memory unassigned
+                    - prometheus:
+                        query: (node_memory_SwapTotal_bytes{instance="$node",job="$job"} - node_memory_SwapFree_bytes{instance="$node",job="$job"})
+                        legend: Swap - Swap space used
+                    - prometheus:
+                        query: node_memory_HardwareCorrupted_bytes{instance="$node",job="$job"}
+                        legend: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                    fill_opacity: 40
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap - Swap memory usage}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Unused - Free memory unassigned}
+                      properties:
+                        color: '#052B51'
+                    - match: {regex: /.*Hardware Corrupted - *./}
+                      properties:
+                        stack: normal
+            - timeseries:
+                title: Network Traffic
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_bytes_total{instance="$node",job="$job"}[$__rate_interval])*8
+                        legend: '{{device}} - Receive'
+                    - prometheus:
+                        query: irate(node_network_transmit_bytes_total{instance="$node",job="$job"}[$__rate_interval])*8
+                        legend: '{{device}} - Transmit'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    unit: bps
+                    label: bits out (-) / in (+)
+                overrides:
+                    - match: {field_name: receive_packets_eth0}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: receive_packets_lo}
+                      properties:
+                        color: '#E24D42'
+                    - match: {field_name: transmit_packets_eth0}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: transmit_packets_lo}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Disk Space Used
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filesystem_size_bytes{instance="$node",job="$job",device!~'rootfs'} - node_filesystem_avail_bytes{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}}'
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+            - timeseries:
+                title: Disk IOps
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_reads_completed_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
+                        legend: '{{device}} - Reads completed'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_writes_completed_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
+                        legend: '{{device}} - Writes completed'
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    unit: iops
+                    label: IO read (-) / write (+)
+                overrides:
+                    - match: {regex: /.*Read.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: I/O Usage Read / Write
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_read_bytes_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
+                        legend: '{{device}} - Successfully read bytes'
+                    - prometheus:
+                        query: irate(node_disk_written_bytes_total{instance="$node",job="$job",device=~"$diskdevices"}[$__rate_interval])
+                        legend: '{{device}} - Successfully written bytes'
+                legend: [as_table, to_bottom, last_non_null, min, avg, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    unit: Bps
+                    label: bytes read (-) / write (+)
+                overrides:
+                    - match: {field_name: io time}
+                      properties:
+                        color: '#890F02'
+                    - match: {regex: /.*read*./}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {field_type: time}
+                      properties:
+                        axis_display: hidden
+            - timeseries:
+                title: I/O Utilization
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_io_time_seconds_total{instance="$node",job="$job",device=~"$diskdevices"} [$__rate_interval])
+                        legend: '{{device}}'
+                legend: [as_table, to_bottom, min, avg, last_non_null, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 40
+                axis:
+                    min: 0
+                    unit: percentunit
+                    label: '%util'
+                overrides:
+                    - match: {field_name: io time}
+                      properties:
+                        color: '#890F02'
+                    - match: {field_type: time}
+                      properties:
+                        axis_display: hidden
+            - timeseries:
+                title: CPU spent seconds in guests (VMs)
+                span: 6
+                targets:
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_guest_seconds_total{instance="$node",job="$job", mode="user"}[1m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[1m])))
+                        legend: Guest - Time spent running a virtual CPU for a guest operating system
+                    - prometheus:
+                        query: sum by(instance) (irate(node_cpu_guest_seconds_total{instance="$node",job="$job", mode="nice"}[1m])) / on(instance) group_left sum by (instance)((irate(node_cpu_seconds_total{instance="$node",job="$job"}[1m])))
+                        legend: GuestNice - Time spent running a niced guest  (virtual CPU for guest operating system)
+                legend: [as_table, to_bottom, last_non_null, avg, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    fill_opacity: 70
+                    point_size: 3
+                    line_width: 2
+                axis:
+                    max: 1
+                    unit: percentunit
+                    label: percentage
+                overrides:
+                    - match: {regex: /^Guest - /}
+                      properties:
+                        color: '#5195ce'
+                    - match: {regex: /^GuestNice - /}
+                      properties:
+                        color: '#c15c17'
+
+        - name: Memory Meminfo
+          collapse: true
+          panels:
+            - timeseries:
+                title: Memory Active / Inactive
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Inactive_bytes{instance="$node",job="$job"}
+                        legend: Inactive - Memory which has been less recently used.  It is more eligible to be reclaimed for other purposes
+                    - prometheus:
+                        query: node_memory_Active_bytes{instance="$node",job="$job"}
+                        legend: Active - Memory that has been used more recently and usually not reclaimed unless absolutely necessary
+                legend: [as_table, to_bottom, avg, max, last_non_null, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+            - timeseries:
+                title: Memory Committed
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Committed_AS_bytes{instance="$node",job="$job"}
+                        legend: Committed_AS - Amount of memory presently allocated on the system
+                    - prometheus:
+                        query: node_memory_CommitLimit_bytes{instance="$node",job="$job"}
+                        legend: CommitLimit - Amount of  memory currently available to be allocated on the system
+                legend: [as_table, to_bottom, last_non_null, max, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*CommitLimit - *./}
+                      properties:
+                        color: '#BF1B00'
+                        fill_opacity: 0
+            - timeseries:
+                title: Memory Active / Inactive Detail
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Inactive_file_bytes{instance="$node",job="$job"}
+                        legend: Inactive_file - File-backed memory on inactive LRU list
+                    - prometheus:
+                        query: node_memory_Inactive_anon_bytes{instance="$node",job="$job"}
+                        legend: Inactive_anon - Anonymous and swap cache on inactive LRU list, including tmpfs (shmem)
+                    - prometheus:
+                        query: node_memory_Active_file_bytes{instance="$node",job="$job"}
+                        legend: Active_file - File-backed memory on active LRU list
+                    - prometheus:
+                        query: node_memory_Active_anon_bytes{instance="$node",job="$job"}
+                        legend: Active_anon - Anonymous and swap cache on active least-recently-used (LRU) list, including tmpfs
+                legend: [as_table, to_bottom, max, avg, last_non_null, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+            - timeseries:
+                title: Memory Writeback and Dirty
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Writeback_bytes{instance="$node",job="$job"}
+                        legend: Writeback - Memory which is actively being written back to disk
+                    - prometheus:
+                        query: node_memory_WritebackTmp_bytes{instance="$node",job="$job"}
+                        legend: WritebackTmp - Memory used by FUSE for temporary writeback buffers
+                    - prometheus:
+                        query: node_memory_Dirty_bytes{instance="$node",job="$job"}
+                        legend: Dirty - Memory which is waiting to get written back to the disk
+                legend: [as_table, to_bottom, last_non_null, avg, max, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total Swap}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory Shared and Mapped
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Mapped_bytes{instance="$node",job="$job"}
+                        legend: Mapped - Used memory in mapped pages files which have been mapped, such as libraries
+                    - prometheus:
+                        query: node_memory_Shmem_bytes{instance="$node",job="$job"}
+                        legend: Shmem - Used shared memory (shared between several processes, thus including RAM disks)
+                    - prometheus:
+                        query: node_memory_ShmemHugePages_bytes{instance="$node",job="$job"}
+                        legend: ShmemHugePages - Memory used by shared memory (shmem) and tmpfs allocated  with huge pages
+                    - prometheus:
+                        query: node_memory_ShmemPmdMapped_bytes{instance="$node",job="$job"}
+                        legend: ShmemPmdMapped - Amount of shared (shmem/tmpfs) memory backed by huge pages
+                legend: [as_table, to_bottom, last_non_null, max, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: ShmemHugePages - Memory used by shared memory (shmem) and tmpfs allocated  with huge pages}
+                      properties:
+                        fill_opacity: 0
+                    - match: {field_name: ShmemHugePages - Memory used by shared memory (shmem) and tmpfs allocated  with huge pages}
+                      properties:
+                        fill_opacity: 0
+            - timeseries:
+                title: Memory Slab
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_SUnreclaim_bytes{instance="$node",job="$job"}
+                        legend: SUnreclaim - Part of Slab, that cannot be reclaimed on memory pressure
+                    - prometheus:
+                        query: node_memory_SReclaimable_bytes{instance="$node",job="$job"}
+                        legend: SReclaimable - Part of Slab, that might be reclaimed, such as caches
+                legend: [as_table, to_bottom, max, min, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total Swap}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory Vmalloc
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_VmallocChunk_bytes{instance="$node",job="$job"}
+                        legend: VmallocChunk - Largest contiguous block of vmalloc area which is free
+                    - prometheus:
+                        query: node_memory_VmallocTotal_bytes{instance="$node",job="$job"}
+                        legend: VmallocTotal - Total size of vmalloc memory area
+                    - prometheus:
+                        query: node_memory_VmallocUsed_bytes{instance="$node",job="$job"}
+                        legend: VmallocUsed - Amount of vmalloc area which is used
+                legend: [as_table, to_bottom, last_non_null, min, avg, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory Bounce
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Bounce_bytes{instance="$node",job="$job"}
+                        legend: Bounce - Memory used for block device bounce buffers
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+            - timeseries:
+                title: Memory Anonymous
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_AnonHugePages_bytes{instance="$node",job="$job"}
+                        legend: AnonHugePages - Memory in anonymous huge pages
+                    - prometheus:
+                        query: node_memory_AnonPages_bytes{instance="$node",job="$job"}
+                        legend: AnonPages - Memory in user pages not backed by files
+                legend: [as_table, to_bottom, min, max, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*Inactive *./}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Memory Kernel / CPU
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_KernelStack_bytes{instance="$node",job="$job"}
+                        legend: KernelStack - Kernel memory stack. This is not reclaimable
+                    - prometheus:
+                        query: node_memory_Percpu_bytes{instance="$node",job="$job"}
+                        legend: PerCPU - Per CPU memory allocated dynamically by loadable modules
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+            - timeseries:
+                title: Memory HugePages Counter
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_HugePages_Free{instance="$node",job="$job"}
+                        legend: HugePages_Free - Huge pages in the pool that are not yet allocated
+                    - prometheus:
+                        query: node_memory_HugePages_Rsvd{instance="$node",job="$job"}
+                        legend: HugePages_Rsvd - Huge pages for which a commitment to allocate from the pool has been made, but no allocation has yet been made
+                    - prometheus:
+                        query: node_memory_HugePages_Surp{instance="$node",job="$job"}
+                        legend: HugePages_Surp - Huge pages in the pool above the value in /proc/sys/vm/nr_hugepages
+                legend: [as_table, to_bottom, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: pages
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory HugePages Size
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_HugePages_Total{instance="$node",job="$job"}
+                        legend: HugePages - Total size of the pool of huge pages
+                    - prometheus:
+                        query: node_memory_Hugepagesize_bytes{instance="$node",job="$job"}
+                        legend: Hugepagesize - Huge Page size
+                legend: [as_table, to_bottom, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory DirectMap
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_DirectMap1G_bytes{instance="$node",job="$job"}
+                        legend: DirectMap1G - Amount of pages mapped as this size
+                    - prometheus:
+                        query: node_memory_DirectMap2M_bytes{instance="$node",job="$job"}
+                        legend: DirectMap2M - Amount of pages mapped as this size
+                    - prometheus:
+                        query: node_memory_DirectMap4k_bytes{instance="$node",job="$job"}
+                        legend: DirectMap4K - Amount of pages mapped as this size
+                legend: [as_table, to_bottom, min, avg, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+            - timeseries:
+                title: Memory Unevictable and MLocked
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_Unevictable_bytes{instance="$node",job="$job"}
+                        legend: Unevictable - Amount of unevictable memory that can't be swapped out for a variety of reasons
+                    - prometheus:
+                        query: node_memory_Mlocked_bytes{instance="$node",job="$job"}
+                        legend: MLocked - Size of pages locked to memory using the mlock() system call
+                legend: [as_table, to_bottom, min, max, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+            - timeseries:
+                title: Memory NFS
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_memory_NFS_Unstable_bytes{instance="$node",job="$job"}
+                        legend: NFS Unstable - Memory in NFS pages sent to the server, but not yet committed to the storage
+                legend: [as_table, to_bottom, last_non_null, min, avg, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total Swap}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+
+        - name: Memory Vmstat
+          collapse: true
+          panels:
+            - timeseries:
+                title: Memory Pages In / Out
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_vmstat_pgpgin{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pagesin - Page in operations
+                    - prometheus:
+                        query: irate(node_vmstat_pgpgout{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pagesout - Page out operations
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: pages out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*out/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Memory Pages Swap In / Out
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_vmstat_pswpin{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pswpin - Pages swapped in
+                    - prometheus:
+                        query: irate(node_vmstat_pswpout{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pswpout - Pages swapped out
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: pages out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*out/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Memory Page Faults
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_vmstat_pgfault{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pgfault - Page major and minor fault operations
+                    - prometheus:
+                        query: irate(node_vmstat_pgmajfault{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pgmajfault - Major page fault operations
+                    - prometheus:
+                        query: irate(node_vmstat_pgfault{instance="$node",job="$job"}[$__rate_interval])  - irate(node_vmstat_pgmajfault{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Pgminfault - Minor page fault operations
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    label: faults
+                overrides:
+                    - match: {field_name: Apps}
+                      properties:
+                        color: '#629E51'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#0A437C'
+                    - match: {field_name: Hardware Corrupted - Amount of RAM that the kernel identified as corrupted / not working}
+                      properties:
+                        color: '#CFFAFF'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#584477'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: RAM_Free}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {field_name: Slab}
+                      properties:
+                        color: '#806EB7'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#E0752D'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Swap_Free}
+                      properties:
+                        color: '#2F575E'
+                    - match: {field_name: Unused}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Pgfault - Page major and minor fault operations}
+                      properties:
+                        fill_opacity: 0
+                        stack: normal
+            - timeseries:
+                title: OOM Killer
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_vmstat_oom_kill{instance="$node",job="$job"}[$__rate_interval])
+                        legend: 'oom killer invocations '
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+                overrides:
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#99440A'
+                    - match: {field_name: Buffers}
+                      properties:
+                        color: '#58140C'
+                    - match: {field_name: Cache}
+                      properties:
+                        color: '#6D1F62'
+                    - match: {field_name: Cached}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Committed}
+                      properties:
+                        color: '#508642'
+                    - match: {field_name: Dirty}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {field_name: Free}
+                      properties:
+                        color: '#B7DBAB'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#EA6460'
+                    - match: {field_name: Mapped}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: PageTables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Page_Tables}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {field_name: Slab_Cache}
+                      properties:
+                        color: '#EAB839'
+                    - match: {field_name: Swap}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {field_name: Swap_Cache}
+                      properties:
+                        color: '#C15C17'
+                    - match: {field_name: Total}
+                      properties:
+                        color: '#511749'
+                    - match: {field_name: Total RAM}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total RAM + Swap}
+                      properties:
+                        color: '#052B51'
+                    - match: {field_name: Total Swap}
+                      properties:
+                        color: '#614D93'
+                    - match: {field_name: VmallocUsed}
+                      properties:
+                        color: '#EA6460'
+
+        - name: System Timesync
+          collapse: true
+          panels:
+            - timeseries:
+                title: Time Synchronized Drift
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_timex_estimated_error_seconds{instance="$node",job="$job"}
+                        legend: Estimated error in seconds
+                    - prometheus:
+                        query: node_timex_offset_seconds{instance="$node",job="$job"}
+                        legend: Time offset in between local system and reference clock
+                    - prometheus:
+                        query: node_timex_maxerror_seconds{instance="$node",job="$job"}
+                        legend: Maximum error in seconds
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: s
+                    label: seconds
+                overrides:
+                    - match: {regex: /.*Variation*./}
+                      properties:
+                        color: '#890F02'
+            - timeseries:
+                title: Time PLL Adjust
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_timex_loop_time_constant{instance="$node",job="$job"}
+                        legend: Phase-locked loop time adjust
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+            - timeseries:
+                title: Time Synchronized Status
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_timex_sync_status{instance="$node",job="$job"}
+                        legend: Is clock synchronized to a reliable server (1 = yes, 0 = no)
+                    - prometheus:
+                        query: node_timex_frequency_adjustment_ratio{instance="$node",job="$job"}
+                        legend: Local clock frequency adjustment
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+                overrides:
+                    - match: {regex: /.*Variation*./}
+                      properties:
+                        color: '#890F02'
+            - timeseries:
+                title: Time Misc
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_timex_tick_seconds{instance="$node",job="$job"}
+                        legend: Seconds between clock ticks
+                    - prometheus:
+                        query: node_timex_tai_offset_seconds{instance="$node",job="$job"}
+                        legend: International Atomic Time (TAI) offset
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: s
+                    label: seconds
+
+        - name: System Processes
+          collapse: true
+          panels:
+            - timeseries:
+                title: Processes Status
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_procs_blocked{instance="$node",job="$job"}
+                        legend: Processes blocked waiting for I/O to complete
+                    - prometheus:
+                        query: node_procs_running{instance="$node",job="$job"}
+                        legend: Processes in runnable state
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Processes State
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_processes_state{instance="$node",job="$job"}
+                        legend: '{{ state }}'
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Processes  Forks
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_forks_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Processes forks second
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: forks / sec
+            - timeseries:
+                title: Processes Memory
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(process_virtual_memory_bytes{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Processes virtual memory size in bytes
+                    - prometheus:
+                        query: process_resident_memory_max_bytes{instance="$node",job="$job"}
+                        legend: Maximum amount of virtual memory available in bytes
+                    - prometheus:
+                        query: irate(process_virtual_memory_bytes{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Processes virtual memory size in bytes
+                    - prometheus:
+                        query: irate(process_virtual_memory_max_bytes{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Maximum amount of virtual memory available in bytes
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: decbytes
+                    label: bytes
+                overrides:
+                    - match: {regex: /.*Max.*/}
+                      properties:
+                        fill_opacity: 0
+            - timeseries:
+                title: PIDs Number and Limit
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_processes_pids{instance="$node",job="$job"}
+                        legend: Number of PIDs
+                    - prometheus:
+                        query: node_processes_max_processes{instance="$node",job="$job"}
+                        legend: PIDs limit
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+                overrides:
+                    - match: {field_name: PIDs limit}
+                      properties:
+                        color: '#F2495C'
+                        fill_opacity: 0
+            - timeseries:
+                title: Process schedule stats Running / Waiting
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_schedstat_running_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{ cpu }} - seconds spent running a process
+                    - prometheus:
+                        query: irate(node_schedstat_waiting_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{ cpu }} - seconds spent by processing waiting for this CPU
+                legend: [as_table, to_bottom, last_non_null, min, avg, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: s
+                    label: seconds
+                overrides:
+                    - match: {regex: /.*waiting.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Threads Number and Limit
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_processes_threads{instance="$node",job="$job"}
+                        legend: Allocated threads
+                    - prometheus:
+                        query: node_processes_max_threads{instance="$node",job="$job"}
+                        legend: Threads limit
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+                overrides:
+                    - match: {field_name: Threads limit}
+                      properties:
+                        color: '#F2495C'
+                        fill_opacity: 0
+
+        - name: System Misc
+          collapse: true
+          panels:
+            - timeseries:
+                title: Context Switches / Interrupts
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_context_switches_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Context switches
+                    - prometheus:
+                        query: irate(node_intr_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Interrupts
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: System Load
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_load1{instance="$node",job="$job"}
+                        legend: Load 1m
+                        interval_factor: 4
+                    - prometheus:
+                        query: node_load5{instance="$node",job="$job"}
+                        legend: Load 5m
+                        interval_factor: 4
+                    - prometheus:
+                        query: node_load15{instance="$node",job="$job"}
+                        legend: Load 15m
+                        interval_factor: 4
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Interrupts Detail
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_interrupts_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{ type }} - {{ info }}'
+                legend: [as_table, to_bottom, min, avg, last_non_null, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+                overrides:
+                    - match: {regex: /.*Critical*./}
+                      properties:
+                        color: '#E24D42'
+                        fill_opacity: 0
+                    - match: {regex: /.*Max*./}
+                      properties:
+                        color: '#EF843C'
+                        fill_opacity: 0
+            - timeseries:
+                title: Schedule timeslices executed by each cpu
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_schedstat_timeslices_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{ cpu }}
+                legend: [as_table, to_bottom, last_non_null, avg, max, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+            - timeseries:
+                title: Entropy
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_entropy_available_bits{instance="$node",job="$job"}
+                        legend: Entropy available to random number generators
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: CPU time spent in user and system contexts
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(process_cpu_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Time spent
+                legend: [as_table, to_bottom, max, min, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: s
+                    label: seconds
+            - timeseries:
+                title: File Descriptors
+                span: 6
+                targets:
+                    - prometheus:
+                        query: process_max_fds{instance="$node",job="$job"}
+                        legend: Maximum open file descriptors
+                    - prometheus:
+                        query: process_open_fds{instance="$node",job="$job"}
+                        legend: Open file descriptors
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+                overrides:
+                    - match: {regex: /.*Max*./}
+                      properties:
+                        color: '#890F02'
+                        fill_opacity: 0
+
+        - name: Hardware Misc
+          collapse: true
+          panels:
+            - timeseries:
+                title: Hardware temperature monitor
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_hwmon_temp_celsius{instance="$node",job="$job"}
+                        legend: '{{ chip }} {{ sensor }} temp'
+                    - prometheus:
+                        query: node_hwmon_temp_crit_alarm_celsius{instance="$node",job="$job"}
+                        legend: '{{ chip }} {{ sensor }} Critical Alarm'
+                        hidden: true
+                    - prometheus:
+                        query: node_hwmon_temp_crit_celsius{instance="$node",job="$job"}
+                        legend: '{{ chip }} {{ sensor }} Critical'
+                    - prometheus:
+                        query: node_hwmon_temp_crit_hyst_celsius{instance="$node",job="$job"}
+                        legend: '{{ chip }} {{ sensor }} Critical Historical'
+                        hidden: true
+                    - prometheus:
+                        query: node_hwmon_temp_max_celsius{instance="$node",job="$job"}
+                        legend: '{{ chip }} {{ sensor }} Max'
+                        hidden: true
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: celsius
+                    label: temperature
+                overrides:
+                    - match: {regex: /.*Critical*./}
+                      properties:
+                        color: '#E24D42'
+                        fill_opacity: 0
+                    - match: {regex: /.*Max*./}
+                      properties:
+                        color: '#EF843C'
+                        fill_opacity: 0
+            - timeseries:
+                title: Throttle cooling device
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_cooling_device_cur_state{instance="$node",job="$job"}
+                        legend: Current {{ name }} in {{ type }}
+                    - prometheus:
+                        query: node_cooling_device_max_state{instance="$node",job="$job"}
+                        legend: Max {{ name }} in {{ type }}
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+                overrides:
+                    - match: {regex: /.*Max*./}
+                      properties:
+                        color: '#EF843C'
+                        fill_opacity: 0
+            - timeseries:
+                title: Power supply
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_power_supply_online{instance="$node",job="$job"}
+                        legend: '{{ power_supply }} online'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+
+        - name: Systemd
+          collapse: true
+          panels:
+            - timeseries:
+                title: Systemd Sockets
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_systemd_socket_accepted_connections_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{ name }} Connections'
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Systemd Units State
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_systemd_units{instance="$node",job="$job",state="activating"}
+                        legend: Activating
+                    - prometheus:
+                        query: node_systemd_units{instance="$node",job="$job",state="active"}
+                        legend: Active
+                    - prometheus:
+                        query: node_systemd_units{instance="$node",job="$job",state="deactivating"}
+                        legend: Deactivating
+                    - prometheus:
+                        query: node_systemd_units{instance="$node",job="$job",state="failed"}
+                        legend: Failed
+                    - prometheus:
+                        query: node_systemd_units{instance="$node",job="$job",state="inactive"}
+                        legend: Inactive
+                legend: [as_table, to_bottom, max, avg, last_non_null, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    label: counter
+                overrides:
+                    - match: {field_name: Failed}
+                      properties:
+                        color: '#F2495C'
+                    - match: {field_name: Inactive}
+                      properties:
+                        color: '#FF9830'
+                    - match: {field_name: Active}
+                      properties:
+                        color: '#73BF69'
+                    - match: {field_name: Deactivating}
+                      properties:
+                        color: '#FFCB7D'
+                    - match: {field_name: Activating}
+                      properties:
+                        color: '#C8F2C2'
+
+        - name: Storage Disk
+          collapse: true
+          panels:
+            - timeseries:
+                title: Disk IOps Completed
+                description: The number (after merges) of I/O requests completed per second for the device
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_reads_completed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Reads completed'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_writes_completed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Writes completed'
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    unit: iops
+                    label: IO read (-) / write (+)
+                overrides:
+                    - match: {regex: /.*Read.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Disk R/W Data
+                description: The number of bytes read from or written to the device per second
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_read_bytes_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Read bytes'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_written_bytes_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Written bytes'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    unit: Bps
+                    label: bytes read (-) / write (+)
+                overrides:
+                    - match: {regex: /.*Read.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Disk Average Wait Time
+                description: The average time for requests issued to the device to be served. This includes the time spent by the requests in queue and the time spent servicing them.
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_read_time_seconds_total{instance="$node",job="$job"}[$__rate_interval]) / irate(node_disk_reads_completed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Read wait time avg'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_write_time_seconds_total{instance="$node",job="$job"}[$__rate_interval]) / irate(node_disk_writes_completed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Write wait time avg'
+                legend: [as_table, to_bottom, max, min, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                    fill_opacity: 30
+                axis:
+                    unit: s
+                    label: time. read (-) / write (+)
+                overrides:
+                    - match: {regex: /.*Read.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Average Queue Size
+                description: The average queue length of the requests that were issued to the device
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_io_time_weighted_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}}'
+                        interval_factor: 4
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    min: 0
+                    unit: none
+                    label: aqu-sz
+                overrides:
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Disk R/W Merged
+                description: The number of read and write requests merged per second that were queued to the device
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_reads_merged_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Read merged'
+                    - prometheus:
+                        query: irate(node_disk_writes_merged_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Write merged'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    unit: iops
+                    label: I/Os
+                overrides:
+                    - match: {regex: /.*Read.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Time Spent Doing I/Os
+                description: Percentage of elapsed time during which I/O requests were issued to the device (bandwidth utilization for the device). Device saturation occurs when this value is close to 100% for devices serving requests serially.  But for devices  serving requests in parallel, such as RAID arrays and modern SSDs, this number does not reflect their performance limits.
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_io_time_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - IO'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_discard_time_seconds_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - discard'
+                        interval_factor: 4
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                    fill_opacity: 30
+                axis:
+                    min: 0
+                    unit: percentunit
+                    label: '%util'
+                overrides:
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Instantaneous Queue Size
+                description: The number of outstanding requests at the instant the sample was taken. Incremented as requests are given to appropriate struct request_queue and decremented as they finish.
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_disk_io_now{instance="$node",job="$job"}
+                        legend: '{{device}} - IO now'
+                        interval_factor: 4
+                legend: [as_table, to_bottom, last_non_null, avg, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    min: 0
+                    unit: none
+                    label: Outstanding req.
+                overrides:
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+            - timeseries:
+                title: Disk IOps Discards completed / merged
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_disk_discards_completed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Discards completed'
+                        interval_factor: 4
+                    - prometheus:
+                        query: irate(node_disk_discards_merged_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Discards merged'
+                legend: [as_table, to_bottom, max, avg, last_non_null, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    unit: iops
+                    label: IOs
+                overrides:
+                    - match: {regex: /.*sda_.*/}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {regex: /.*sdb_.*/}
+                      properties:
+                        color: '#EAB839'
+                    - match: {regex: /.*sdc_.*/}
+                      properties:
+                        color: '#6ED0E0'
+                    - match: {regex: /.*sdd_.*/}
+                      properties:
+                        color: '#EF843C'
+                    - match: {regex: /.*sde_.*/}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*sda1.*/}
+                      properties:
+                        color: '#584477'
+                    - match: {regex: /.*sda2_.*/}
+                      properties:
+                        color: '#BA43A9'
+                    - match: {regex: /.*sda3_.*/}
+                      properties:
+                        color: '#F4D598'
+                    - match: {regex: /.*sdb1.*/}
+                      properties:
+                        color: '#0A50A1'
+                    - match: {regex: /.*sdb2.*/}
+                      properties:
+                        color: '#BF1B00'
+                    - match: {regex: /.*sdb3.*/}
+                      properties:
+                        color: '#E0752D'
+                    - match: {regex: /.*sdc1.*/}
+                      properties:
+                        color: '#962D82'
+                    - match: {regex: /.*sdc2.*/}
+                      properties:
+                        color: '#614D93'
+                    - match: {regex: /.*sdc3.*/}
+                      properties:
+                        color: '#9AC48A'
+                    - match: {regex: /.*sdd1.*/}
+                      properties:
+                        color: '#65C5DB'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#F9934E'
+                    - match: {regex: /.*sdd3.*/}
+                      properties:
+                        color: '#EA6460'
+                    - match: {regex: /.*sde1.*/}
+                      properties:
+                        color: '#E0F9D7'
+                    - match: {regex: /.*sdd2.*/}
+                      properties:
+                        color: '#FCEACA'
+                    - match: {regex: /.*sde3.*/}
+                      properties:
+                        color: '#F9E2D2'
+
+        - name: Storage Filesystem
+          collapse: true
+          panels:
+            - timeseries:
+                title: Filesystem space available
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filesystem_avail_bytes{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - Available'
+                    - prometheus:
+                        query: node_filesystem_free_bytes{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - Free'
+                        hidden: true
+                    - prometheus:
+                        query: node_filesystem_size_bytes{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - Size'
+                        hidden: true
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+            - timeseries:
+                title: File Nodes Free
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filesystem_files_free{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - Free file nodes'
+                legend: [as_table, to_bottom, last_non_null, avg, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: file nodes
+            - timeseries:
+                title: File Descriptor
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filefd_maximum{instance="$node",job="$job"}
+                        legend: Max open files
+                        interval_factor: 4
+                    - prometheus:
+                        query: node_filefd_allocated{instance="$node",job="$job"}
+                        legend: Open files
+                legend: [as_table, to_bottom, last_non_null, max, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: single_series
+                axis:
+                    min: 0
+                    label: files
+            - timeseries:
+                title: File Nodes Size
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filesystem_files{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - File nodes total'
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: file Nodes
+            - timeseries:
+                title: Filesystem in ReadOnly / Error
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_filesystem_readonly{instance="$node",job="$job",device!~'rootfs'}
+                        legend: '{{mountpoint}} - ReadOnly'
+                    - prometheus:
+                        query: node_filesystem_device_error{instance="$node",job="$job",device!~'rootfs',fstype!~'tmpfs'}
+                        legend: '{{mountpoint}} - Device error'
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    min: 0
+                    max: 1
+                    label: counter
+                overrides:
+                    - match: {field_name: / ReadOnly}
+                      properties:
+                        color: '#890F02'
+
+        - name: Network Traffic
+          collapse: true
+          panels:
+            - timeseries:
+                title: Network Traffic by Packets
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_packets_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive'
+                    - prometheus:
+                        query: irate(node_network_transmit_packets_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Transmit'
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {field_name: receive_packets_eth0}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: receive_packets_lo}
+                      properties:
+                        color: '#E24D42'
+                    - match: {field_name: transmit_packets_eth0}
+                      properties:
+                        color: '#7EB26D'
+                    - match: {field_name: transmit_packets_lo}
+                      properties:
+                        color: '#E24D42'
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Errors
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_errs_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive errors'
+                    - prometheus:
+                        query: irate(node_network_transmit_errs_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Rransmit errors'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Drop
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_drop_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive drop'
+                    - prometheus:
+                        query: irate(node_network_transmit_drop_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Transmit drop'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Compressed
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_compressed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive compressed'
+                    - prometheus:
+                        query: irate(node_network_transmit_compressed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Transmit compressed'
+                legend: [as_table, to_bottom, min, avg, max, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Multicast
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_multicast_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive multicast'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Fifo
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_fifo_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive fifo'
+                    - prometheus:
+                        query: irate(node_network_transmit_fifo_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Transmit fifo'
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Frame
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_receive_frame_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Receive frame'
+                legend: [as_table, to_bottom, avg, max, last_non_null, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    unit: pps
+                    label: packets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Network Traffic Carrier
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_transmit_carrier_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Statistic transmit_carrier'
+                legend: [as_table, to_bottom, min, max, last_non_null, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+            - timeseries:
+                title: Network Traffic Colls
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_network_transmit_colls_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: '{{device}} - Transmit colls'
+                legend: [as_table, to_bottom, avg, min, max, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+                overrides:
+                    - match: {regex: /.*Trans.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: NF Contrack
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_nf_conntrack_entries{instance="$node",job="$job"}
+                        legend: NF conntrack entries
+                    - prometheus:
+                        query: node_nf_conntrack_entries_limit{instance="$node",job="$job"}
+                        legend: NF conntrack limit
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: entries
+                overrides:
+                    - match: {field_name: NF conntrack limit}
+                      properties:
+                        color: '#890F02'
+                        fill_opacity: 0
+            - timeseries:
+                title: ARP Entries
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_arp_entries{instance="$node",job="$job"}
+                        legend: '{{ device }} - ARP entries'
+                legend: [as_table, to_bottom, avg, last_non_null, max, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: Entries
+            - timeseries:
+                title: MTU
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_network_mtu_bytes{instance="$node",job="$job"}
+                        legend: '{{ device }} - Bytes'
+                legend: [as_table, to_bottom, last_non_null, max, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    decimals: 0
+                    unit: bytes
+                    label: bytes
+            - timeseries:
+                title: Speed
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_network_speed_bytes{instance="$node",job="$job"}
+                        legend: '{{ device }} - Speed'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    decimals: 0
+                    unit: bytes
+                    label: bytes
+            - timeseries:
+                title: Queue Length
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_network_transmit_queue_length{instance="$node",job="$job"}
+                        legend: '{{ device }} -   Interface transmit queue length'
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    decimals: 0
+                    unit: none
+                    label: packets
+            - timeseries:
+                title: Softnet Packets
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_softnet_processed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{cpu}} - Processed
+                    - prometheus:
+                        query: irate(node_softnet_dropped_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{cpu}} - Dropped
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: packetes drop (-) / process (+)
+                overrides:
+                    - match: {regex: /.*Dropped.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Softnet Out of Quota
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_softnet_times_squeezed_total{instance="$node",job="$job"}[$__rate_interval])
+                        legend: CPU {{cpu}} - Squeezed
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+            - timeseries:
+                title: Network Operational Status
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_network_up{operstate="up",instance="$node",job="$job"}
+                        legend: '{{interface}} - Operational state UP'
+                    - prometheus:
+                        query: node_network_carrier{instance="$node",job="$job"}
+                        legend: '{{device}} - Physical link state'
+                legend: [as_table, to_bottom, min, avg, last_non_null, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+
+        - name: Network Sockstat
+          collapse: true
+          panels:
+            - timeseries:
+                title: Sockstat TCP
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_sockstat_TCP_alloc{instance="$node",job="$job"}
+                        legend: TCP_alloc - Allocated sockets
+                    - prometheus:
+                        query: node_sockstat_TCP_inuse{instance="$node",job="$job"}
+                        legend: TCP_inuse - Tcp sockets currently in use
+                    - prometheus:
+                        query: node_sockstat_TCP_mem{instance="$node",job="$job"}
+                        legend: TCP_mem - Used memory for tcp
+                        hidden: true
+                    - prometheus:
+                        query: node_sockstat_TCP_orphan{instance="$node",job="$job"}
+                        legend: TCP_orphan - Orphan sockets
+                    - prometheus:
+                        query: node_sockstat_TCP_tw{instance="$node",job="$job"}
+                        legend: TCP_tw - Sockets waiting close
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Sockstat UDP
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_sockstat_UDPLITE_inuse{instance="$node",job="$job"}
+                        legend: UDPLITE_inuse - Udplite sockets currently in use
+                    - prometheus:
+                        query: node_sockstat_UDP_inuse{instance="$node",job="$job"}
+                        legend: UDP_inuse - Udp sockets currently in use
+                    - prometheus:
+                        query: node_sockstat_UDP_mem{instance="$node",job="$job"}
+                        legend: UDP_mem - Used memory for udp
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Sockstat FRAG / RAW
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_sockstat_FRAG_inuse{instance="$node",job="$job"}
+                        legend: FRAG_inuse - Frag sockets currently in use
+                    - prometheus:
+                        query: node_sockstat_RAW_inuse{instance="$node",job="$job"}
+                        legend: RAW_inuse - Raw sockets currently in use
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: Sockstat Memory Size
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_sockstat_TCP_mem_bytes{instance="$node",job="$job"}
+                        legend: mem_bytes - TCP sockets in that state
+                    - prometheus:
+                        query: node_sockstat_UDP_mem_bytes{instance="$node",job="$job"}
+                        legend: mem_bytes - UDP sockets in that state
+                    - prometheus:
+                        query: node_sockstat_FRAG_memory{instance="$node",job="$job"}
+                        legend: FRAG_memory - Used memory for frag
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    unit: bytes
+                    label: bytes
+            - timeseries:
+                title: Sockstat Used
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_sockstat_sockets_used{instance="$node",job="$job"}
+                        legend: Sockets_used - Sockets currently in use
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: sockets
+
+        - name: Network Netstat
+          collapse: true
+          panels:
+            - timeseries:
+                title: Netstat IP In / Out Octets
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_IpExt_InOctets{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InOctets - Received octets
+                    - prometheus:
+                        query: irate(node_netstat_IpExt_OutOctets{instance="$node",job="$job"}[$__rate_interval])
+                        legend: OutOctets - Sent octets
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: octets out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Out.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: Netstat IP Forwarding
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Ip_Forwarding{instance="$node",job="$job"}[$__rate_interval])
+                        legend: Forwarding - IP forwarding
+                legend: [as_table, to_bottom, last_non_null, max, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: datagrams
+            - timeseries:
+                title: ICMP In / Out
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Icmp_InMsgs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InMsgs -  Messages which the entity received. Note that this counter includes all those counted by icmpInErrors
+                    - prometheus:
+                        query: irate(node_netstat_Icmp_OutMsgs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: OutMsgs - Messages which this entity attempted to send. Note that this counter includes all those counted by icmpOutErrors
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: messages out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Out.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: ICMP Errors
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Icmp_InErrors{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InErrors - Messages which the entity received but determined as having ICMP-specific errors (bad ICMP checksums, bad length, etc.)
+                legend: [as_table, to_bottom, min, last_non_null, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: messages out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Out.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: UDP In / Out
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Udp_InDatagrams{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InDatagrams - Datagrams received
+                    - prometheus:
+                        query: irate(node_netstat_Udp_OutDatagrams{instance="$node",job="$job"}[$__rate_interval])
+                        legend: OutDatagrams - Datagrams sent
+                legend: [as_table, to_bottom, max, last_non_null, min, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: datagrams out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Out.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*Snd.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: UDP Errors
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Udp_InErrors{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InErrors - UDP Datagrams that could not be delivered to an application
+                    - prometheus:
+                        query: irate(node_netstat_Udp_NoPorts{instance="$node",job="$job"}[$__rate_interval])
+                        legend: NoPorts - UDP Datagrams received on a port with no listener
+                    - prometheus:
+                        query: irate(node_netstat_UdpLite_InErrors{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InErrors Lite - UDPLite Datagrams that could not be delivered to an application
+                    - prometheus:
+                        query: irate(node_netstat_Udp_RcvbufErrors{instance="$node",job="$job"}[$__rate_interval])
+                        legend: RcvbufErrors - UDP buffer errors received
+                    - prometheus:
+                        query: irate(node_netstat_Udp_SndbufErrors{instance="$node",job="$job"}[$__rate_interval])
+                        legend: SndbufErrors - UDP buffer errors send
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: datagrams
+            - timeseries:
+                title: TCP In / Out
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_InSegs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InSegs - Segments received, including those received in error. This count includes segments received on currently established connections
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_OutSegs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: OutSegs - Segments sent, including those on current connections but excluding those containing only retransmitted octets
+                legend: [as_table, to_bottom, min, max, avg, last_non_null]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: datagrams out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Out.*/}
+                      properties:
+                        negative_Y: true
+                    - match: {regex: /.*Snd.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: TCP Errors
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_ListenOverflows{instance="$node",job="$job"}[$__rate_interval])
+                        legend: ListenOverflows - Times the listen queue of a socket overflowed
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_ListenDrops{instance="$node",job="$job"}[$__rate_interval])
+                        legend: ListenDrops - SYNs to LISTEN sockets ignored
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_TCPSynRetrans{instance="$node",job="$job"}[$__rate_interval])
+                        legend: TCPSynRetrans - SYN-SYN/ACK retransmits to break down retransmissions in SYN, fast/timeout retransmits
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_RetransSegs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: RetransSegs - Segments retransmitted - that is, the number of TCP segments transmitted containing one or more previously transmitted octets
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_InErrs{instance="$node",job="$job"}[$__rate_interval])
+                        legend: InErrs - Segments received in error (e.g., bad TCP checksums)
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_OutRsts{instance="$node",job="$job"}[$__rate_interval])
+                        legend: OutRsts - Segments sent with RST flag
+                legend: [as_table, to_bottom, last_non_null, min, max, avg]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: counter
+            - timeseries:
+                title: TCP Connections
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_netstat_Tcp_CurrEstab{instance="$node",job="$job"}
+                        legend: CurrEstab - TCP connections for which the current state is either ESTABLISHED or CLOSE- WAIT
+                    - prometheus:
+                        query: node_netstat_Tcp_MaxConn{instance="$node",job="$job"}
+                        legend: MaxConn - Limit on the total number of TCP connections the entity can support (Dynamic is "-1")
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: connections
+                overrides:
+                    - match: {regex: /.*MaxConn *./}
+                      properties:
+                        color: '#890F02'
+                        fill_opacity: 0
+            - timeseries:
+                title: TCP SynCookie
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_SyncookiesFailed{instance="$node",job="$job"}[$__rate_interval])
+                        legend: SyncookiesFailed - Invalid SYN cookies received
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_SyncookiesRecv{instance="$node",job="$job"}[$__rate_interval])
+                        legend: SyncookiesRecv - SYN cookies received
+                    - prometheus:
+                        query: irate(node_netstat_TcpExt_SyncookiesSent{instance="$node",job="$job"}[$__rate_interval])
+                        legend: SyncookiesSent - SYN cookies sent
+                legend: [as_table, to_bottom, min, avg, last_non_null, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter out (-) / in (+)
+                overrides:
+                    - match: {regex: /.*Sent.*/}
+                      properties:
+                        negative_Y: true
+            - timeseries:
+                title: TCP Direct Transition
+                span: 6
+                targets:
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_ActiveOpens{instance="$node",job="$job"}[$__rate_interval])
+                        legend: ActiveOpens - TCP connections that have made a direct transition to the SYN-SENT state from the CLOSED state
+                    - prometheus:
+                        query: irate(node_netstat_Tcp_PassiveOpens{instance="$node",job="$job"}[$__rate_interval])
+                        legend: PassiveOpens - TCP connections that have made a direct transition to the SYN-RCVD state from the LISTEN state
+                legend: [as_table, to_bottom, avg, last_non_null, min, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    min: 0
+                    label: connections
+
+        - name: Node Exporter
+          collapse: true
+          panels:
+            - timeseries:
+                title: Node Exporter Scrape Time
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_scrape_collector_duration_seconds{instance="$node",job="$job"}
+                        legend: '{{collector}} - Scrape duration'
+                legend: [as_table, to_bottom, min, avg, last_non_null, max]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                    stack: normal
+                axis:
+                    unit: s
+                    label: seconds
+            - timeseries:
+                title: Node Exporter Scrape
+                span: 6
+                targets:
+                    - prometheus:
+                        query: node_scrape_collector_success{instance="$node",job="$job"}
+                        legend: '{{collector}} - Scrape success'
+                    - prometheus:
+                        query: node_textfile_scrape_error{instance="$node",job="$job"}
+                        legend: '{{collector}} - Scrape textfile error (1 = true)'
+                legend: [as_table, to_bottom, last_non_null, max, avg, min]
+                visualization:
+                    gradient_mode: none
+                    tooltip: all_series
+                axis:
+                    label: counter
+                overrides:
+                    - match: {regex: /.*error.*/}
+                      properties:
+                        color: '#F2495C'
+                        negative_Y: true
