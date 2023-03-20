@@ -17,7 +17,7 @@ import (
 )
 
 const grafanaDashboardFinalizerName = "grafanadashboards.k8s.kevingomez.fr/finalizer"
-const folderAnnotation = "dark/folder"
+const DashboardFolderAnnotation = "dark/folder"
 
 type dashboardManager interface {
 	FromRawSpec(ctx context.Context, folderName string, uid string, rawJSON []byte) error
@@ -103,7 +103,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	folder := dashboard.Annotations[folderAnnotation]
+	folder := dashboard.Annotations[DashboardFolderAnnotation]
 	if dashboard.Folder != "" {
 		folder = dashboard.Folder
 	}
