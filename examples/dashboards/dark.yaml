@@ -1,61 +1,200 @@
 apiVersion: k8s.kevingomez.fr/v1
 kind: GrafanaDashboard
 metadata:
-  name: dark-reconciliations
+  name: dark-dashboard
   annotations:
-    dark/folder: DARK
+    dark/folder: Dark
 
 spec:
-  title: Dark operator reconciliations
-  editable: true
+  title: Dark Service
+
   shared_crosshair: true
-  tags: [dark, generated]
-  auto_refresh: 5s
-  time: [now-1h, now]
+  editable: false
+
+  tags: [generated, dark]
+  auto_refresh: 30s
 
   variables:
-  - interval:
-      name: interval
-      label: "Interval"
-      default: 10m
-      values: [1m, 5m, 10m, 30m, 1h, 2h, 4h, 8h]
+    - interval:
+        name: interval
+        label: Interval
+        default: 1m
+        values: [30s, 1m, 5m, 10m, 30m, 1h, 6h, 12h]
 
   rows:
-    - name: Overview
+    - name: System
       panels:
-      - timeseries:
-          title: GrafanaDashboards reconciliations status
-          description: Reconciliation status of GrafanaDashboards manifests
-          datasource: Prometheus
-          targets:
-            - prometheus:
-                query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[$interval])) by (result)
-                legend: '{{ result }}'
-          alert:
-            summary: 'Alert summary'
-            description: "Alert msg"
-            evaluate_every: 3m
-            for: 6m
-            on_no_data: ok
-            on_execution_error: alerting
-            if:
-              - { avg: A, above: 0 }
+        - timeseries:
+            title: CPU usage per pod
+            span: 3
+            height: 200px
             targets:
               - prometheus:
-                  ref: A
-                  query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[5m])) by (result)
-                  legend: "{{ result }}"
-                  lookback: 5m
-            tags:
-              owner: platform
-              service: service_name
-              og_priority: P4
+                  query: 'sum(rate(container_cpu_usage_seconds_total{pod=~"dark-.*"}[$interval])) by (pod)'
+                  legend: "{{ pod }}"
+            legend: [hide]
 
-      - timeseries:
-          title: Datasources reconciliations status
-          description: Reconciliation status of Datasources manifests
-          datasource: Prometheus
-          targets:
-            - prometheus:
-                query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[$interval])) by (result)
-                legend: '{{ result }}'
+        - timeseries:
+            title: Memory per pod
+            span: 3
+            height: 200px
+            targets:
+              - prometheus:
+                  query: 'sum(container_memory_working_set_bytes{pod=~"dark-.*",container!="",container!="POD"}) by (pod,container)'
+                  legend: "{{ pod }} - {{ container }}"
+            legend: [hide]
+            axis: {unit: bytes, min: 0}
+
+        - timeseries:
+            title: Container restarts
+            span: 3
+            height: 200px
+            targets:
+              - prometheus:
+                  query: 'sum(rate(kube_pod_container_status_restarts_total{pod=~"dark-.*"}[$interval])) by (pod)'
+                  legend: "{{ pod }}"
+            legend: [hide]
+            axis: {min: 0}
+            alert:
+              summary: 'DARK container restart'
+              evaluate_every: 3m
+              for: 6m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, above: 0 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: 'sum(rate(kube_pod_container_status_restarts_total{pod=~"dark-.*"}[1m])) by (pod)'
+                    legend: "{{ pod }}"
+                    lookback: 5m
+              tags:
+                service: dark
+
+        - timeseries:
+            title: '% of available replicas'
+            span: 3
+            height: 200px
+            targets:
+              - prometheus:
+                  query: '(kube_deployment_status_replicas_available{deployment="dark"} * 100) / kube_deployment_spec_replicas{deployment="dark"}'
+            legend: [hide]
+            axis: {unit: percent, min: 0, max: 100}
+            alert:
+              summary: 'DARK available replicas'
+              evaluate_every: 1m
+              for: 2m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, below: 50 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: '(kube_deployment_status_replicas_available{deployment="dark"} * 100) / kube_deployment_spec_replicas{deployment="dark"}'
+                    lookback: 2m
+              tags:
+                service: dark
+
+    - name: Reconciliation
+      panels:
+        - timeseries:
+            title: GrafanaDashboards reconciliations status
+            description: Reconciliation status of GrafanaDashboards manifests
+            targets:
+              - prometheus:
+                  query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[$interval])) by (result)
+                  legend: '{{ result }}'
+            alert:
+              summary: 'GrafanaDashboard reconciliations are failing'
+              description: "Some dashboards managed by DARK can not be reconciliated with Grafana and might be out-of-date"
+              evaluate_every: 3m
+              for: 6m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, above: 0 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: sum(increase(controller_runtime_reconcile_total{controller="grafanadashboard"}[5m])) by (result)
+                    legend: "{{ result }}"
+                    lookback: 5m
+              tags:
+                service: dark
+
+        - timeseries:
+            title: Datasources reconciliations status
+            description: Reconciliation status of Datasources manifests
+            targets:
+              - prometheus:
+                  query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[$interval])) by (result)
+                  legend: '{{ result }}'
+            alert:
+              summary: 'Datasource reconciliations are failing'
+              description: "Some datasources managed by DARK can not be reconciliated with Grafana and might be out-of-date"
+              evaluate_every: 3m
+              for: 6m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, above: 0 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: sum(increase(controller_runtime_reconcile_total{controller="datasource"}[5m])) by (result)
+                    legend: "{{ result }}"
+                    lookback: 5m
+              tags:
+                service: dark
+
+        - timeseries:
+            title: AlertManager reconciliations status
+            description: Reconciliation status of AlertManager manifests
+            targets:
+              - prometheus:
+                  query: sum(increase(controller_runtime_reconcile_total{controller="alertmanager"}[$interval])) by (result)
+                  legend: '{{ result }}'
+            alert:
+              summary: 'AlertManager reconciliations are failing'
+              description: "AlertManager definitions managed by DARK can not be reconciliated with Grafana and might be out-of-date"
+              evaluate_every: 3m
+              for: 6m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, above: 0 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: sum(increase(controller_runtime_reconcile_total{controller="alertmanager"}[5m])) by (result)
+                    legend: "{{ result }}"
+                    lookback: 5m
+              tags:
+                service: dark
+
+        - timeseries:
+            title: APIKey reconciliations status
+            description: Reconciliation status of APIKey manifests
+            targets:
+              - prometheus:
+                  query: sum(increase(controller_runtime_reconcile_total{controller="apikey"}[$interval])) by (result)
+                  legend: '{{ result }}'
+            alert:
+              summary: 'APIKey reconciliations are failing'
+              description: "APIKey definitions managed by DARK can not be reconciliated with Grafana and might be out-of-date"
+              evaluate_every: 3m
+              for: 6m
+              on_no_data: ok
+              on_execution_error: alerting
+              if:
+                - { avg: A, above: 0 }
+              targets:
+                - prometheus:
+                    ref: A
+                    query: sum(increase(controller_runtime_reconcile_total{controller="apikey"}[5m])) by (result)
+                    legend: "{{ result }}"
+                    lookback: 5m
+              tags:
+                service: dark
