@@ -120,11 +120,3 @@ func TestConvertLinks(t *testing.T) {
 	req.Equal(1, len(dashboard.DashboardLinks))
 	req.Equal(1, len(dashboard.ExternalLinks))
 }
-
-func strPtr(input string) *string {
-	return &input
-}
-
-func boolPtr(input bool) *bool {
-	return &input
-}
