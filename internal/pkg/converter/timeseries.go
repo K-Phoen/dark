@@ -170,21 +170,26 @@ func (converter *JSON) convertTimeSeriesLineInterpolation(panel sdk.Panel) strin
 func (converter *JSON) convertTimeSeriesLegend(legend sdk.TimeseriesLegendOptions) []string {
 	options := []string{}
 
-	// Display mode
-	switch legend.DisplayMode {
-	case "list":
-		options = append(options, "as_list")
-	case "hidden":
+	// Hidden legend?
+	if legend.Show != nil && !*legend.Show {
 		options = append(options, "hide")
-	default:
-		options = append(options, "as_table")
-	}
-
-	// Placement
-	if legend.Placement == "right" {
-		options = append(options, "to_the_right")
 	} else {
-		options = append(options, "to_bottom")
+		// Display mode
+		switch legend.DisplayMode {
+		case "list":
+			options = append(options, "as_list")
+		case "hidden":
+			options = append(options, "hide")
+		default:
+			options = append(options, "as_table")
+		}
+
+		// Placement
+		if legend.Placement == "right" {
+			options = append(options, "to_the_right")
+		} else {
+			options = append(options, "to_bottom")
+		}
 	}
 
 	// Automatic calculations
