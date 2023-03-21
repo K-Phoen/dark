@@ -26,6 +26,8 @@ func (converter *JSON) convertVariable(variable sdk.TemplateVar, dashboard *grab
 		converter.convertConstVar(variable, dashboard)
 	case "datasource":
 		converter.convertDatasourceVar(variable, dashboard)
+	case "textbox":
+		converter.convertTextVar(variable, dashboard)
 	default:
 		converter.logger.Warn("unhandled variable type found: skipped", zap.String("type", variable.Type), zap.String("name", variable.Name))
 	}
@@ -64,6 +66,16 @@ func (converter *JSON) convertCustomVar(variable sdk.TemplateVar, dashboard *gra
 	}
 
 	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Custom: custom})
+}
+
+func (converter *JSON) convertTextVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {
+	textVar := &grabana.VariableText{
+		Name:  variable.Name,
+		Label: variable.Label,
+		Hide:  converter.convertVarHide(variable),
+	}
+
+	dashboard.Variables = append(dashboard.Variables, grabana.DashboardVariable{Text: textVar})
 }
 
 func (converter *JSON) convertQueryVar(variable sdk.TemplateVar, dashboard *grabana.DashboardModel) {

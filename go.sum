@@ -38,8 +38,8 @@ cloud.google.com/go/storage v1.14.0/go.mod h1:GrKmX003DSIwi9o29oFT7YDnHYwZoctc3f
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/xgb v0.0.0-20160522181843-27f122750802/go.mod h1:IVnqGOEym/WlBOVXweHU+Q+/VP0lqqI8lqeDx9IjBqo=
-github.com/K-Phoen/grabana v0.21.15 h1:rUyJm9pV2XiPWQNVDjR+ubEBP+A8zv0hpRQmZjFcBnM=
-github.com/K-Phoen/grabana v0.21.15/go.mod h1:HDl99djdna5Auu7RcOgxE64HnvQ9UBIpqc+A2A5XnL8=
+github.com/K-Phoen/grabana v0.21.16 h1:IxZKPqrQyt3Yq00p/YMhexCtPAxJJpAEfMQorRVG7+0=
+github.com/K-Phoen/grabana v0.21.16/go.mod h1:HDl99djdna5Auu7RcOgxE64HnvQ9UBIpqc+A2A5XnL8=
 github.com/K-Phoen/sdk v0.12.0 h1:+0QqHoDZbO6zetFMggM3zKF48GKRu744Ycc9w4oyY0E=
 github.com/K-Phoen/sdk v0.12.0/go.mod h1:wp7qXARaIhCYktmoOjRZ+TDMlek5nbayC+waN7vigxI=
 github.com/OneOfOne/xxhash v1.2.2/go.mod h1:HSdplMjZKSmBqAxg5vPj2TmRDmfkzw+cTzAElWljhcU=

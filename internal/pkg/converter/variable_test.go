@@ -184,3 +184,26 @@ func TestConvertQueryVar(t *testing.T) {
 	req.True(query.IncludeAll)
 	req.True(query.DefaultAll)
 }
+
+func TestConvertTextboxVar(t *testing.T) {
+	req := require.New(t)
+
+	variable := defaultVar("textbox")
+	variable.Name = "var_textbox"
+	variable.Label = "Filter"
+	variable.Hide = 1
+
+	converter := NewJSON(zap.NewNop())
+
+	dashboard := &grabana.DashboardModel{}
+	converter.convertVariables([]sdk.TemplateVar{variable}, dashboard)
+
+	req.Len(dashboard.Variables, 1)
+	req.NotNil(dashboard.Variables[0].Text)
+
+	textVar := dashboard.Variables[0].Text
+
+	req.Equal("var_textbox", textVar.Name)
+	req.Equal("Filter", textVar.Label)
+	req.Equal("label", textVar.Hide)
+}
