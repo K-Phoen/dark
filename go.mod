@@ -3,15 +3,15 @@ module github.com/K-Phoen/dark
 go 1.19
 
 require (
-	github.com/K-Phoen/grabana v0.21.16
-	github.com/K-Phoen/sdk v0.12.0
+	github.com/K-Phoen/grabana v0.21.17
+	github.com/K-Phoen/sdk v0.12.2
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.27.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	go.uber.org/zap v1.24.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/api v0.26.1
