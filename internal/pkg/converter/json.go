@@ -6,7 +6,7 @@ import (
 	"io"
 
 	v1 "github.com/K-Phoen/dark/api/v1"
-	"github.com/K-Phoen/dark/internal/pkg/controllers"
+	"github.com/K-Phoen/dark/internal/pkg/model"
 	grabana "github.com/K-Phoen/grabana/decoder"
 	"github.com/K-Phoen/sdk"
 	"go.uber.org/zap"
@@ -90,7 +90,7 @@ func (converter *JSON) ToK8SManifest(input io.Reader, output io.Writer, options 
 
 	if options.Folder != "" {
 		manifest.Metadata["annotations"] = map[string]string{
-			controllers.DashboardFolderAnnotation: options.Folder,
+			model.DashboardFolderAnnotation: options.Folder,
 		}
 	}
 
