@@ -97,7 +97,7 @@ github.com/gogo/protobuf/sortkeys
 # github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da
 ## explicit
 github.com/golang/groupcache/lru
-# github.com/golang/protobuf v1.5.2
+# github.com/golang/protobuf v1.5.3
 ## explicit; go 1.9
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
@@ -207,7 +207,7 @@ github.com/onsi/ginkgo/reporters/stenographer
 github.com/onsi/ginkgo/reporters/stenographer/support/go-colorable
 github.com/onsi/ginkgo/reporters/stenographer/support/go-isatty
 github.com/onsi/ginkgo/types
-# github.com/onsi/gomega v1.27.1
+# github.com/onsi/gomega v1.27.6
 ## explicit; go 1.18
 github.com/onsi/gomega
 github.com/onsi/gomega/format
@@ -301,7 +301,7 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/net v0.7.0
+# golang.org/x/net v0.8.0
 ## explicit; go 1.17
 golang.org/x/net/context
 golang.org/x/net/html
@@ -315,16 +315,16 @@ golang.org/x/net/idna
 ## explicit; go 1.17
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.5.0
+# golang.org/x/sys v0.6.0
 ## explicit; go 1.17
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.5.0
+# golang.org/x/term v0.6.0
 ## explicit; go 1.17
 golang.org/x/term
-# golang.org/x/text v0.7.0
+# golang.org/x/text v0.8.0
 ## explicit; go 1.17
 golang.org/x/text/encoding
 golang.org/x/text/encoding/charmap
