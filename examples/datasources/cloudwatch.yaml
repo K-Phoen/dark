@@ -1,0 +1,8 @@
+apiVersion: k8s.kevingomez.fr/v1alpha1
+kind: Datasource
+metadata:
+  name: dark-cloudwatch
+spec:
+  cloudwatch:
+    # Uses AWS SDK auth strategy by default
+    default_region: eu-north-1
