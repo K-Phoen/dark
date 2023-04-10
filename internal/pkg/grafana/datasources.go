@@ -49,6 +49,9 @@ func (datasources *Datasources) SpecToModel(ctx context.Context, objectRef types
 	if spec.Tempo != nil {
 		return datasources.tempoSpecToModel(ctx, objectRef, spec.Tempo)
 	}
+	if spec.CloudWatch != nil {
+		return datasources.cloudWatchSpecToModel(ctx, objectRef, spec.CloudWatch)
+	}
 
 	return nil, ErrDatasourceNotConfigured
 }

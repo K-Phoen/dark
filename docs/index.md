@@ -27,6 +27,7 @@
 
 ### Data sources
 
+* [CloudWatch](./usage/declaring-cloudwatch-datasource.md)
 * [Jaeger](./usage/declaring-jaeger-datasource.md)
 * [Loki](./usage/declaring-loki-datasource.md)
 * [Prometheus](./usage/declaring-prometheus-datasource.md)

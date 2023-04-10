@@ -48,6 +48,7 @@ type DatasourceSpec struct {
 	Jaeger      *JaegerDatasource      `json:"jaeger,omitempty"`
 	Loki        *LokiDatasource        `json:"loki,omitempty"`
 	Tempo       *TempoDatasource       `json:"tempo,omitempty"`
+	CloudWatch  *CloudWatchDatasource  `json:"cloudwatch,omitempty"`
 }
 
 type PrometheusDatasource struct {
@@ -162,6 +163,37 @@ type JaegerDatasource struct {
 	NodeGraph *bool `json:"node_graph,omitempty"`
 
 	TraceToLogs *TraceToLogs `json:"trace_to_logs,omitempty"`
+}
+
+type CloudWatchDatasource struct {
+	Default *bool `json:"default,omitempty"`
+
+	Auth *CloudWatchAuth `json:"auth,omitempty"`
+
+	// Endpoint specifies a custom endpoint for the CloudWatch service.
+	Endpoint string `json:"endpoint,omitempty"`
+
+	// DefaultRegion sets the default region to use.
+	DefaultRegion string `json:"default_region,omitempty"`
+
+	// AssumeRoleARN specifies the ARN of a role to assume.
+	// Format: arn:aws:iam:*
+	AssumeRoleARN string `json:"assume_role_arn,omitempty"`
+
+	// ExternalID specifies the external identifier of a role to assume in another account.
+	ExternalID string `json:"external_id,omitempty"`
+
+	// CustomMetricsNamespaces specifies a list of namespaces for custom metrics.
+	CustomMetricsNamespaces []string `json:"custom_metrics_namespaces,omitempty"`
+}
+
+type CloudWatchAuth struct {
+	Keys *CloudWatchAuthKeys `json:"keys,omitempty"`
+}
+
+type CloudWatchAuthKeys struct {
+	Access string      `json:"access"`
+	Secret *ValueOrRef `json:"secret"`
 }
 
 type BasicAuth struct {

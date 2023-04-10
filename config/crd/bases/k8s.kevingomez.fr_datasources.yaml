@@ -3,7 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.8.0
+    controller-gen.kubebuilder.io/version: v0.11.3
   creationTimestamp: null
   name: datasources.k8s.kevingomez.fr
 spec:
@@ -45,6 +45,74 @@ spec:
             type: object
           spec:
             properties:
+              cloudwatch:
+                properties:
+                  assume_role_arn:
+                    description: 'AssumeRoleARN specifies the ARN of a role to assume.
+                      Format: arn:aws:iam:*'
+                    type: string
+                  auth:
+                    properties:
+                      keys:
+                        properties:
+                          access:
+                            type: string
+                          secret:
+                            properties:
+                              value:
+                                description: Only one of the following may be specified.
+                                type: string
+                              valueFrom:
+                                properties:
+                                  secretKeyRef:
+                                    description: SecretKeySelector selects a key of
+                                      a Secret.
+                                    properties:
+                                      key:
+                                        description: The key of the secret to select
+                                          from.  Must be a valid secret key.
+                                        type: string
+                                      name:
+                                        description: 'Name of the referent. More info:
+                                          https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
+                                          TODO: Add other useful fields. apiVersion,
+                                          kind, uid?'
+                                        type: string
+                                      optional:
+                                        description: Specify whether the Secret or
+                                          its key must be defined
+                                        type: boolean
+                                    required:
+                                    - key
+                                    type: object
+                                    x-kubernetes-map-type: atomic
+                                type: object
+                            type: object
+                        required:
+                        - access
+                        - secret
+                        type: object
+                    type: object
+                  custom_metrics_namespaces:
+                    description: CustomMetricsNamespaces specifies a list of namespaces
+                      for custom metrics.
+                    items:
+                      type: string
+                    type: array
+                  default:
+                    type: boolean
+                  default_region:
+                    description: DefaultRegion sets the default region to use.
+                    type: string
+                  endpoint:
+                    description: Endpoint specifies a custom endpoint for the CloudWatch
+                      service.
+                    type: string
+                  external_id:
+                    description: ExternalID specifies the external identifier of a
+                      role to assume in another account.
+                    type: string
+                type: object
               jaeger:
                 properties:
                   basic_auth:
@@ -77,6 +145,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                       username:
@@ -107,6 +176,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                     required:
@@ -139,6 +209,7 @@ spec:
                             required:
                             - key
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                     type: object
                   default:
@@ -219,6 +290,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                       username:
@@ -249,6 +321,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                     required:
@@ -281,6 +354,7 @@ spec:
                             required:
                             - key
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                     type: object
                   default:
@@ -371,6 +445,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                       username:
@@ -401,6 +476,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                     required:
@@ -433,6 +509,7 @@ spec:
                             required:
                             - key
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                     type: object
                   default:
@@ -515,6 +592,7 @@ spec:
                             required:
                             - key
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                     type: object
                 type: object
@@ -550,6 +628,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                       username:
@@ -580,6 +659,7 @@ spec:
                                 required:
                                 - key
                                 type: object
+                                x-kubernetes-map-type: atomic
                             type: object
                         type: object
                     required:
@@ -612,6 +692,7 @@ spec:
                             required:
                             - key
                             type: object
+                            x-kubernetes-map-type: atomic
                         type: object
                     type: object
                   default:
@@ -679,9 +760,3 @@ spec:
     storage: true
     subresources:
       status: {}
-status:
-  acceptedNames:
-    kind: ""
-    plural: ""
-  conditions: []
-  storedVersions: []
