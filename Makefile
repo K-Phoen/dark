@@ -103,7 +103,7 @@ dev-env-provision: ## Provision the development k3d cluster with useful tools (G
 	# Grafana, loki, prometheus, ...
 	helm upgrade \
 		--install loki grafana/loki-stack \
-		--set grafana.enabled=true,grafana.image.tag=8.5.1,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
+		--set grafana.enabled=true,grafana.image.tag=9.4.7,prometheus.enabled=true,prometheus.alertmanager.persistentVolume.enabled=false,prometheus.server.persistentVolume.enabled=false
 	# InfluxDB
 	helm upgrade --install influxdb bitnami/influxdb \
 		--set auth.enabled=false
