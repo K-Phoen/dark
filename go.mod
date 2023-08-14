@@ -3,8 +3,8 @@ module github.com/K-Phoen/dark
 go 1.19
 
 require (
-	github.com/K-Phoen/grabana v0.21.18
-	github.com/K-Phoen/sdk v0.12.2
+	github.com/K-Phoen/grabana v0.21.19
+	github.com/K-Phoen/sdk v0.12.3
 	github.com/go-logr/logr v1.2.3
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.27.1
