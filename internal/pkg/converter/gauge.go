@@ -91,14 +91,14 @@ func (converter *JSON) convertGaugeValueType(panel sdk.Panel) string {
 
 func (converter *JSON) convertGaugeOrientation(panel sdk.Panel) string {
 	switch panel.GaugePanel.Options.Orientation {
-	case "":
+	case "", "auto":
 		return "auto"
 	case "horizontal":
 		return "horizontal"
 	case "vertical":
 		return "vertical"
 	default:
-		converter.logger.Warn("unknown orientation", zap.String("orientation", panel.StatPanel.Options.Orientation))
+		converter.logger.Warn("unknown orientation", zap.String("orientation", panel.GaugePanel.Options.Orientation))
 		return "auto"
 	}
 }
