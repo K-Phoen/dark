@@ -3,21 +3,20 @@ package controllers
 import (
 	"context"
 
-	"sigs.k8s.io/controller-runtime/pkg/controller"
-
 	k8skevingomezfrv1 "github.com/K-Phoen/dark/api/v1"
 	"github.com/K-Phoen/dark/internal/pkg/grafana"
+	"github.com/K-Phoen/dark/internal/pkg/model"
 	"github.com/K-Phoen/grabana"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 )
 
 const grafanaDashboardFinalizerName = "grafanadashboards.k8s.kevingomez.fr/finalizer"
-const DashboardFolderAnnotation = "dark/folder"
 
 type dashboardManager interface {
 	FromRawSpec(ctx context.Context, folderName string, uid string, rawJSON []byte) error
@@ -103,7 +102,7 @@ func (r *GrafanaDashboardReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		return ctrl.Result{}, nil
 	}
 
-	folder := dashboard.Annotations[DashboardFolderAnnotation]
+	folder := dashboard.Annotations[model.DashboardFolderAnnotation]
 	if dashboard.Folder != "" {
 		folder = dashboard.Folder
 	}

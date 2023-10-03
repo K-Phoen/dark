@@ -1,1 +1,3 @@
 /bin
+/dark-web-extension/*.wasm
+/dark-web-extension/web-ext-artifacts
