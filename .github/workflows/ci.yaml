@@ -22,7 +22,7 @@ jobs:
         uses: reviewdog/action-golangci-lint@v2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          golangci_lint_flags: "--config=.golangci.yaml"
+          golangci_lint_flags: "--config=build/golangci.yaml"
           reporter: github-pr-review
           go_version: ${{ matrix.go }}
           cache: false # managed by actions/setup-go
