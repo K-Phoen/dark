@@ -25,6 +25,9 @@ func (converter *JSON) convertTimeSeries(panel sdk.Panel) grabana.DashboardPanel
 	if panel.Repeat != nil {
 		tsPanel.Repeat = *panel.Repeat
 	}
+	if panel.RepeatDirection != nil {
+		tsPanel.RepeatDirection = sdkRepeatDirectionToYAML(*panel.RepeatDirection)
+	}
 	if panel.Height != nil {
 		tsPanel.Height = panel.Height.(string)
 	}

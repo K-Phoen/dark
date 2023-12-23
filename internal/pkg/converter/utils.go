@@ -1,5 +1,9 @@
 package converter
 
+import (
+	"github.com/K-Phoen/sdk"
+)
+
 func stringInSlice(search string, haystack []string) bool {
 	for _, item := range haystack {
 		if item == search {
@@ -24,4 +28,12 @@ func float64Ptr(input float64) *float64 {
 
 func strPtr(input string) *string {
 	return &input
+}
+
+func sdkRepeatDirectionToYAML(repeatDirection sdk.RepeatDirection) string {
+	if repeatDirection == sdk.RepeatDirectionHorizontal {
+		return "vertical"
+	}
+
+	return "horizontal"
 }
