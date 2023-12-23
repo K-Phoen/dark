@@ -18,6 +18,12 @@ func (converter *JSON) convertLogs(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Description != nil {
 		convertedLogs.Description = *panel.Description
 	}
+	if panel.Repeat != nil {
+		convertedLogs.Repeat = *panel.Repeat
+	}
+	if panel.RepeatDirection != nil {
+		convertedLogs.RepeatDirection = sdkRepeatDirectionToYAML(*panel.RepeatDirection)
+	}
 	if panel.Height != nil {
 		convertedLogs.Height = *(panel.Height).(*string)
 	}

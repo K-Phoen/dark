@@ -30,6 +30,9 @@ func (converter *JSON) convertHeatmap(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Repeat != nil {
 		heatmap.Repeat = *panel.Repeat
 	}
+	if panel.RepeatDirection != nil {
+		heatmap.RepeatDirection = sdkRepeatDirectionToYAML(*panel.RepeatDirection)
+	}
 	if panel.Height != nil {
 		heatmap.Height = *(panel.Height).(*string)
 	}

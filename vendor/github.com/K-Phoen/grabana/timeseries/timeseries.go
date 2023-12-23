@@ -3,8 +3,6 @@ package timeseries
 import (
 	"fmt"
 
-	"github.com/K-Phoen/sdk"
-
 	"github.com/K-Phoen/grabana/alert"
 	"github.com/K-Phoen/grabana/errors"
 	"github.com/K-Phoen/grabana/links"
@@ -12,6 +10,7 @@ import (
 	"github.com/K-Phoen/grabana/timeseries/axis"
 	"github.com/K-Phoen/grabana/timeseries/fields"
 	"github.com/K-Phoen/grabana/timeseries/threshold"
+	"github.com/K-Phoen/sdk"
 )
 
 // Option represents an option that can be used to configure a graph panel.
@@ -421,6 +420,15 @@ func Alert(name string, opts ...alert.Option) Option {
 func Repeat(repeat string) Option {
 	return func(timeseries *TimeSeries) error {
 		timeseries.Builder.Repeat = &repeat
+
+		return nil
+	}
+}
+
+// RepeatDirection configures repeating vertical or horizontal
+func RepeatDirection(direction sdk.RepeatDirection) Option {
+	return func(timeseries *TimeSeries) error {
+		timeseries.Builder.RepeatDirection = &direction
 
 		return nil
 	}

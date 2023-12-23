@@ -32,6 +32,9 @@ func (converter *JSON) convertStat(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Repeat != nil {
 		stat.Repeat = *panel.Repeat
 	}
+	if panel.RepeatDirection != nil {
+		stat.RepeatDirection = sdkRepeatDirectionToYAML(*panel.RepeatDirection)
+	}
 	if panel.Height != nil {
 		stat.Height = *(panel.Height).(*string)
 	}

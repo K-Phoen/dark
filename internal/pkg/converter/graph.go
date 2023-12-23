@@ -23,6 +23,9 @@ func (converter *JSON) convertGraph(panel sdk.Panel) grabana.DashboardPanel {
 	if panel.Repeat != nil {
 		graph.Repeat = *panel.Repeat
 	}
+	if panel.RepeatDirection != nil {
+		graph.RepeatDirection = sdkRepeatDirectionToYAML(*panel.RepeatDirection)
+	}
 	if panel.Height != nil {
 		graph.Height = *(panel.Height).(*string)
 	}

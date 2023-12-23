@@ -4,9 +4,6 @@ CONVERTER_IMAGE=$(REGISTRY)/dark-converter
 
 VERSION?=latest
 
-# ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.22
-
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
 GOBIN=$(shell go env GOPATH)/bin
@@ -66,8 +63,8 @@ vet: ## Run go vet against code.
 	go vet ./...
 
 .PHONY: test
-test: envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" $(GOCMD_TEST) ./...
+test: ## Run tests.
+	$(GOCMD_TEST) ./...
 
 .PHONY: lint
 lint: ## Lints the code base.
@@ -205,11 +202,6 @@ KUSTOMIZE = $(shell pwd)/bin/kustomize
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
 	$(call go-get-tool,$(KUSTOMIZE),sigs.k8s.io/kustomize/kustomize/v3@v3.8.7)
-
-ENVTEST = $(shell pwd)/bin/setup-envtest
-.PHONY: envtest
-envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 # go-get-tool will 'go get' any package $2 and install it to $1.
 PROJECT_DIR := $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
