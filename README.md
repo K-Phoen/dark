@@ -26,6 +26,11 @@ In addition to dashboards, DARK can also manage:
 
 * creation and operation of Grafana instances themselves. For that, check out [`grafana-operator/grafana-operator`](https://github.com/grafana-operator/grafana-operator)
 
+## See also
+
+* [`grafana-foundation-sdk`](https://github.com/grafana/grafana-foundation-sdk/): A set of tools, types and libraries for building and manipulating Grafana objects – built by Grafana Labs
+* [`grabana`](https://github.com/K-Phoen/grabana): User-friendly Go library for building Grafana dashboards
+
 ## Example dashboard
 
 ```yaml
@@ -59,7 +64,7 @@ spec:
               - prometheus:
                   query: "rate(promhttp_metric_handler_requests_total[$interval])"
                   legend: "{{ handler }} - {{ code }}"
-        
+
         - graph:
             title: Heap allocations
             datasource: prometheus-default
