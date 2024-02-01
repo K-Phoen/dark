@@ -46,6 +46,8 @@ func main() {
 	var probeAddr string
 	var grafanaHost string
 	var grafanaToken string
+	var grafanaUser string
+	var grafanaPassword string
 	var insecureSkipVerify bool
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
@@ -54,6 +56,8 @@ func main() {
 			"Enabling this will ensure there is only one active controller operator.")
 	flag.StringVar(&grafanaHost, "grafana-host", "http://localhost:3000", "The host to use to reach Grafana.")
 	flag.StringVar(&grafanaToken, "grafana-api-key", "", "The API key to use to authenticate to Grafana.")
+	flag.StringVar(&grafanaUser, "grafana-user", "", "The user to use to authenticate to Grafana.")
+	flag.StringVar(&grafanaPassword, "grafana-password", "", "The password to use to authenticate to Grafana.")
 	flag.BoolVar(&insecureSkipVerify, "insecure-skip-verify", false, "Skips SSL certificates verification. Useful when self-signed certificates are used, but can be insecure. Enabled at your own risks.")
 	opts := zap.Options{
 		Development: true,
@@ -62,6 +66,8 @@ func main() {
 
 	must(viper.BindEnv("grafana-host", "GRAFANA_HOST"))
 	must(viper.BindEnv("grafana-token", "GRAFANA_TOKEN"))
+	must(viper.BindEnv("grafana-user", "GRAFANA_USER"))
+	must(viper.BindEnv("grafana-password", "GRAFANA_PASSWORD"))
 	must(viper.BindEnv("insecure-skip-verify", "INSECURE_SKIP_VERIFY"))
 
 	pflag.CommandLine.AddGoFlagSet(flag.CommandLine)
@@ -75,11 +81,20 @@ func main() {
 		//nolint:gosec
 		InsecureSkipVerify: viper.GetBool("insecure-skip-verify"),
 	})
-	grabanaClient := grabana.NewClient(
-		httpClient,
-		viper.GetString("grafana-host"),
-		grabana.WithAPIToken(viper.GetString("grafana-token")),
-	)
+	var grabanaClient *grabana.Client
+	if viper.GetString("grafana-user") != "" {
+		grabanaClient = grabana.NewClient(
+			httpClient,
+			viper.GetString("grafana-host"),
+			grabana.WithBasicAuth(viper.GetString("grafana-user"), viper.GetString("grafana-password")),
+		)
+	} else {
+		grabanaClient = grabana.NewClient(
+			httpClient,
+			viper.GetString("grafana-host"),
+			grabana.WithAPIToken(viper.GetString("grafana-token")),
+		)
+	}
 
 	// controllers setup
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{

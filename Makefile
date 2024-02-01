@@ -137,6 +137,13 @@ run: ## Run a controller from your host.
 	GRAFANA_TOKEN=$(DEV_GRAFANA_API_KEY) \
 	go run ./cmd/controller
 
+.PHONY: run-with-password
+run-with-password: ## Run a controller from your host.
+	GRAFANA_HOST=http://$(DEV_GRAFANA_HOST):$(DEV_CLUSTER_PORT) \
+	GRAFANA_USER=admin \
+	GRAFANA_PASSWORD=$(DEV_GRAFANA_PASSWORD) \
+	go run ./cmd/controller
+
 ##@ Build
 
 .PHONY: build
