@@ -62,7 +62,7 @@ func (converter *JSON) convertStat(panel sdk.Panel) grabana.DashboardPanel {
 
 func (converter *JSON) convertStatOrientation(panel sdk.Panel) string {
 	switch panel.StatPanel.Options.Orientation {
-	case "":
+	case "", "auto":
 		return "auto"
 	case "horizontal":
 		return "horizontal"

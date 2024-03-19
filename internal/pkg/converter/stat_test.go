@@ -33,7 +33,7 @@ func TestConvertStatPanel(t *testing.T) {
 				},
 			},
 			Options: sdk.StatOptions{
-				Orientation: "horizontal",
+				Orientation: "auto",
 				TextMode:    "value_and_name",
 				ColorMode:   "value",
 				GraphMode:   "area",
@@ -63,7 +63,7 @@ func TestConvertStatPanel(t *testing.T) {
 	req.Equal("panel desc", converted.Stat.Description)
 	req.Equal("none", converted.Stat.Unit)
 	req.Equal("last", converted.Stat.ValueType)
-	req.Equal("horizontal", converted.Stat.Orientation)
+	req.Equal("auto", converted.Stat.Orientation)
 	req.Equal("value", converted.Stat.ColorMode)
 	req.Equal("value_and_name", converted.Stat.Text)
 	req.Equal(10, converted.Stat.ValueFontSize)
