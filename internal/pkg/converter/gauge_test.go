@@ -31,7 +31,7 @@ func TestConvertGaugePanel(t *testing.T) {
 				},
 			},
 			Options: sdk.StatOptions{
-				Orientation: "horizontal",
+				Orientation: "auto",
 				ReduceOptions: sdk.ReduceOptions{
 					Calcs: []string{"last"},
 				},
@@ -57,7 +57,7 @@ func TestConvertGaugePanel(t *testing.T) {
 	req.Equal("panel desc", converted.Gauge.Description)
 	req.Equal("none", converted.Gauge.Unit)
 	req.Equal("last", converted.Gauge.ValueType)
-	req.Equal("horizontal", converted.Gauge.Orientation)
+	req.Equal("auto", converted.Gauge.Orientation)
 	req.Equal(10, converted.Gauge.ValueFontSize)
 	req.Equal(20, converted.Gauge.TitleFontSize)
 	req.Equal(height, converted.Gauge.Height)
