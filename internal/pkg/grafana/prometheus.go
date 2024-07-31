@@ -82,6 +82,18 @@ func (datasources *Datasources) prometheusSpecToOptions(ctx context.Context, obj
 
 		opts = append(opts, prometheus.WithCertificate(caCertificate))
 	}
+	if spec.TLSClientAuth != nil {
+		clientCertificate, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, spec.TLSClientAuth.Certificate)
+		if err != nil {
+			return nil, fmt.Errorf("couldd not extrct client certificate: %w", err)
+		}
+		clientKey, err := datasources.refReader.RefToValue(ctx, objectRef.Namespace, spec.TLSClientAuth.Key)
+		if err != nil {
+			return nil, fmt.Errorf("couldd not extrct client key: %w", err)
+		}
+		opts = append(opts, prometheus.WithTLSClientAuth(clientCertificate, clientKey))
+	}
+
 	if len(spec.Exemplars) != 0 {
 		exemplars, err := datasources.prometheusExemplars(ctx, spec.Exemplars)
 		if err != nil {

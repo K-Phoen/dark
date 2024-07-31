@@ -68,6 +68,7 @@ type PrometheusDatasource struct {
 	BasicAuth     *BasicAuth           `json:"basic_auth,omitempty"`
 	CACertificate *ValueOrRef          `json:"ca_certificate,omitempty"`
 	Exemplars     []PrometheusExemplar `json:"exemplars,omitempty"`
+	TLSClientAuth *TLSClientAuth       `json:"tls_client_auth,omitempty"`
 }
 
 type PrometheusExemplar struct {
@@ -199,6 +200,11 @@ type CloudWatchAuthKeys struct {
 type BasicAuth struct {
 	Username ValueOrRef `json:"username"`
 	Password ValueOrRef `json:"password"`
+}
+
+type TLSClientAuth struct {
+	Certificate ValueOrRef `json:"certificate"`
+	Key         ValueOrRef `json:"key"`
 }
 
 type ValueOrDatasourceRef struct {
